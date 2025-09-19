@@ -7,57 +7,83 @@ DROP TABLE IF EXISTS LearningObjectives; #stores learning objectives (input from
 DROP TABLE IF EXISTS Students; #keeps track of students and accounts
 DROP TABLE IF EXISTS Archives; #past information
 
-#For now we will store email, but depending on legal's answer we can use a token from google
-CREATE TABLE Users (
-    user_id SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    email VARCHAR(150) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    is_instructor BOOLEAN DEFAULT FALSE
+CREATE TABLE UserAccounts (
+    userId SERIAL PRIMARY KEY,              
+    googleId VARCHAR(255) unique not null, #verify what this will look like 
+    username VARCHAR(100) UNIQUE NOT NULL,
+    email VARCHAR(150) UNIQUE NOT NULL,  #merrimack email
+    isInstructor BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    lastLogin TIMESTAMP
 );
 
-CREATE TABLE LearningObjectives (
-    objective_id INT PRIMARY KEY AUTO_INCREMENT,
-    objective_name VARCHAR(200) NOT NULL,
-    description TEXT
+#important: student may have multiple instructors
+#important: student may belong to more than one class
+CREATE TABLE Students (
+studentId VARCHAR(100) UNIQUE NOT NULL,
+badge VARCHAR(100), #i will eventually make a bank of badges
+totalPoints int,
+foreign key (studentId) references UserAccounts(user_id) on delete cascade
 );
 
-CREATE TABLE QuestionObjectives (
-    question_id INT,
-    objective_id INT,
-    PRIMARY KEY (question_id, objective_id),
-    FOREIGN KEY (question_id) REFERENCES Questions(question_id),
-    FOREIGN KEY (objective_id) REFERENCES LearningObjectives(objective_id)
+#will need to add to this! maybe?
+CREATE TABLE Instructors (
+username varchar(100) unique not null,
+foreign key (username) references UserAccounts on delete cascade
+);
+
+#CREATE TABLE Classroom ();
+
+CREATE TABLE Quizzes (
+    quizId int primary key,
+    quizName varchar(100),
+    userId INT, #instructor who created it
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    classId int,
+    foreign key (classId) references Class(classId)
 );
 
 CREATE TABLE Questions (
-    question_id INT PRIMARY KEY AUTO_INCREMENT,
-    question_text TEXT NOT NULL,
+    questionId INT PRIMARY KEY AUTO_INCREMENT,
+    questionText TEXT NOT NULL,
+    quizId int not null,
     difficulty ENUM('easy','medium','hard') NOT NULL,
-    correct_choice_id INT #tie in to the correct option
+    correct_choice_id INT, #tie in to the correct option
+    foreign key (quizId) references Quizzes(quizId) on delete cascade #verify delete cascade
 );
+
+
+CREATE TABLE LearningObjectives (
+    objectiveId INT PRIMARY KEY AUTO_INCREMENT,
+    objectiveName VARCHAR(200) NOT NULL, #i will eventually just make a bank of objectives
+    objDescript TEXT
+);
+
+CREATE TABLE QuestionObjectives (
+    questionId INT,
+    objectiveId INT,
+    PRIMARY KEY (questionId, objectiveId),
+    FOREIGN KEY (questionId) REFERENCES Questions(questionId),
+    FOREIGN KEY (objectiveId) REFERENCES LearningObjectives(objectiveId)
+);
+
 
 CREATE TABLE QuestionChoices (
-    choice_id INT PRIMARY KEY AUTO_INCREMENT,
-    question_id INT,
-    choice_label CHAR(1), #A, B, C, D
-    choice_text VARCHAR(300) NOT NULL,
-    FOREIGN KEY (question_id) REFERENCES Questions(question_id)
+    choiceId INT PRIMARY KEY AUTO_INCREMENT,
+    questionId INT,
+    choiceLabel CHAR(1), #A, B, C, D
+    choiceText VARCHAR(300) NOT NULL,
+    FOREIGN KEY (questionId) REFERENCES Questions(questionId) on delete cascade
 );
 
-CREATE TABLE Quizzes (
-    quiz_id SERIAL PRIMARY KEY,
-    user_id INT, #instructor who created it
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
 
 CREATE TABLE Attempts (
-    attempt_id SERIAL PRIMARY KEY,
-    student_id INT REFERENCES Users(user_id),
-    quiz_id INT REFERENCES Quizzes(quiz_id),
-    question_id INT REFERENCES Questions(question_id),
-    chosen_choice_id INT REFERENCES QuestionChoices(choice_id),
-    is_correct BOOLEAN,
-    points_earned INT DEFAULT 0,
-    attempt_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    attemptId SERIAL PRIMARY KEY,
+    studentId INT REFERENCES Users(userId),
+    quizId INT REFERENCES Quizzes(quizId),
+    questionId INT REFERENCES Questions(questionId),
+    chosenChoiceId INT REFERENCES QuestionChoices(choiceId),
+    isCorrect BOOLEAN,
+    pointsEarned INT DEFAULT 0,
+    attemptTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
