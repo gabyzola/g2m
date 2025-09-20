@@ -17,30 +17,47 @@ CREATE TABLE UserAccounts (
     lastLogin TIMESTAMP
 );
 
-#important: student may have multiple instructors
-#important: student may belong to more than one class
 CREATE TABLE Students (
-studentId VARCHAR(100) UNIQUE NOT NULL,
+studentId int primary key,
 badge VARCHAR(100), #i will eventually make a bank of badges
 totalPoints int,
-foreign key (studentId) references UserAccounts(user_id) on delete cascade
+foreign key (studentId) references UserAccounts(userId) on delete cascade
 );
 
 #will need to add to this! maybe?
 CREATE TABLE Instructors (
-username varchar(100) unique not null,
-foreign key (username) references UserAccounts on delete cascade
+instructorId int primary key,
+schoolSubject varchar(50),
+foreign key (instructorId) references UserAccounts(userId) on delete cascade
 );
 
-#CREATE TABLE Classroom ();
+#im thinking that instead of useraccounts maybe the foreign key should link instructors table?
+CREATE TABLE Classroom (
+classId serial primary key,
+className varchar(100) not null,
+instructorId int not null,
+created_at timestamp default current_timestamp,
+foreign key (instructorId) references UserAccounts(userId) on delete cascade
+);
+
+#should foreign key be linked to students table and not user accounts?
+CREATE TABLE ClassEnrollees (
+classId int not null,
+studentId int not null,
+enrolled_at timestamp default current_timestamp,
+primary key (classId, studentId),
+foreign key (classId) references Classroom(classId) on delete cascade,
+foreign key (studentId) references Students(studentId) on delete cascade
+);
 
 CREATE TABLE Quizzes (
-    quizId int primary key,
+    quizId serial primary key,
     quizName varchar(100),
-    userId INT, #instructor who created it
+    instructorId INT, #instructor who created it
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     classId int,
-    foreign key (classId) references Class(classId)
+    foreign key (userId) references Instructors(instructorId) on delete cascade,
+    foreign key (classId) references Classroom(classId) on delete cascade
 );
 
 CREATE TABLE Questions (
@@ -49,7 +66,8 @@ CREATE TABLE Questions (
     quizId int not null,
     difficulty ENUM('easy','medium','hard') NOT NULL,
     correct_choice_id INT, #tie in to the correct option
-    foreign key (quizId) references Quizzes(quizId) on delete cascade #verify delete cascade
+    foreign key (quizId) references Quizzes(quizId) on delete cascade, 
+    foreign key (correct_choice_id) references QuestionChoices(choiceId)
 );
 
 
@@ -79,7 +97,7 @@ CREATE TABLE QuestionChoices (
 
 CREATE TABLE Attempts (
     attemptId SERIAL PRIMARY KEY,
-    studentId INT REFERENCES Users(userId),
+    studentId INT REFERENCES Students(studentId),
     quizId INT REFERENCES Quizzes(quizId),
     questionId INT REFERENCES Questions(questionId),
     chosenChoiceId INT REFERENCES QuestionChoices(choiceId),

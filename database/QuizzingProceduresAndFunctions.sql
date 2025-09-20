@@ -34,25 +34,20 @@ DELIMITER ;
 
 /*Procedures*/
 
-#insert student to student table automatically
-
-#insert instructor to instructor table automatically
-
 #class creation procedure
 
 #quiz creation procedure
 delimiter $$
 drop procedure if exists InsertNewQuiz;
 create procedure InsertNewQuiz (
-myQuizId int,
 myQuizName varchar(100),
 myUserId int) -- add class id, set it by getting classid automatically?
 begin
 declare my_current_time timestamp;
 set my_current_time = current_timestamp;
 
-insert into Quizzes (quizId, quizName, userId, created_at)
-    values (myQuizId, myQuizName, myUserId, my_current_time);
+insert into Quizzes (quizName, userId, created_at)
+    values (myQuizName, myUserId, my_current_time);
 end $$
 delimeter ;
 
@@ -111,15 +106,15 @@ drop procedure if exists DeleteQuestion $$
 create procedure DeleteQuestion (myQuestionId int
 )
 begin
-delete from Questions where question_id = myQuestionId;
+delete from Questions where questionId = myQuestionId;
 end $$
 DELIMITER ;
 
-#modify question
+#edit question procedure
 
-#modify objective
+#edit objective procedure
 
-#modify choices
+#edit choices procedure
 
 #student to move to next question
 DELIMITER $$
@@ -141,20 +136,41 @@ BEGIN
 end $$
 DELIMITER ;
 
+#insert instructor to instructor table (called automatically in dal when account is created based on flag)
+
 #insert a student  to student table, automatically called when user is flagged as student
+DELIMITER $$
 DELIMITER $$
 DROP PROCEDURE IF EXISTS InsertNewStudent $$
 CREATE PROCEDURE InsertNewStudent (
-    IN myStudentId VARCHAR(100)
+    IN myUserId INT
 )
 BEGIN
-    IF NOT doesUserExist(myEmail) THEN
+    IF NOT EXISTS (SELECT 1 FROM Students WHERE studentId = myUserId) THEN
         INSERT INTO Students (studentId, badge, totalPoints)
-        VALUES (myStudentId, null, 0);
-        
-        
+        VALUES (myUserId, NULL, 0);
     END IF;
 END $$
 DELIMITER ;
 
-#procedure for adding a student to a class
+
+#procedure for adding a student to a class. 
+
+#procedure that creates a csv report after each quiz is completed for that quiz. probs done in dal
+
+/*
+#assign more objectives to a question
+#use: if a professor wants to add more than one objective
+DELIMITER $$
+DROP PROCEDURE IF EXISTS AssignObjective $$
+CREATE PROCEDURE AssignObjective (
+)
+BEGIN
+END $$
+DELIMITER ;
+*/
+
+/*Gamification
+#procedure to assign badges at point thresholds
+
+*/
