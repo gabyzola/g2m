@@ -26,30 +26,91 @@ SELECT COUNT(*) INTO result FROM UserAccounts WHERE email = myEmail;
 END $$
 DELIMITER ;
 
-#check if user is student
-
-#check if user is instructor
-
 #check if student answer is correct
 
 /*Procedures*/
 
 #class creation procedure
+delimiter $$
+drop procedure if exists InsertNewClass;
+create procedure InsertNewClass (
+myClassId int,
+myClassName varchar(100),
+myInstructorId int) 
+begin
+declare my_current_time timestamp;
+set my_current_time = current_timestamp;
+
+insert into Classroom (classId, className, instructorId, created_at)
+    values (myClassId, myClassName, myInstructorId, my_current_time);
+end $$
+delimiter ;
+
+#enroll student
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS EnrollStudent $$
+CREATE PROCEDURE EnrollStudent (
+    IN myClassId INT,
+    IN myEmail VARCHAR(150)
+)
+BEGIN
+    DECLARE vUserId INT;
+    DECLARE vStudentId INT;
+
+    -- Look up the userId by email
+    SELECT userId INTO vUserId
+    FROM UserAccounts
+    WHERE email = myEmail;
+
+    -- If no user found, throw an error
+    IF vUserId IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'No user found with this email.';
+    END IF;
+
+    -- Ensure the user is a student
+    SELECT studentId INTO vStudentId
+    FROM Students
+    WHERE studentId = vUserId;
+
+    IF vStudentId IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'User exists but is not a student.';
+    END IF;
+
+    -- Check if already enrolled
+    IF EXISTS (
+        SELECT 1 FROM ClassEnrollees
+        WHERE classId = myClassId AND studentId = vStudentId
+    ) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Student is already enrolled in this class.';
+    ELSE
+        -- Insert enrollment
+        INSERT INTO ClassEnrollees (classId, studentId)
+        VALUES (myClassId, vStudentId);
+    END IF;
+END $$
+
+DELIMITER ;
+
 
 #quiz creation procedure
 delimiter $$
 drop procedure if exists InsertNewQuiz;
 create procedure InsertNewQuiz (
 myQuizName varchar(100),
-myUserId int) -- add class id, set it by getting classid automatically?
+myInstructorId int,
+myClassId int) -- add class id, set it by getting classid automatically?
 begin
 declare my_current_time timestamp;
 set my_current_time = current_timestamp;
 
-insert into Quizzes (quizName, userId, created_at)
-    values (myQuizName, myUserId, my_current_time);
+insert into Quizzes (quizName, instructorId, classId, created_at)
+    values (myQuizName, myInstructorId, myClassId, my_current_time);
 end $$
-delimeter ;
+delimiter ;
 
 #insert a question to a quiz with choices and objective
 delimiter $$
@@ -137,26 +198,41 @@ end $$
 DELIMITER ;
 
 #insert instructor to instructor table (called automatically in dal when account is created based on flag)
-
 #insert a student  to student table, automatically called when user is flagged as student
+#the above is gonna be done in one proc
 DELIMITER $$
-DELIMITER $$
-DROP PROCEDURE IF EXISTS InsertNewStudent $$
-CREATE PROCEDURE InsertNewStudent (
-    IN myUserId INT
+
+DROP PROCEDURE IF EXISTS InsertNewUser $$
+CREATE PROCEDURE InsertNewUser (
+    IN myGoogleId VARCHAR(255),
+    IN myUsername VARCHAR(100),
+    IN myEmail VARCHAR(150),
+    IN myIsInstructor BOOLEAN,
+    IN myMajor VARCHAR(100),        
+    IN mySchoolSubject VARCHAR(50)   
 )
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM Students WHERE studentId = myUserId) THEN
-        INSERT INTO Students (studentId, badge, totalPoints)
-        VALUES (myUserId, NULL, 0);
+    DECLARE newUserId INT;
+
+    INSERT INTO UserAccounts (googleId, username, email, isInstructor, created_at)
+    VALUES (myGoogleId, myUsername, myEmail, myIsInstructor, CURRENT_TIMESTAMP);
+
+    SET newUserId = LAST_INSERT_ID();
+
+    IF myIsInstructor = TRUE THEN
+        INSERT INTO Instructors (instructorId, schoolSubject)
+        VALUES (newUserId, mySchoolSubject);
+    ELSE
+        INSERT INTO Students (studentId, badge, totalPoints, major)
+        VALUES (newUserId, NULL, 0, myMajor);
     END IF;
 END $$
+
 DELIMITER ;
 
 
-#procedure for adding a student to a class. 
 
-#procedure that creates a csv report after each quiz is completed for that quiz. probs done in dal
+#procedure that creates a csv report after each quiz is completed for that quiz
 
 /*
 #assign more objectives to a question
