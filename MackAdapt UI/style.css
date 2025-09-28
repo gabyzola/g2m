@@ -1,0 +1,282 @@
+:root {
+  --navy: #002855;
+  --gold: #FFC72C;
+  --white: #ffffff;
+  --light-gray: #f5f5f5;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: var(--light-gray);
+  color: var(--navy);
+  line-height: 1.6;
+}
+
+/* Header styles */
+header {
+  background-color: var(--navy);
+  color: var(--white);
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+header h1 {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: 1.5rem;
+}
+
+nav a {
+  color: var(--gold);
+  text-decoration: none;
+  font-weight: bold;
+  transition: color 0.3s;
+}
+
+nav a:hover,
+nav a.active {
+  color: var(--white);
+  border-bottom: 2px solid var(--gold);
+}
+
+/* Main content */
+main {
+  padding: 2rem;
+}
+
+.hero {
+  background-color: var(--white);
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 40, 85, 0.1);
+  text-align: center;
+}
+
+.hero h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.hero button {
+  background-color: var(--gold);
+  color: var(--navy);
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: background 0.3s;
+}
+
+.hero button:hover {
+  background-color: #e0b91f;
+}
+
+.quiz-preview {
+  margin-top: 3rem;
+}
+
+.quiz-card {
+  background-color: var(--white);
+  padding: 1.5rem;
+  border-left: 6px solid var(--gold);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 40, 85, 0.08);
+  margin-bottom: 1rem;
+}
+
+.quiz-card h4 {
+  margin-bottom: 0.5rem;
+  font-size: 1.3rem;
+}
+
+.quiz-card button {
+  background-color: var(--navy);
+  color: var(--white);
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  margin-top: 1rem;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+.quiz-card button:hover {
+  background-color: #001b3a;
+}
+
+/* Login Page Styles */
+.login-body {
+  background-color: var(--navy);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.login-container {
+  background-color: var(--white);
+  color: var(--navy);
+  padding: 2rem;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  text-align: center;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.login-form input {
+  padding: 0.75rem;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.login-form button {
+  background-color: var(--gold);
+  color: var(--navy);
+  padding: 0.75rem;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.small-text {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+}
+
+/* Dashboard & Classroom */
+.class-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.class-card {
+  background-color: var(--white);
+  border-left: 6px solid var(--gold);
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
+}
+
+.class-card a {
+  display: inline-block;
+  margin-top: 1rem;
+  background-color: var(--navy);
+  color: var(--white);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+.quiz-list {
+  margin-top: 2rem;
+}
+
+.quiz-item {
+  background-color: var(--white);
+  padding: 1rem;
+  border-left: 5px solid var(--gold);
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
+}
+
+.quiz-item button {
+  background-color: var(--navy);
+  color: var(--white);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  margin-top: 0.5rem;
+  cursor: pointer;
+}
+
+footer {
+  background-color: var(--navy);
+  color: var(--white);
+  text-align: center;
+  padding: 1rem;
+  margin-top: 4rem;
+}
+.hero-image {
+  background-image: url("images/hero.jpeg");
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white);
+  text-align: center;
+}
+
+.hero-image::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 40, 85, 0.5); /* dark navy overlay */
+  z-index: 1;
+}
+
+.hero-text {
+  position: relative;
+  z-index: 2;
+  max-width: 700px;
+  padding: 2rem;
+}
+
+.hero-text h2 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.hero-text p {
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+}
+
+.hero-text button {
+  background-color: var(--gold);
+  color: var(--navy);
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.hero-text button:hover {
+  background-color: #e0b91f;
+}

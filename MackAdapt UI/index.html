@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
+  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+</head>
+<body>
+  <header>
+    <h1>MackAdapt</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html" class="active">Home</a></li>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="classroom.html">Classroom</a></li>
+        <li><a href="login.html">Login</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero-image" data-aos="fade-up">
+  <div class="hero-text">
+    <h2>Smarter Quizzes. Better Learning.</h2>
+    <p>MackAdapt is Merrimack College's next-gen adaptive quiz platform designed to help students master material efficiently and confidently.</p>
+    <a href="login.html"><button>Get Started</button></a>
+  </div>
+</section>
+<div class="divider"></div>
+
+    <section class="about" data-aos="fade-right">
+      <div class="about-container">
+        <div class="about-image">
+          <img src="images/adaptive-learning.png" alt="Adaptive Learning Illustration">
+        </div>
+        <div class="about-text">
+          <h3>What is MackAdapt?</h3>
+          <p>
+            MackAdapt is an adaptive learning tool built for Merrimack students and professors. Our mission is to personalize quiz experiences based on your progress — no more one-size-fits-all testing.
+          </p>
+          <ul>
+            <li><i class="fas fa-brain"></i> Real-time adaptation based on your answers</li>
+            <li><i class="fas fa-bullseye"></i> Aligned with your learning objectives</li>
+            <li><i class="fas fa-chalkboard-teacher"></i> Easy-to-use dashboard for students and instructors</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+<div class="divider"></div>
+
+    <section class="how-it-works" data-aos="fade-up">
+      <h3>How It Works</h3>
+      <div class="steps">
+        <div class="step">
+          <i class="fas fa-user-circle"></i>
+          <h4>1. Sign In</h4>
+          <p>Log in to your student dashboard with your school credentials.</p>
+        </div>
+        <div class="step">
+          <i class="fas fa-clipboard-check"></i>
+          <h4>2. Take Adaptive Quizzes</h4>
+          <p>Questions adapt to your performance in real time.</p>
+        </div>
+        <div class="step">
+          <i class="fas fa-chart-line"></i>
+          <h4>3. Track Your Progress</h4>
+          <p>See what you’ve mastered and where to focus next.</p>
+        </div>
+      </div>
+    </section>
+<div class="divider"></div>
+
+    <section class="cta" data-aos="zoom-in">
+      <h3>Ready to learn smarter?</h3>
+      <p>Login to access your personalized dashboard and start mastering your courses.</p>
+      <a href="login.html"><button>Login Now</button></a>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 MackAdapt – Built for Merrimack College</p>
+  </footer>
+  <script>
+    AOS.init();
+  </script>
+</body>
+  <style>
+    .about {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 3rem 2rem;
+      background-color: var(--white);
+    }
+
+    .about-container {
+      display: flex;
+      gap: 2rem;
+      max-width: 1100px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .about-image img {
+      max-width: 400px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 40, 85, 0.1);
+    }
+
+    .about-text {
+      max-width: 600px;
+    }
+
+    .about-text h3 {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+    }
+
+    .about-text p {
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+    }
+
+    .about-text ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .about-text ul li {
+      margin-bottom: 0.75rem;
+      font-size: 1rem;
+    }
+
+    .about-text ul i {
+      color: var(--gold);
+      margin-right: 0.5rem;
+    }
+
+    .how-it-works {
+      padding: 4rem 2rem;
+      background-color: var(--white);
+      text-align: center;
+    }
+
+    .how-it-works h3 {
+      font-size: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .steps {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 2rem;
+    }
+
+    .step {
+      width: 250px;
+      background: var(--light-gray);
+      padding: 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.05);
+    }
+
+    .step i {
+      font-size: 2rem;
+      color: var(--gold);
+      margin-bottom: 1rem;
+    }
+    .divider {
+      height: 2px;
+      background: var(--light-gray);
+      margin: 4rem auto;
+      width: 80%;
+      border-radius: 4px;
+    }
+  </style>
+</html>
