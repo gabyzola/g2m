@@ -1,0 +1,14 @@
+{
+  "folders": [
+	{
+		"path": "../.."
+	},
+	{
+		"name": "g2m",
+		"path": ".."
+	}
+],
+  "settings": {
+    "liveServer.settings.multiRootWorkspaceName": "Capstone"
+  }
+}

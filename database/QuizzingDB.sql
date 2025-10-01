@@ -1,45 +1,125 @@
+DROP DATABASE IF EXISTS QuizzingDB;
+CREATE DATABASE QuizzingDB;
+USE QuizzingDB;
+
 DROP TABLE IF EXISTS Attempts; #tracks student attemps
 DROP TABLE IF EXISTS Questions; #stores questions (input from professor)
 DROP TABLE IF EXISTS LearningObjectives; #stores learning objectives (input from student or professor)
 DROP TABLE IF EXISTS Students; #keeps track of students and accounts
 DROP TABLE IF EXISTS Archives; #past information
 
-CREATE TABLE Students (
-    student_id SERIAL PRIMARY KEY,
-    student_name VARCHAR(100) NOT NULL,
-    email VARCHAR(150) UNIQUE
+
+CREATE TABLE UserAccounts (
+    userId int auto_increment PRIMARY KEY,              
+    googleId VARCHAR(255) unique not null, #verify what this will look like 
+    username VARCHAR(100) UNIQUE NOT NULL,
+    email VARCHAR(150) UNIQUE NOT NULL,  #merrimack email
+    isInstructor BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    lastLogin TIMESTAMP
 );
 
+CREATE TABLE Students (
+studentId int primary key,
+badge VARCHAR(100), #i will eventually make a bank of badges
+totalPoints int,
+major varchar(100),
+foreign key (studentId) references UserAccounts(userId) on delete cascade
+);
+
+CREATE TABLE Instructors (
+instructorId int primary key,
+schoolSubject varchar(50),
+foreign key (instructorId) references UserAccounts(userId) on delete cascade
+);
+
+CREATE TABLE Classroom (
+classId int primary key,
+className varchar(100) not null,
+instructorId int not null,
+created_at timestamp default current_timestamp,
+foreign key (instructorId) references UserAccounts(userId) on delete cascade
+);
+
+CREATE TABLE ClassEnrollees (
+classId int not null,
+studentId int not null,
+enrolled_at timestamp default current_timestamp,
+primary key (classId, studentId),
+foreign key (classId) references Classroom(classId) on delete cascade,
+foreign key (studentId) references Students(studentId) on delete cascade
+);
+
+CREATE TABLE Quizzes (
+    quizId int primary key,
+    quizName varchar(100),
+    instructorId INT, #instructor who created it
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    classId int not null,
+    foreign key (instructorId) references Instructors(instructorId) on delete cascade,
+    foreign key (classId) references Classroom(classId) on delete cascade
+);
+
+
 CREATE TABLE LearningObjectives (
-    objective_id SERIAL PRIMARY KEY,
-    objective_name VARCHAR(200) NOT NULL,
-    description TEXT
+    objectiveId INT PRIMARY KEY AUTO_INCREMENT,
+    objectiveName VARCHAR(200) NOT NULL, #i will eventually just make a bank of objectives
+    objDescript TEXT
 );
 
 CREATE TABLE Questions (
-    question_id SERIAL PRIMARY KEY,
-    text TEXT NOT NULL,
-    choice_a VARCHAR(300) NOT NULL,
-    choice_b VARCHAR(300) NOT NULL,
-    choice_c VARCHAR(300) NOT NULL,
-    choice_d VARCHAR(300) NOT NULL,
-    correct_answer CHAR(1) NOT NULL CHECK (correct_answer IN ('A','B','C','D')), #check with prof: do they always want it to be 4 options? or should this be flexible
-    difficulty VARCHAR(10) NOT NULL CHECK (difficulty IN ('easy','medium','hard')),
-    objective_id INT REFERENCES LearningObjectives(objective_id)
+    questionId INT PRIMARY KEY AUTO_INCREMENT,
+    questionText TEXT NOT NULL,
+    quizId INT NOT NULL,
+    difficulty ENUM('easy','medium','hard') NOT NULL,
+    correct_choice_id INT,
+    FOREIGN KEY (quizId) REFERENCES Quizzes(quizId) ON DELETE CASCADE
+);
+
+CREATE TABLE QuestionChoices (
+    choiceId INT PRIMARY KEY AUTO_INCREMENT,
+    questionId INT NOT NULL,
+    choiceLabel CHAR(1),
+    choiceText VARCHAR(300) NOT NULL,
+    FOREIGN KEY (questionId) REFERENCES Questions(questionId) ON DELETE CASCADE
+);
+
+-- added the foreign key after both tables exist (to get rid of circular dependency)
+ALTER TABLE Questions
+ADD CONSTRAINT fk_correct_choice
+FOREIGN KEY (correct_choice_id) REFERENCES QuestionChoices(choiceId);
+
+CREATE TABLE QuestionObjectives (
+    questionId INT,
+    objectiveId INT,
+    PRIMARY KEY (questionId, objectiveId),
+    FOREIGN KEY (questionId) REFERENCES Questions(questionId),
+    FOREIGN KEY (objectiveId) REFERENCES LearningObjectives(objectiveId)
 );
 
 CREATE TABLE Attempts (
-    attempt_id SERIAL PRIMARY KEY,
-    student_id INT REFERENCES Students(student_id),
-    question_id INT REFERENCES Questions(question_id),
-    chosen_answer CHAR(1) CHECK (chosen_answer IN ('A','B','C','D')), #check with prof: do they always want it to be 4 options? or should this be flexible
-    is_correct BOOLEAN,
-    attempt_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    attemptId SERIAL PRIMARY KEY,
+    studentId INT REFERENCES Students(studentId),
+    quizId INT REFERENCES Quizzes(quizId),
+    questionId INT REFERENCES Questions(questionId),
+    chosenChoiceId INT REFERENCES QuestionChoices(choiceId),
+    isCorrect BOOLEAN,
+    pointsEarned INT DEFAULT 0,
+    attemptTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-/*
-no clue how to set this up rn, deal with it later
-CREATE TABLE Archives (
-
+CREATE TABLE Badges (
+  badgeId INT AUTO_INCREMENT PRIMARY KEY,
+  badgeName VARCHAR(100) UNIQUE NOT NULL,
+  description TEXT,
+  pointThreshold INT
 );
-*/
+
+CREATE TABLE StudentBadges (
+    studentId INT NOT NULL,
+    badgeId INT NOT NULL,
+    earnedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (studentId, badgeId),
+    FOREIGN KEY (studentId) REFERENCES Students(studentId) ON DELETE CASCADE,
+    FOREIGN KEY (badgeId) REFERENCES Badges(badgeId) ON DELETE CASCADE
+);
