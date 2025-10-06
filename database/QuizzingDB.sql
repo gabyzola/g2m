@@ -118,7 +118,6 @@ CREATE TABLE Badges (
 CREATE TABLE StudentBadges (
     studentId INT NOT NULL,
     badgeId INT NOT NULL,
-    earnedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (studentId, badgeId),
     FOREIGN KEY (studentId) REFERENCES Students(studentId) ON DELETE CASCADE,
     FOREIGN KEY (badgeId) REFERENCES Badges(badgeId) ON DELETE CASCADE
