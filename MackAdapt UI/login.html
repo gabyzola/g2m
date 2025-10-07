@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Login – MackAdapt</title>
   <link rel="stylesheet" href="style.css" />
+  <script src="https://alcdn.msauth.net/browser/2.32.2/js/msal-browser.min.js"></script>
 </head>
 <body class="login-body">
   <header>
@@ -21,16 +22,36 @@
 
   <div class="login-container">
     <h2>Welcome to MackAdapt</h2>
-    <form class="login-form">
-      <label for="email">Email:</label>
-      <input type="email" id="email" required />
-
-      <label for="password">Password:</label>
-      <input type="password" id="password" required />
-
-      <button type="submit">Login</button>
-    </form>
+    <button id="ms-login">Sign in with Microsoft</button>
     <p class="small-text">Need an account? Contact your instructor.</p>
   </div>
+
+  <script>
+    // 1. Configure MSAL
+    const msalConfig = {
+      auth: {
+        clientId: "YOUR_AZURE_AD_CLIENT_ID", // Replace with your App Registration client ID
+        authority: "https://login.microsoftonline.com/common/", // or your tenant ID
+        redirectUri: window.location.origin + "/dashboard.html" // where user goes after login
+      }
+    };
+
+    const msalInstance = new msal.PublicClientApplication(msalConfig);
+
+    // 2. Add login functionality
+    document.getElementById("ms-login").onclick = async () => {
+      try {
+        const loginResponse = await msalInstance.loginPopup({
+          scopes: ["User.Read"] // permissions to request
+        });
+        console.log("Login successful:", loginResponse);
+
+        // Redirect to dashboard or handle tokens
+        window.location.href = "dashboard.html";
+      } catch (err) {
+        console.error(err);
+      }
+    };
+  </script>
 </body>
 </html>

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dashboard – MackAdapt</title>
   <link rel="stylesheet" href="style.css" />
+  <script src="https://alcdn.msauth.net/browser/2.32.2/js/msal-browser.min.js"></script>
 </head>
 <body>
   <header>
@@ -20,7 +21,9 @@
   </header>
 
   <main>
-    <h2>Welcome, Giormanie 👋</h2>
+    <h2 id="welcome-text">Welcome 👋</h2>
+    <p id="user-email"></p>
+
     <p>Select a class to view progress or take a quiz:</p>
 
     <div class="class-cards">
@@ -40,10 +43,39 @@
   <footer>
     <p>&copy; 2025 MackAdapt</p>
   </footer>
-</body>
-</html>
-  <footer>
-    <p>&copy; 2025 MackAdapt</p>
-  </footer>
+
+  <script>
+    // 1. Configure MSAL (must match login.html)
+    const msalConfig = {
+      auth: {
+        clientId: "YOUR_AZURE_AD_CLIENT_ID", // same client ID
+        authority: "https://login.microsoftonline.com/common/",
+        redirectUri: window.location.origin + "/dashboard.html"
+      }
+    };
+
+    const msalInstance = new msal.PublicClientApplication(msalConfig);
+
+    // 2. Handle redirect after login
+    msalInstance.handleRedirectPromise()
+      .then(async (response) => {
+        let account;
+        if (response) {
+          account = response.account;
+          msalInstance.setActiveAccount(account);
+        } else {
+          account = msalInstance.getActiveAccount();
+        }
+
+        if (account) {
+          document.getElementById("welcome-text").textContent = `Welcome, ${account.name} 👋`;
+          document.getElementById("user-email").textContent = account.username;
+        } else {
+          // If no user is logged in, bounce back to login
+          window.location.href = "login.html";
+        }
+      })
+      .catch((err) => console.error(err));
+  </script>
 </body>
 </html>
