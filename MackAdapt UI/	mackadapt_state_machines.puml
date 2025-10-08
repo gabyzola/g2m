@@ -1,0 +1,219 @@
+
+
+@startuml
+' =============================================================
+' MackAdapt – STUDENT FLOW State Machine (UML)
+' Author: Gio
+' Notes: End-to-end student navigation across the UI
+' =============================================================
+
+skinparam dpi 180
+skinparam shadowing false
+skinparam backgroundColor #ffffff
+skinparam state {
+  BackgroundColor #f8fbff
+  BorderColor #002855
+  FontColor #002855
+}
+
+title Student Flow — MackAdapt Adaptive Quizzing
+
+[*] --> Start : Open site (index.html)
+
+state Start {
+  [*] --> Idle
+  Idle : Landing/Home visible
+}
+
+Start --> Login : Click "Login"
+
+state Login {
+  [*] --> Prompt
+  Prompt : Microsoft login screen
+  Prompt --> Dashboard : Success
+  Prompt --> [*] : Cancel/Close
+}
+
+Dashboard : View progress, streaks, objectives
+Dashboard --> Classroom : "View Class"
+Dashboard --> Logout : "Logout"
+
+state Classroom {
+  [*] --> ClassHome
+  ClassHome : See quizzes/tests list
+  ClassHome --> Quiz : Start quiz
+  ClassHome --> Dashboard : Back to dashboard
+}
+
+state Quiz {
+  [*] --> Intro
+  Intro : Instructions / point wagering (optional)
+  Intro --> Asking
+  Asking : Adaptive item selection
+  Asking --> Asking : Next item (adapt)
+  Asking --> Results : Submit/Complete
+}
+
+state Results {
+  [*] --> Show
+  Show : Score + objectives to improve
+  Show --> Dashboard : Return to dashboard
+}
+
+Logout : End session
+Logout --> Login : Redirect to login
+
+@enduml
+
+
+@startuml
+' =============================================================
+' MackAdapt – INSTRUCTOR FLOW State Machine (UML)
+' Author: Gio
+' Notes: Instructor content & analytics lifecycle
+' =============================================================
+
+skinparam dpi 180
+skinparam shadowing false
+skinparam backgroundColor #ffffff
+skinparam state {
+  BackgroundColor #fffaf2
+  BorderColor #7a4b00
+  FontColor #2d1b00
+}
+
+title Instructor Flow — MackAdapt Adaptive Quizzing
+
+[*] --> Login
+Login --> InstrDashboard : Successful login
+
+state InstrDashboard as "Instructor Dashboard" {
+  [*] --> Overview
+  Overview : Classes, recent activity
+  Overview --> ItemBank : Manage questions
+  Overview --> Objectives : Manage learning objectives
+  Overview --> Analytics : View analytics
+}
+
+state ItemBank as "Item Bank" {
+  [*] --> List
+  List : Upload / Tag by difficulty & LO
+  List --> Create : New item
+  List --> Edit : Edit item
+  Create --> List : Save
+  Edit --> List : Save
+}
+
+state Objectives {
+  [*] --> LO_List
+  LO_List : Create/rename/archive objectives
+  LO_List --> LO_Edit : Edit mappings
+  LO_Edit --> LO_List : Save
+}
+
+state Analytics {
+  [*] --> Summary
+  Summary : Descriptive stats by quiz/class
+  Summary --> Discrimination : Identify discriminating items
+  Summary --> ByObjective : Performance by objective
+  Summary --> Export : Export CSV (Canvas dummy assignment)
+  Export --> Summary : Done
+}
+
+InstrDashboard --> Logout
+Logout --> Login
+
+@enduml
+
+
+@startuml
+' =============================================================
+' MackAdapt – SYSTEM OVERVIEW STATES (UML)
+' Author: Gio
+' Notes: High-level system states incl. data & privacy
+' =============================================================
+
+skinparam dpi 180
+skinparam shadowing false
+skinparam backgroundColor #ffffff
+skinparam state {
+  BackgroundColor #f7fff9
+  BorderColor #0f5d2f
+  FontColor #0f5d2f
+}
+
+title System Overview — MackAdapt
+
+[*] --> Uninitialized
+Uninitialized --> Configured : Env ready (keys, clients, DB)
+Configured --> Operational : Routes available (UI pages)
+Operational --> Degraded : API temporarily unavailable
+Operational --> Maintenance : Scheduled maintenance
+Degraded --> Operational : Services restored
+Maintenance --> Operational : Done
+
+state DataLifecycle {
+  [*] --> Collect
+  Collect : Accept attempts, metadata (non-PII)
+  Collect --> Analyze : Aggregate stats, item analysis
+  Analyze --> Recommend : (Stretch) ML suggests revise/retain
+  Recommend --> Archive : End of term archive (no identifiers)
+  Archive --> [*]
+}
+
+Operational --> DataLifecycle : When users interact
+
+@enduml
+
+
+@startuml
+' =============================================================
+' MackAdapt – QUIZ ENGINE SUBSTATE (UML)
+' Author: Gio
+' Notes: Adaptive selection inside a single quiz session
+' =============================================================
+
+skinparam dpi 180
+skinparam shadowing false
+skinparam backgroundColor #ffffff
+skinparam state {
+  BackgroundColor #f2f7ff
+  BorderColor #1a3a8a
+  FontColor #1a3a8a
+}
+
+title Quiz Engine — Adaptive Session Submachine
+
+[*] --> Initialize
+Initialize : Load pool by class + objectives
+Initialize --> SelectItem
+
+state SelectItem {
+  [*] --> Choose
+  Choose : Pick item by difficulty & LO targets
+  Choose --> Deliver
+}
+
+state Deliver {
+  [*] --> Present
+  Present : Render MCQ, timer (optional)
+  Present --> Score : Submit answer
+}
+
+state Score {
+  [*] --> Evaluate
+  Evaluate : Correct? update mastery/ability
+  Evaluate --> Adapt
+}
+
+state Adapt {
+  [*] --> Decide
+  Decide : Adjust difficulty; update LO counters
+  Decide --> SelectItem : Next item
+  Decide --> Complete : Stop condition (items/time)
+}
+
+Complete : Emit attempt summary
+Complete --> [*]
+
+@enduml

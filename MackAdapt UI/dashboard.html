@@ -3,17 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dashboard – MackAdapt</title>
+  <title>Instructor Dashboard – MackAdapt</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://alcdn.msauth.net/browser/2.32.2/js/msal-browser.min.js"></script>
 </head>
 <body>
+  <!-- ✅ Shared Header -->
   <header>
     <h1>MackAdapt</h1>
     <nav>
       <ul>
         <li><a href="index.html">Home</a></li>
-        <li><a href="dashboard.html" class="active">Dashboard</a></li>
+        <li><a href="dashboard.html" class="active" aria-current="page">Instructor Dashboard</a></li>
+        <li><a href="student-dashboard.html">Student Dashboard</a></li>
         <li><a href="classroom.html">Classroom</a></li>
         <li><a href="login.html">Login</a></li>
       </ul>
@@ -23,7 +25,6 @@
   <main>
     <h2 id="welcome-text">Welcome 👋</h2>
     <p id="user-email"></p>
-
     <p>Select a class to view progress or take a quiz:</p>
 
     <div class="class-cards">
@@ -40,15 +41,16 @@
     </div>
   </main>
 
+  <!-- ✅ Shared Footer -->
   <footer>
-    <p>&copy; 2025 MackAdapt</p>
+    <p>&copy; 2025 MackAdapt – Built for Merrimack College</p>
   </footer>
 
   <script>
-    // 1. Configure MSAL (must match login.html)
+    // Microsoft Login (Placeholder for now)
     const msalConfig = {
       auth: {
-        clientId: "YOUR_AZURE_AD_CLIENT_ID", // same client ID
+        clientId: "YOUR_AZURE_AD_CLIENT_ID",
         authority: "https://login.microsoftonline.com/common/",
         redirectUri: window.location.origin + "/dashboard.html"
       }
@@ -56,26 +58,15 @@
 
     const msalInstance = new msal.PublicClientApplication(msalConfig);
 
-    // 2. Handle redirect after login
     msalInstance.handleRedirectPromise()
-      .then(async (response) => {
-        let account;
-        if (response) {
-          account = response.account;
-          msalInstance.setActiveAccount(account);
-        } else {
-          account = msalInstance.getActiveAccount();
-        }
-
+      .then((response) => {
+        let account = response?.account || msalInstance.getActiveAccount();
         if (account) {
           document.getElementById("welcome-text").textContent = `Welcome, ${account.name} 👋`;
           document.getElementById("user-email").textContent = account.username;
-        } else {
-          // If no user is logged in, bounce back to login
-          window.location.href = "login.html";
         }
       })
-      .catch((err) => console.error(err));
+      .catch(console.error);
   </script>
 </body>
 </html>

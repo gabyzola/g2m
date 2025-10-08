@@ -1,0 +1,98 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quiz – MackAdapt</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .card{max-width:720px;margin:8vh auto;background:#fff;padding:2rem;border-radius:10px;box-shadow:0 2px 12px rgba(0,40,85,.1)}
+    .choices label{display:block;margin:.6rem 0;padding:.6rem;border:1px solid #ddd;border-radius:6px;cursor:pointer}
+    .choices input{margin-right:.4rem}
+    .actions{display:flex;gap:.75rem;margin-top:1rem}
+    #resultModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);align-items:center;justify-content:center}
+    #resultModal .inner{background:#fff;padding:1.25rem;border-radius:10px;width:min(520px,92%)}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>MackAdapt</h1>
+    <nav><ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="dashboard.html">Instructor Dashboard</a></li>
+      <li><a href="student-dashboard.html">Student Dashboard</a></li>
+      <li><a href="classroom.html">Classroom</a></li>
+      <li><a href="login.html">Login</a></li>
+    </ul></nav>
+  </header>
+
+  <main>
+    <div class="card">
+      <h2 id="q-stem">Loading question…</h2>
+      <div class="choices" id="choices"></div>
+      <div class="actions">
+        <button id="nextBtn">Submit & Next</button>
+        <button type="button" onclick="location.href='student-dashboard.html'">Quit</button>
+      </div>
+      <p class="small-text">Demo-only: selection is static; real app will adapt difficulty and learning objectives per response.</p>
+    </div>
+  </main>
+
+  <!-- Score Popup -->
+  <div id="resultModal"><div class="inner">
+    <h3>Quiz Complete</h3>
+    <p id="scoreLine">You scored 0%.</p>
+    <p class="small-text">Focus next on: LO2 (Experimental Design), LO4 (Statistics)</p>
+    <div style="display:flex;gap:.5rem">
+      <button onclick="location.href='student-dashboard.html'">Return to Dashboard</button>
+      <button onclick="location.href='classroom.html'">Back to Class</button>
+    </div>
+  </div></div>
+
+  <footer><p>&copy; 2025 MackAdapt – Built for Merrimack College</p></footer>
+
+  <script>
+    // Simple mock quiz runner (no backend, no ML yet)
+    const QUESTIONS = [
+      { id:'Q1', stem:'Which design best controls for participant differences?', choices:['Between-subjects','Within-subjects','Case study','Naturalistic'], correct:1 },
+      { id:'Q2', stem:'Mean of 2, 4, 10?', choices:['4','5','6','8'], correct:2 },
+      { id:'Q3', stem:'Working memory primarily relates to…', choices:['Long-term storage','Rehearsal/maintenance','Classical conditioning','Sensory buffer'], correct:1 },
+    ];
+
+    let i = 0, score = 0;
+    const qStem = document.getElementById('q-stem');
+    const choices = document.getElementById('choices');
+    const nextBtn = document.getElementById('nextBtn');
+    const resultModal = document.getElementById('resultModal');
+    const scoreLine = document.getElementById('scoreLine');
+
+    function render() {
+      const q = QUESTIONS[i];
+      qStem.textContent = q.stem;
+      choices.innerHTML = q.choices.map((c, idx) => `
+        <label><input type="radio" name="ans" value="${idx}"/> ${c}</label>
+      `).join('');
+      nextBtn.textContent = i < QUESTIONS.length - 1 ? 'Submit & Next' : 'Submit & Finish';
+    }
+
+    nextBtn.addEventListener('click', () => {
+      const sel = document.querySelector('input[name="ans"]:checked');
+      if (!sel) { alert('Choose an answer'); return; }
+      if (+sel.value === QUESTIONS[i].correct) score++;
+      i++;
+      if (i >= QUESTIONS.length) {
+        const pct = Math.round((score / QUESTIONS.length) * 100);
+        scoreLine.textContent = `You scored ${pct}%.`;
+        resultModal.style.display = 'flex';
+      } else {
+        render();
+      }
+    });
+
+    // init
+    render();
+  </script>
+</body>
+</html>

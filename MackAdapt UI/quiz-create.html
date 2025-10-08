@@ -1,0 +1,75 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Create Quiz – MackAdapt</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .panel{background:#fff;padding:1.25rem;border-radius:10px;box-shadow:0 2px 10px rgba(0,40,85,.08);margin:1rem 0}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+    label{display:block;margin:.5rem 0 .25rem}
+    input,select,textarea{width:100%;padding:.65rem;border:1px solid #ccc;border-radius:6px}
+    textarea{min-height:110px}
+    .actions{display:flex;gap:.75rem;margin-top:1rem}
+    .notice{font-size:.9rem;color:#444;margin-top:.5rem}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>MackAdapt</h1>
+    <nav><ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="dashboard.html">Instructor Dashboard</a></li>
+      <li><a href="student-dashboard.html">Student Dashboard</a></li>
+      <li><a href="classroom.html">Classroom</a></li>
+      <li><a href="login.html">Login</a></li>
+    </ul></nav>
+  </header>
+
+  <main>
+    <h2>Create Quiz</h2>
+
+    <div class="panel">
+      <h3>Upload Questions (doc/pdf/csv)</h3>
+      <input type="file" accept=".doc,.docx,.pdf,.csv" />
+      <p class="small-text">Or add questions manually below.</p>
+    </div>
+
+    <div class="panel">
+      <h3>Add Question Manually</h3>
+      <label>Question Text</label>
+      <textarea placeholder="Enter the question stem..."></textarea>
+      <div class="row">
+        <div>
+          <label>Difficulty</label>
+          <select><option>Easy</option><option>Medium</option><option>Hard</option></select>
+        </div>
+        <div>
+          <label>Learning Objective</label>
+          <select>
+            <option>LO1 – Memory & Recall</option>
+            <option>LO2 – Experimental Design</option>
+            <option>LO3 – Learning Theories</option>
+            <option>LO4 – Statistics Basics</option>
+            <option>LO5 – Research Ethics</option>
+          </select>
+        </div>
+      </div>
+      <label>Choices</label>
+      <textarea placeholder="A) ...&#10;B) ...&#10;C) ...&#10;D) ..."></textarea>
+      <label>Correct Answer</label>
+      <input placeholder="e.g., B" />
+      <div class="actions">
+        <button onclick="alert('Question added')">Add Question</button>
+        <button onclick="alert('Quiz saved')">Save Quiz</button>
+      </div>
+      <p class="notice">Demo only: these buttons just show alerts. Backend wiring will save to the DB and validate fields.</p>
+    </div>
+  </main>
+
+  <footer><p>&copy; 2025 MackAdapt – Built for Merrimack College</p></footer>
+</body>
+</html>

@@ -2,36 +2,45 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MackAdapt – Home</title>
+
+  <!-- Styles & Icons -->
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
+  <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet" />
   <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
 </head>
+
 <body>
+  <!--  Shared Header (blue/gold) -->
   <header>
     <h1>MackAdapt</h1>
     <nav>
       <ul>
-        <li><a href="index.html" class="active">Home</a></li>
-        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="index.html" class="active" aria-current="page">Home</a></li>
+        <li><a href="dashboard.html">Instructor Dashboard</a></li>
+        <li><a href="student-dashboard.html">Student Dashboard</a></li>
         <li><a href="classroom.html">Classroom</a></li>
         <li><a href="login.html">Login</a></li>
       </ul>
     </nav>
   </header>
 
+  <!--  Main Page Content -->
   <main>
+    <!-- Hero Banner -->
     <section class="hero-image" data-aos="fade-up">
-  <div class="hero-text">
-    <h2>Smarter Quizzes. Better Learning.</h2>
-    <p>MackAdapt is Merrimack College's next-gen adaptive quiz platform designed to help students master material efficiently and confidently.</p>
-    <a href="login.html"><button>Get Started</button></a>
-  </div>
-</section>
-<div class="divider"></div>
+      <div class="hero-text">
+        <h2>Smarter Quizzes. Better Learning.</h2>
+        <p>MackAdapt is Merrimack College's next-gen adaptive quiz platform designed to help students master material efficiently and confidently.</p>
+        <a href="login.html"><button>Get Started</button></a>
+      </div>
+    </section>
 
+    <div class="divider"></div>
+
+    <!-- About Section -->
     <section class="about" data-aos="fade-right">
       <div class="about-container">
         <div class="about-image">
@@ -40,7 +49,8 @@
         <div class="about-text">
           <h3>What is MackAdapt?</h3>
           <p>
-            MackAdapt is an adaptive learning tool built for Merrimack students and professors. Our mission is to personalize quiz experiences based on your progress — no more one-size-fits-all testing.
+            MackAdapt is an adaptive learning tool built for Merrimack students and professors.
+            Our mission is to personalize quiz experiences based on your progress — no more one-size-fits-all testing.
           </p>
           <ul>
             <li><i class="fas fa-brain"></i> Real-time adaptation based on your answers</li>
@@ -50,8 +60,10 @@
         </div>
       </div>
     </section>
-<div class="divider"></div>
 
+    <div class="divider"></div>
+
+    <!-- How It Works -->
     <section class="how-it-works" data-aos="fade-up">
       <h3>How It Works</h3>
       <div class="steps">
@@ -72,8 +84,10 @@
         </div>
       </div>
     </section>
-<div class="divider"></div>
 
+    <div class="divider"></div>
+
+    <!-- Call to Action -->
     <section class="cta" data-aos="zoom-in">
       <h3>Ready to learn smarter?</h3>
       <p>Login to access your personalized dashboard and start mastering your courses.</p>
@@ -81,13 +95,17 @@
     </section>
   </main>
 
+  <!--  Shared Footer -->
   <footer>
     <p>&copy; 2025 MackAdapt – Built for Merrimack College</p>
   </footer>
+
+  <!-- Animation Library Init -->
   <script>
     AOS.init();
   </script>
-</body>
+
+  <!-- Local Page Styles -->
   <style>
     .about {
       display: flex;
@@ -172,6 +190,7 @@
       color: var(--gold);
       margin-bottom: 1rem;
     }
+
     .divider {
       height: 2px;
       background: var(--light-gray);
@@ -180,4 +199,5 @@
       border-radius: 4px;
     }
   </style>
+</body>
 </html>

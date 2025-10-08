@@ -8,14 +8,16 @@
   <script src="https://alcdn.msauth.net/browser/2.32.2/js/msal-browser.min.js"></script>
 </head>
 <body class="login-body">
+  <!-- ✅ Shared Header -->
   <header>
     <h1>MackAdapt</h1>
     <nav>
       <ul>
         <li><a href="index.html">Home</a></li>
-        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="dashboard.html">Instructor Dashboard</a></li>
+        <li><a href="student-dashboard.html">Student Dashboard</a></li>
         <li><a href="classroom.html">Classroom</a></li>
-        <li><a href="login.html" class="active">Login</a></li>
+        <li><a href="login.html" class="active" aria-current="page">Login</a></li>
       </ul>
     </nav>
   </header>
@@ -26,27 +28,24 @@
     <p class="small-text">Need an account? Contact your instructor.</p>
   </div>
 
+  <footer>
+    <p>&copy; 2025 MackAdapt – Built for Merrimack College</p>
+  </footer>
+
   <script>
-    // 1. Configure MSAL
+    // Placeholder Azure AD login setup
     const msalConfig = {
       auth: {
-        clientId: "YOUR_AZURE_AD_CLIENT_ID", // Replace with your App Registration client ID
-        authority: "https://login.microsoftonline.com/common/", // or your tenant ID
-        redirectUri: window.location.origin + "/dashboard.html" // where user goes after login
+        clientId: "YOUR_AZURE_AD_CLIENT_ID",
+        authority: "https://login.microsoftonline.com/common/",
+        redirectUri: window.location.origin + "/dashboard.html"
       }
     };
-
     const msalInstance = new msal.PublicClientApplication(msalConfig);
 
-    // 2. Add login functionality
     document.getElementById("ms-login").onclick = async () => {
       try {
-        const loginResponse = await msalInstance.loginPopup({
-          scopes: ["User.Read"] // permissions to request
-        });
-        console.log("Login successful:", loginResponse);
-
-        // Redirect to dashboard or handle tokens
+        await msalInstance.loginPopup({ scopes: ["User.Read"] });
         window.location.href = "dashboard.html";
       } catch (err) {
         console.error(err);

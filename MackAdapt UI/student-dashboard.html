@@ -1,0 +1,354 @@
+<!-- Student Dashboard (Gio) — Vanilla HTML/CSS/JS -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Dashboard – MackAdapt</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    :root {
+      --bg:#0b1020;
+      --panel:#121a33;
+      --accent:#6ea8fe;
+      --accent-2:#8ef6d4;
+      --text:#eef2ff;
+      --muted:#a6b0cf;
+      --chip:#1c274b;
+      --chip-br:#2a3a72;
+      --danger:#ff7b7b;
+      --ok:#8fff9a;
+      --shadow:0 10px 25px rgba(0,0,0,.35);
+      --radius:16px;
+    }
+
+    body {
+      margin:0;
+      background:linear-gradient(180deg,#0a0f1e,#0e1630);
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial;
+      color:var(--text);
+    }
+
+    .wrap {
+      max-width:1180px;
+      margin:32px auto;
+      padding:0 16px;
+    }
+
+    header.dashboard-header {
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      justify-content:space-between;
+      align-items:flex-end;
+      margin-bottom:20px;
+    }
+
+    h1 { margin:0; font-size:28px; letter-spacing:.2px; }
+    .subtitle { color:var(--muted); font-size:14px; margin-top:6px; }
+
+    .controls {
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    select,input,button {
+      background:var(--panel);
+      border:1px solid #23305c;
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:10px;
+    }
+
+    button { cursor:pointer; }
+    .btn-primary {
+      background:linear-gradient(180deg,#6ea8fe,#3a7bff);
+      border:none;
+    }
+    .btn-primary:disabled { opacity:.6; cursor:not-allowed; }
+
+    .grid {
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:14px;
+      margin:18px 0;
+    }
+    @media (max-width:1000px){.grid{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:560px){.grid{grid-template-columns:1fr}}
+
+    .card {
+      background:linear-gradient(180deg,#111939,#0f1733);
+      border:1px solid #1e2b56;
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
+    .card .head { padding:14px 16px; border-bottom:1px solid #1e2b56; }
+    .card .title { font-size:14px; display:flex; align-items:center; gap:8px; }
+    .desc { color:var(--muted); font-size:12px; margin-top:6px; }
+    .card .content { padding:18px 16px; }
+    .kpi { font-size:34px; font-weight:700; }
+    .chip {
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      background:var(--chip);
+      border:1px solid var(--chip-br);
+      padding:6px 10px;
+      border-radius:999px;
+      color:#d7e0ff;
+      font-size:12px;
+    }
+
+    .chart { height:280px; }
+
+    .tabs {
+      display:flex;
+      gap:8px;
+      border-bottom:1px solid #243160;
+      margin-bottom:12px;
+    }
+    .tab {
+      padding:10px 12px;
+      border:1px solid #243160;
+      border-bottom:none;
+      border-top-left-radius:10px;
+      border-top-right-radius:10px;
+      background:#111939;
+      color:#cfd7ff;
+      cursor:pointer;
+    }
+    .tab.active { background:#172146; }
+
+    table { width:100%; border-collapse:collapse; }
+    th,td { text-align:left; padding:10px 12px; border-bottom:1px solid #23305c; font-size:14px; }
+    th { color:#b8c5ff; font-weight:600; }
+
+    .pill-row { display:flex; flex-wrap:wrap; gap:8px; }
+    .pill {
+      padding:8px 12px;
+      border:1px solid #243160;
+      border-radius:999px;
+      background:#0f1733;
+      color:#cfd7ff;
+      cursor:pointer;
+    }
+    .pill.active {
+      background:linear-gradient(180deg,#395bd6,#1f46d5);
+      border-color:#395bd6;
+    }
+
+    .muted { color:var(--muted); }
+    .list { margin:0; padding-left:18px; }
+  </style>
+</head>
+
+<body>
+  <!-- ✅ Shared Header -->
+  <header>
+    <h1>MackAdapt</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="dashboard.html">Instructor Dashboard</a></li>
+        <li><a href="student-dashboard.html" class="active" aria-current="page">Student Dashboard</a></li>
+        <li><a href="classroom.html">Classroom</a></li>
+        <li><a href="login.html">Login</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- ✅ Dashboard Content -->
+  <div class="wrap">
+    <header class="dashboard-header">
+      <div>
+        <h1>Student Dashboard</h1>
+        <div class="subtitle">Welcome back, Gio — track scores, streaks, and goals.</div>
+      </div>
+      <div class="controls">
+        <select id="classSelect"></select>
+        <input id="search" placeholder="Search by date or ID…" />
+        <button class="btn-primary" disabled>Start New Quiz</button>
+      </div>
+    </header>
+
+    <!-- KPI Grid -->
+    <section class="grid">
+      <div class="card">
+        <div class="head"><div class="title">🏆 High Score<div class="desc" id="kpiClass1"></div></div></div>
+        <div class="content"><div class="kpi" id="kpiHigh">0%</div></div>
+      </div>
+      <div class="card">
+        <div class="head"><div class="title">📊 Average Quiz<div class="desc" id="kpiClass2"></div></div></div>
+        <div class="content"><div class="kpi" id="kpiAvg">0%</div></div>
+      </div>
+      <div class="card">
+        <div class="head"><div class="title">🔥 Streak<div class="desc">≥ 80% in a row</div></div></div>
+        <div class="content"><div class="kpi" id="kpiStreak">0 <span class="muted" style="font-weight:500;font-size:16px">quizzes</span></div></div>
+      </div>
+      <div class="card">
+        <div class="head"><div class="title">📘 Objectives to Improve<div class="desc">Top focus areas</div></div></div>
+        <div class="content" id="objectivesChips"></div>
+      </div>
+    </section>
+
+    <!-- Chart -->
+    <section class="card">
+      <div class="head"><div class="title">📈 Quiz Performance Over Time<div class="desc" id="chartClass"></div></div></div>
+      <div class="content chart">
+        <canvas id="lineChart" width="1100" height="260"></canvas>
+      </div>
+    </section>
+
+    <!-- Tabs -->
+    <section class="card" style="margin-top:14px">
+      <div class="content">
+        <div class="tabs">
+          <button class="tab active" data-tab="quizzes">Quizzes</button>
+          <button class="tab" data-tab="tests">Tests</button>
+        </div>
+        <div id="tableWrap"></div>
+      </div>
+    </section>
+
+    <!-- Classes -->
+    <section class="card" style="margin-top:14px">
+      <div class="head"><div class="title">📚 My Classes<div class="desc">Switch to view scores & objectives</div></div></div>
+      <div class="content">
+        <div class="pill-row" id="classPills"></div>
+      </div>
+    </section>
+
+    <!-- Footer / Next Steps -->
+    <section style="margin-top:18px">
+      <div class="muted" style="font-size:14px">Next sprint (backend-ready TODOs):</div>
+      <ul class="list muted" style="margin-top:6px">
+        <li>Auth: <code>/api/auth/me</code> — get current student</li>
+        <li>Classes: <code>/api/classes</code> — list a student’s classes</li>
+        <li>Attempts: <code>/api/attempts?classId=*</code> — quizzes/tests with scores & objective tags</li>
+        <li>Objectives: <code>/api/objectives</code> — map objective codes to labels</li>
+        <li>POST <code>/api/attempts</code> — submit new quiz results (later)</li>
+      </ul>
+    </section>
+  </div>
+
+  <!-- ✅ Shared Footer -->
+  <footer>
+    <p>&copy; 2025 MackAdapt – Built for Merrimack College</p>
+  </footer>
+
+  <!-- JS Logic -->
+  <script>
+    // ---------------- Mock Data ----------------
+    const CLASSES = [
+      { id: "psyc101", name: "PSYC 101 — Intro Psychology" },
+      { id: "psyc262", name: "PSYC 262 — Cognitive Science" },
+      { id: "stat201", name: "STAT 201 — Statistics" },
+    ];
+
+    const OBJECTIVES = {
+      LO1: "Memory & Recall",
+      LO2: "Experimental Design",
+      LO3: "Learning Theories",
+      LO4: "Statistics Basics",
+      LO5: "Research Ethics",
+    };
+
+    const ATTEMPTS = [
+      { id: "q-1001", type: "quiz", classId: "psyc101", date: "2025-09-03", score: 7, maxScore: 10, objectivesMissed: ["LO1", "LO3"] },
+      { id: "q-1002", type: "quiz", classId: "psyc101", date: "2025-09-10", score: 8, maxScore: 10, objectivesMissed: ["LO3"] },
+      { id: "q-1003", type: "quiz", classId: "psyc101", date: "2025-09-17", score: 9, maxScore: 10, objectivesMissed: ["LO2"] },
+      { id: "t-1004", type: "test", classId: "psyc101", date: "2025-09-24", score: 83, maxScore: 100, objectivesMissed: ["LO2", "LO4"] },
+      { id: "q-1005", type: "quiz", classId: "psyc101", date: "2025-10-01", score: 10, maxScore: 10, objectivesMissed: [] },
+    ];
+
+    const pct = (score, max) => Math.round((score / max) * 100);
+    const byDateDesc = (a, b) => b.date.localeCompare(a.date);
+
+    function classAttempts(classId) {
+      const all = ATTEMPTS.filter(a => a.classId === classId);
+      const quizzes = all.filter(a => a.type === 'quiz');
+      const tests = all.filter(a => a.type === 'test');
+      const high = quizzes.length ? Math.max(...quizzes.map(q => pct(q.score, q.maxScore))) : 0;
+      const avg = quizzes.length ? Math.round(quizzes.reduce((acc, q) => acc + pct(q.score, q.maxScore), 0) / quizzes.length) : 0;
+      const sortedQ = [...quizzes].sort((a,b)=>a.date.localeCompare(b.date));
+      let streak = 0;
+      for (let i = sortedQ.length-1; i >= 0; i--) {
+        const s = pct(sortedQ[i].score, sortedQ[i].maxScore);
+        if (s >= 80) streak++; else break;
+      }
+      const objectives = {};
+      all.forEach(a => a.objectivesMissed.forEach(o => objectives[o] = (objectives[o] || 0) + 1));
+      const sortedObj = Object.entries(objectives).sort((a,b)=>b[1]-a[1]);
+      return { quizzes, tests, high, avg, streak, objectives: sortedObj };
+    }
+
+    // DOM Refs
+    const classSelect = document.getElementById('classSelect');
+    const kHigh = document.getElementById('kpiHigh');
+    const kAvg = document.getElementById('kpiAvg');
+    const kStreak = document.getElementById('kpiStreak');
+    const objectivesChips = document.getElementById('objectivesChips');
+    const tableWrap = document.getElementById('tableWrap');
+    const classPills = document.getElementById('classPills');
+
+    let activeClass = CLASSES[0].id;
+    let activeTab = 'quizzes';
+
+    function initClasses() {
+      classSelect.innerHTML = CLASSES.map(c => `<option value=\"${c.id}\">${c.name}</option>`).join('');
+      classPills.innerHTML = CLASSES.map(c => `<button class=\"pill ${c.id===activeClass?'active':''}\" data-id=\"${c.id}\">${c.name}</button>`).join('');
+    }
+
+    function render(state) {
+      kHigh.textContent = state.high + '%';
+      kAvg.textContent = state.avg + '%';
+      kStreak.textContent = state.streak + ' quizzes';
+      objectivesChips.innerHTML = state.objectives.length
+        ? state.objectives.map(([code,count]) => `<span class='chip'>${OBJECTIVES[code] || code} • ${count}</span>`).join(' ')
+        : '<span class=\"chip\">All caught up</span>';
+      renderTable(state);
+    }
+
+    function renderTable(state) {
+      const rows = (activeTab==='quizzes'? state.quizzes : state.tests).sort(byDateDesc);
+      tableWrap.innerHTML = `
+        <table>
+          <thead><tr><th>ID</th><th>Date</th><th>Score</th><th>Objectives</th></tr></thead>
+          <tbody>
+            ${rows.map(r=>`
+              <tr>
+                <td><strong>${r.id}</strong></td>
+                <td>${r.date}</td>
+                <td>${pct(r.score,r.maxScore)}%</td>
+                <td>${r.objectivesMissed.map(o=>`<span class='chip'>${OBJECTIVES[o]||o}</span>`).join(' ')}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>`;
+    }
+
+    // Events
+    classSelect.addEventListener('change', e => {
+      activeClass = e.target.value;
+      update();
+    });
+
+    classPills.addEventListener('click', e => {
+      const btn = e.target.closest('.pill');
+      if (!btn) return;
+      activeClass = btn.dataset.id;
+      update();
+    });
+
+    function update() {
+      const state = classAttempts(activeClass);
+      render(state);
+      document.querySelectorAll('.pill').forEach(p => p.classList.toggle('active', p.dataset.id===activeClass));
+    }
+
+    initClasses();
+    update();
+  </script>
+</body>
+</html>
