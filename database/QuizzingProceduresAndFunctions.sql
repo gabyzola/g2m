@@ -28,27 +28,79 @@ DELIMITER ;
 
 #check if student answer is correct
 
-/*Procedures*/
+/*TABLE INSERTIONS*/
+
+#insert instructor to instructor table (called automatically in dal when account is created based on flag)
+#insert a student  to student table, automatically called when user is flagged as student
+#the above is gonna be done in one proc
+DELIMITER $$
+DROP PROCEDURE IF EXISTS InsertNewUser $$
+CREATE PROCEDURE InsertNewUser (
+    IN myUsername VARCHAR(100),
+    IN myEmail VARCHAR(150),
+    IN myIsInstructor BOOLEAN,
+    IN myMajor VARCHAR(100),        
+    IN mySchoolSubject VARCHAR(50),
+    IN myFirstName varchar(20),
+    IN myLastName varchar(50)
+)
+BEGIN
+    DECLARE newUserId INT;
+
+    INSERT INTO UserAccounts (username, email, isInstructor, firstName, lastName)
+    VALUES (myUsername, myEmail, myIsInstructor, myFirstName, myLastName);
+    
+    -- Capture the auto-incremented ID from the last insert
+    SET newUserId = LAST_INSERT_ID();
+
+    IF myIsInstructor = TRUE THEN
+        INSERT INTO Instructors (instructorId, schoolSubject, firstName, lastName, email)
+        VALUES (newUserId, mySchoolSubject, myFirstName, myLastName, myEmail);
+    ELSE
+        INSERT INTO Students (studentId, firstName, lastName, badge, totalPoints, major, email)
+        VALUES (newUserId, myFirstName, myLastName, NULL, 0, myMajor, myEmail);
+    END IF;
+END $$
+
+DELIMITER ;
 
 #class creation procedure
-delimiter $$
-drop procedure if exists InsertNewClass;
-create procedure InsertNewClass (
-myClassId int,
-myClassName varchar(100),
-myInstructorId int) 
-begin
-declare my_current_time timestamp;
-set my_current_time = current_timestamp;
-
-insert into Classroom (classId, className, instructorId, created_at)
-    values (myClassId, myClassName, myInstructorId, my_current_time);
-end $$
-delimiter ;
-
-#enroll student
 DELIMITER $$
 
+DROP PROCEDURE IF EXISTS InsertNewClass $$
+CREATE PROCEDURE InsertNewClass (
+	IN myClassId int,
+    IN myClassName VARCHAR(100),
+    IN myEmail VARCHAR(150)
+)
+BEGIN
+    DECLARE instructorIdFound INT;
+    DECLARE instructorFirstName VARCHAR(20);
+    DECLARE instructorLastName VARCHAR(50);
+
+    -- Look up instructor details using the email
+    SELECT instructorId, firstName, lastName
+    INTO instructorIdFound, instructorFirstName, instructorLastName
+    FROM Instructors
+    WHERE email = myEmail
+    LIMIT 1;
+
+    -- Handle the case where no instructor is found
+    IF instructorIdFound IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Instructor with the provided email was not found.';
+    ELSE
+        -- Insert the new class using retrieved instructor info
+        INSERT INTO Classroom (classId, className, firstName, lastName, instructorId)
+        VALUES (myClassId, myClassName, instructorFirstName, instructorLastName, instructorIdFound);
+    END IF;
+END $$
+
+DELIMITER ;
+
+
+#enroll student in class
+DELIMITER $$
 DROP PROCEDURE IF EXISTS EnrollStudent $$
 CREATE PROCEDURE EnrollStudent (
     IN myClassId INT,
@@ -95,20 +147,17 @@ END $$
 
 DELIMITER ;
 
-
 #quiz creation procedure
 delimiter $$
 drop procedure if exists InsertNewQuiz;
 create procedure InsertNewQuiz (
 myQuizName varchar(100),
 myInstructorId int,
-myClassId int) -- add class id, set it by getting classid automatically?
+myClassId int) 
 begin
-declare my_current_time timestamp;
-set my_current_time = current_timestamp;
 
-insert into Quizzes (quizName, instructorId, classId, created_at)
-    values (myQuizName, myInstructorId, myClassId, my_current_time);
+insert into Quizzes (quizName, instructorId, classId)
+    values (myQuizName, myInstructorId, myClassId);
 end $$
 delimiter ;
 
@@ -161,7 +210,11 @@ if not doesQuestionExist(myQuestionText) then
 end $$
 delimiter ;
 
-#delete question if typo, choices/objectives will also delete
+#Add to attempts table
+
+/*DELETE FROM TABLES*/
+
+#delete question from question table
 DELIMITER $$
 drop procedure if exists DeleteQuestion $$
 create procedure DeleteQuestion (myQuestionId int
@@ -171,68 +224,176 @@ delete from Questions where questionId = myQuestionId;
 end $$
 DELIMITER ;
 
+#delete class, classenrollees also delete
+#check that quizzes also delete
+DELIMITER $$
+drop procedure if exists DeleteClass $$
+create procedure DeleteClass (myClassId int
+)
+begin
+delete from Classroom where classId = myClassId;
+end $$
+DELIMITER ;
+
+#delete from classenrollees (without deleting entire class)
+DELIMITER $$
+drop procedure if exists DeleteClassEnrollee $$
+create procedure DeleteClassEnrollee (myClassId int, myStudentId int 
+)
+begin
+delete from ClassEnrollees where classId = myClassId AND studentId = myStudentId;
+end $$
+DELIMITER ;
+
+#delete from question choice
+DELIMITER $$
+drop procedure if exists DeleteChoice $$
+create procedure DeleteChoice (myChoiceId int)
+begin
+delete from QuestionChoices where choiceId = myChoiceId;
+end $$
+DELIMITER ;
+
+#delete from UserAccounts (should also delete from instructors and students)
+DELIMITER $$
+drop procedure if exists DeleteUser $$
+create procedure DeleteUser (myUserId int)
+begin
+delete from UserAccounts where userId = myUserId;
+end $$
+DELIMITER ;
+
+#delete from quizzes table (should also delete questions and choices)
+DELIMITER $$
+drop procedure if exists DeleteQuiz $$
+create procedure DeleteQuiz (myQuizId int
+)
+begin
+delete from Quizzes where QuizId = myQuizId;
+end $$
+DELIMITER ;
+
+/*MODIFY DATA IN TABLES*/
+
 #edit question procedure
 
 #edit objective procedure
 
 #edit choices procedure
 
+#edit quiz info
+
+#edit student info-> there's some baggage here i fear
+
+#edit instructor info-> there's some baggage here i fear
+
+/*QUIZ FUNCTIONALITY*/
+
 #student to move to next question
 DELIMITER $$
 drop procedure if exists GetNextQuestion $$
-create procedure GetNextQuestion (myQuizId int, myStudentId int
+CREATE PROCEDURE GetNextQuestion (
+    IN myQuizId INT,
+    IN myStudentId INT
 )
 BEGIN
--- this will get the first question they haven't answered yet
--- Return first unanswered question in this quiz
-    select q.questionId, q.questionText, qc.choiceId, qc.choiceLabel, qc.choiceText
-    from Questions q
-    join QuestionChoices qc ON q.questionId = qc.questionId
-    where q.quizId = myQuizId
-      and q.questionId not in (
-          select questionId from Attempts 
-          where quizId = myQuizId and studentId = myStudentId
+    SELECT q.questionId, q.questionText, qc.choiceId, qc.choiceLabel, qc.choiceText
+    FROM Questions q
+    JOIN QuestionChoices qc ON q.questionId = qc.questionId
+    WHERE q.quizId = myQuizId
+      AND q.questionId NOT IN (
+          SELECT questionId
+          FROM Attempts
+          WHERE quizId = myQuizId AND studentId = myStudentId
       )
-      limit 1; -- just return one
-end $$
+    ORDER BY q.questionId
+    LIMIT 1;
+END$$
 DELIMITER ;
 
-#insert instructor to instructor table (called automatically in dal when account is created based on flag)
-#insert a student  to student table, automatically called when user is flagged as student
-#the above is gonna be done in one proc
+#submit answer one by one
 DELIMITER $$
-
-DROP PROCEDURE IF EXISTS InsertNewUser $$
-CREATE PROCEDURE InsertNewUser (
-    IN myGoogleId VARCHAR(255),
-    IN myUsername VARCHAR(100),
-    IN myEmail VARCHAR(150),
-    IN myIsInstructor BOOLEAN,
-    IN myMajor VARCHAR(100),        
-    IN mySchoolSubject VARCHAR(50)   
+drop procedure if exists SubmitAnswer $$
+CREATE PROCEDURE SubmitAnswer (
+    IN myStudentId INT,
+    IN myQuizId INT,
+    IN myQuestionId INT,
+    IN myChoiceId INT
 )
 BEGIN
-    DECLARE newUserId INT;
+    DECLARE correctId INT;
+    DECLARE isCorrectVal BOOLEAN;
 
-    INSERT INTO UserAccounts (googleId, username, email, isInstructor, created_at)
-    VALUES (myGoogleId, myUsername, myEmail, myIsInstructor, CURRENT_TIMESTAMP);
+    -- find the correct answer
+    SELECT correct_choice_id INTO correctId
+    FROM Questions WHERE questionId = myQuestionId;
 
-    SET newUserId = LAST_INSERT_ID();
+    -- check if its correct
+    SET isCorrectVal = (myChoiceId = correctId);
 
-    IF myIsInstructor = TRUE THEN
-        INSERT INTO Instructors (instructorId, schoolSubject)
-        VALUES (newUserId, mySchoolSubject);
-    ELSE
-        INSERT INTO Students (studentId, badge, totalPoints, major)
-        VALUES (newUserId, NULL, 0, myMajor);
-    END IF;
-END $$
+    -- insert attempt
+    INSERT INTO Attempts (studentId, quizId, questionId, chosenChoiceId, isCorrect, pointsEarned)
+    VALUES (myStudentId, myQuizId, myQuestionId, myChoiceId, isCorrectVal, IF(isCorrectVal, 1, 0));
 
+    -- return feedback immediately
+    SELECT isCorrectVal AS isCorrect, correctId AS correctChoiceId;
+END$$
 DELIMITER ;
 
+#submit quiz as a whole
+DELIMITER $$
+drop procedure if exists GetQuizScore $$
+CREATE PROCEDURE GetQuizScore (
+    IN myStudentId INT,
+    IN myQuizId INT
+)
+BEGIN
+    SELECT SUM(pointsEarned) AS totalScore,
+           COUNT(*) AS totalQuestions,
+           ROUND(SUM(pointsEarned) / COUNT(*) * 100, 2) AS percentage
+    FROM Attempts
+    WHERE studentId = myStudentId
+      AND quizId = myQuizId;
+END$$
+DELIMITER ;
 
+-- =========================
+-- GET VALUES BASED ON ATTRIBUTES
+-- =========================
 
-#procedure that creates a csv report after each quiz is completed for that quiz
+#search class enrollees by classId
+DELIMITER $$
+drop procedure if exists getEnrolleesByClass $$
+create procedure getEnrolleesByClass(
+myClassId int
+)
+BEGIN
+select s.studentId, s.firstName, s.lastName 
+from ClassEnrollees ce
+join Students s on ce.studentId = s.studentId
+where classId=myClassId;
+END$$
+DELIMITER ;
+
+#Get all classes that a student is in
+DELIMITER $$
+drop procedure if exists getStudentsClasses $$
+create procedure getStudentsClasses(
+myStudentId int
+)
+BEGIN
+SELECT 
+        c.classId,
+        c.className,
+        c.firstName AS instructorFirstName,
+        c.lastName AS instructorLastName
+    FROM ClassEnrollees ce
+    JOIN Classroom c ON ce.classId = c.classId
+    WHERE ce.studentId = myStudentId;
+END$$
+DELIMITER ;
+
+#procedure that creates a csv report after each quiz is completed for that quizZ????? -> after DAL
 
 /*
 #assign more objectives to a question
@@ -250,3 +411,4 @@ DELIMITER ;
 #procedure to assign badges at point thresholds
 
 */
+

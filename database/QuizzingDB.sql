@@ -11,41 +11,46 @@ DROP TABLE IF EXISTS Archives; #past information
 
 CREATE TABLE UserAccounts (
     userId int auto_increment PRIMARY KEY,              
-    googleId VARCHAR(255) unique not null, #verify what this will look like 
+    -- googleId VARCHAR(255) unique not null, #verify what this will look like 
     username VARCHAR(100) UNIQUE NOT NULL,
     email VARCHAR(150) UNIQUE NOT NULL,  #merrimack email
     isInstructor BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    lastLogin TIMESTAMP
+    firstName varchar(20),
+	lastName varchar(50)
 );
 
 CREATE TABLE Students (
 studentId int primary key,
+firstName varchar(20),
+lastName varchar(50),
 badge VARCHAR(100), #i will eventually make a bank of badges
 totalPoints int,
 major varchar(100),
+email VARCHAR(150) UNIQUE NOT NULL,
 foreign key (studentId) references UserAccounts(userId) on delete cascade
 );
 
 CREATE TABLE Instructors (
 instructorId int primary key,
 schoolSubject varchar(50),
+firstName varchar(20),
+lastName varchar(50),
+email VARCHAR(150) UNIQUE NOT NULL,
 foreign key (instructorId) references UserAccounts(userId) on delete cascade
 );
 
 CREATE TABLE Classroom (
 classId int primary key,
 className varchar(100) not null,
+firstName varchar(20),
+lastName varchar(50),
 instructorId int not null,
-created_at timestamp default current_timestamp,
 foreign key (instructorId) references UserAccounts(userId) on delete cascade
 );
 
-#should foreign key be linked to students table and not user accounts?
 CREATE TABLE ClassEnrollees (
 classId int not null,
 studentId int not null,
-enrolled_at timestamp default current_timestamp,
 primary key (classId, studentId),
 foreign key (classId) references Classroom(classId) on delete cascade,
 foreign key (studentId) references Students(studentId) on delete cascade
@@ -55,7 +60,6 @@ CREATE TABLE Quizzes (
     quizId int primary key,
     quizName varchar(100),
     instructorId INT, #instructor who created it
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     classId int not null,
     foreign key (instructorId) references Instructors(instructorId) on delete cascade,
     foreign key (classId) references Classroom(classId) on delete cascade
@@ -109,12 +113,22 @@ CREATE TABLE Attempts (
     attemptTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-/*
-CREATE TABLE StudentBadge (
+CREATE TABLE Badges (
+  badgeId INT AUTO_INCREMENT PRIMARY KEY,
+  badgeName VARCHAR(100) UNIQUE NOT NULL,
+  description TEXT,
+  pointThreshold INT
 );
 
-CREATE TABLE Badges (
-badgeId int primary key,
-badgeName varchar(50)
+CREATE TABLE StudentBadges (
+    studentId INT NOT NULL,
+    badgeId INT NOT NULL,
+    PRIMARY KEY (studentId, badgeId),
+    FOREIGN KEY (studentId) REFERENCES Students(studentId) ON DELETE CASCADE,
+    FOREIGN KEY (badgeId) REFERENCES Badges(badgeId) ON DELETE CASCADE
 );
+
+/*
+CREATE TABLE ReadingMaterial ();
+CREATE TABLE ReadingObjective ();
 */
