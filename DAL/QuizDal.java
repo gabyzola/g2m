@@ -84,86 +84,86 @@ public class QuizDal {
 
     //LOOK UP STUDENT BY EMAIL
     public ArrayList<Student> searchForStudentByEmail(String emailQuery) {
-    ArrayList<Student> students = new ArrayList<>();
-    String sql = "SELECT s.studentId, u.username, u.email, s.major, s.totalPoints " +
-                 "FROM Students s " +
-                 "JOIN UserAccounts u ON s.studentId = u.userId " +
-                 "WHERE u.email LIKE ?";
+        ArrayList<Student> students = new ArrayList<>();
+        String sql = "SELECT s.studentId, u.username, u.email, s.major, s.totalPoints " +
+                    "FROM Students s " +
+                    "JOIN UserAccounts u ON s.studentId = u.userId " +
+                    "WHERE u.email LIKE ?";
 
-    try (PreparedStatement ps = myConnection.prepareStatement(sql)) {
-        ps.setString(1, "%" + emailQuery + "%");
-        ResultSet rs = ps.executeQuery();
+        try (PreparedStatement ps = myConnection.prepareStatement(sql)) {
+            ps.setString(1, "%" + emailQuery + "%");
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Student student = new Student(
+                    rs.getInt("studentId"),
+                    rs.getString("badge"),
+                    rs.getInt("totalPoints"),
+                    rs.getString("major")
+                );
+                students.add(student);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return students;
+    }
+
+    //LOOK UP STUDENT BY NAME
+    public ArrayList<Student> searchForStudentByName(String nameQuery) {
+        ArrayList<Student> students = new ArrayList<>();
+        String sql = "SELECT s.studentId, u.username, u.email, s.major, s.totalPoints " +
+                    "FROM Students s " +
+                    "JOIN UserAccounts u ON s.studentId = u.userId " +
+                    "WHERE u.username LIKE ?";
+
+        try (PreparedStatement ps = myConnection.prepareStatement(sql)) {
+            ps.setString(1, "%" + nameQuery + "%");
+            ResultSet rs = ps.executeQuery();
 
         while (rs.next()) {
-            Student student = new Student(
-                rs.getInt("studentId"),
-                rs.getString("badge"),
-                rs.getInt("totalPoints"),
-                rs.getString("major")
-            );
-            students.add(student);
+                Student student = new Student(
+                    rs.getInt("studentId"),
+                    rs.getString("badge"),
+                    rs.getInt("totalPoints"),
+                    rs.getString("major")
+                );
+                students.add(student);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-    } catch (SQLException e) {
-        e.printStackTrace();
+
+        return students;
     }
 
-    return students;
-}
+    //LOOK UP STUDENT BY ID
+    public ArrayList<Student> searchForStudentById(String IdQuery) {
+        ArrayList<Student> students = new ArrayList<>();
+        String sql = "SELECT s.studentId, u.username, u.email, s.major, s.totalPoints " +
+                    "FROM Students s " +
+                    "WHERE studentId LIKE ?";
 
-//LOOK UP STUDENT BY NAME
-public ArrayList<Student> searchForStudentByName(String nameQuery) {
-    ArrayList<Student> students = new ArrayList<>();
-    String sql = "SELECT s.studentId, u.username, u.email, s.major, s.totalPoints " +
-                 "FROM Students s " +
-                 "JOIN UserAccounts u ON s.studentId = u.userId " +
-                 "WHERE u.username LIKE ?";
+        try (PreparedStatement ps = myConnection.prepareStatement(sql)) {
+            ps.setString(1, "%" + IdQuery + "%");
+            ResultSet rs = ps.executeQuery();
 
-    try (PreparedStatement ps = myConnection.prepareStatement(sql)) {
-        ps.setString(1, "%" + nameQuery + "%");
-        ResultSet rs = ps.executeQuery();
-
-       while (rs.next()) {
-            Student student = new Student(
-                rs.getInt("studentId"),
-                rs.getString("badge"),
-                rs.getInt("totalPoints"),
-                rs.getString("major")
-            );
-            students.add(student);
+            while (rs.next()) {
+                Student student = new Student(
+                    rs.getInt("studentId"),
+                    rs.getString("badge"),
+                    rs.getInt("totalPoints"),
+                    rs.getString("major")
+                );
+                students.add(student);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-    } catch (SQLException e) {
-        e.printStackTrace();
+
+        return students;
     }
-
-    return students;
-}
-
-//LOOK UP STUDENT BY ID
-public ArrayList<Student> searchForStudentById(String IdQuery) {
-    ArrayList<Student> students = new ArrayList<>();
-    String sql = "SELECT s.studentId, u.username, u.email, s.major, s.totalPoints " +
-                 "FROM Students s " +
-                 "WHERE studentId LIKE ?";
-
-    try (PreparedStatement ps = myConnection.prepareStatement(sql)) {
-        ps.setString(1, "%" + IdQuery + "%");
-        ResultSet rs = ps.executeQuery();
-
-        while (rs.next()) {
-            Student student = new Student(
-                rs.getInt("studentId"),
-                rs.getString("badge"),
-                rs.getInt("totalPoints"),
-                rs.getString("major")
-            );
-            students.add(student);
-        }
-    } catch (SQLException e) {
-        e.printStackTrace();
-    }
-
-    return students;
-}
 
 
     //Enroll student in class
@@ -239,13 +239,13 @@ public ArrayList<Student> searchForStudentById(String IdQuery) {
     }
 
     // Insert new class
-    public boolean insertNewClass(int classId, String className, int instructorId) {
+    public boolean insertNewClass(int classId, String className, String instructorEmail) {
         CallableStatement stmt = null;
         try {
             stmt = myConnection.prepareCall("{CALL InsertNewClass(?, ?, ?)}");
             stmt.setInt(1, classId);
             stmt.setString(2, className);
-            stmt.setInt(3, instructorId);
+            stmt.setInt(3, instructorEmail);
 
             stmt.execute();
             return true;
@@ -313,7 +313,6 @@ public ArrayList<Student> searchForStudentById(String IdQuery) {
     }
 
     //Get All Badges
-    // Get all Students stored in the database returns as an arraylist
     public ArrayList<Badge> getAllBadges() {
 
         Statement myStatement;
@@ -321,8 +320,6 @@ public ArrayList<Student> searchForStudentById(String IdQuery) {
             myStatement = myConnection.createStatement();
             //get relations via a sql query
             ResultSet myRelation = myStatement.executeQuery("SELECT * FROM Badges");
-
-            //create students arraylist
             ArrayList<Badge> Badges = new ArrayList<>();
 
             //add each relation into arraylist-- studentid, badge, totalPoints, major
@@ -334,31 +331,90 @@ public ArrayList<Student> searchForStudentById(String IdQuery) {
 
             return Badges; // return the array list of Students
 
-        } catch (SQLException e) { //error handling
+        } catch (SQLException e) { 
             e.printStackTrace();
             return null;
         }
     }
 
+    //gets all classes for a specific student
+    public List<Map<String, Object>> getStudentsClasses(int studentId) {
+        List<Map<String, Object>> results = new ArrayList<>();
+        try (CallableStatement cs = myConnection.prepareCall("{CALL getStudentsClasses(?)}")) {
+            cs.setInt(1, studentId);
+            ResultSet rs = cs.executeQuery();
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("classId", rs.getInt("classId"));
+                row.put("className", rs.getString("className"));
+                row.put("instructorFirstName", rs.getString("instructorFirstName"));
+                row.put("instructorLastName", rs.getString("instructorLastName"));
+                results.add(row);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return results;
+    }
+
+
+    //gets all classes for a specific instructor
+
     //GetNextQuestion
+    public Map<String, Object> getNextQuestion(int quizId, int studentId) {
+        Map<String, Object> result = new HashMap<>();
+        try (CallableStatement cs = myConnection.prepareCall("{CALL GetNextQuestion(?, ?)}")) {
+            cs.setInt(1, quizId);
+            cs.setInt(2, studentId);
+            ResultSet rs = cs.executeQuery();
+            if (rs.next()) {
+                result.put("questionId", rs.getInt("questionId"));
+                result.put("questionText", rs.getString("questionText"));
+                result.put("choiceId", rs.getInt("choiceId"));
+                result.put("choiceLabel", rs.getString("choiceLabel"));
+                result.put("choiceText", rs.getString("choiceText"));
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return result;
+    }
 
-    //submitAnswer --> automatically calls GetNextQuestion
+    // Submit answer
+    public Map<String, Object> submitAnswer(int studentId, int quizId, int questionId, int choiceId) {
+        Map<String, Object> result = new HashMap<>();
+        try (CallableStatement cs = myConnection.prepareCall("{CALL SubmitAnswer(?, ?, ?, ?)}")) {
+            cs.setInt(1, studentId);
+            cs.setInt(2, quizId);
+            cs.setInt(3, questionId);
+            cs.setInt(4, choiceId);
+            ResultSet rs = cs.executeQuery();
+            if (rs.next()) {
+                result.put("isCorrect", rs.getBoolean("isCorrect"));
+                result.put("correctChoiceId", rs.getInt("correctChoiceId"));
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return result;
+    }
 
-    //getsQuizScore
+    // Get quiz score
+    public Map<String, Object> getQuizScore(int studentId, int quizId) {
+        Map<String, Object> result = new HashMap<>();
+        try (CallableStatement cs = myConnection.prepareCall("{CALL GetQuizScore(?, ?)}")) {
+            cs.setInt(1, studentId);
+            cs.setInt(2, quizId);
+            ResultSet rs = cs.executeQuery();
+            if (rs.next()) {
+                result.put("totalScore", rs.getInt("totalScore"));
+                result.put("totalQuestions", rs.getInt("totalQuestions"));
+                result.put("percentage", rs.getDouble("percentage"));
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return result;
+    }
+
 
     //AssignBadge
 
     //submitQuiz --> adds missing info to attempts table, checks for badge eligability and assigns badge if elligable
-
-    //delete question
-
-    //delete quiz
-
-    //delete class
-
-    //delete user --> student/instructor on cascade
-
-    //delete enrollee
 
     //modify question
 
@@ -368,6 +424,39 @@ public ArrayList<Student> searchForStudentById(String IdQuery) {
 
     //modify user info
 
+    //DELETIONS
+
+    public boolean deleteQuestion(int questionId) { return executeSimpleDelete("{CALL DeleteQuestion(?)}", questionId); }
+    public boolean deleteQuiz(int quizId) { return executeSimpleDelete("{CALL DeleteQuiz(?)}", quizId); }
+    public boolean deleteClass(int classId) { return executeSimpleDelete("{CALL DeleteClass(?)}", classId); }
+    public boolean deleteUser(int userId) { return executeSimpleDelete("{CALL DeleteUser(?)}", userId); }
+    public boolean deleteClassEnrollee(int classId, int studentId) {
+        return executeDoubleDelete("{CALL DeleteClassEnrollee(?, ?)}", classId, studentId);
+    }
+    public boolean deleteChoice(int choiceId) { return executeSimpleDelete("{CALL DeleteChoice(?)}", choiceId); }
+
+    private boolean executeSimpleDelete(String sql, int param) {
+        try (CallableStatement stmt = myConnection.prepareCall(sql)) {
+            stmt.setInt(1, param);
+            stmt.execute();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private boolean executeDoubleDelete(String sql, int p1, int p2) {
+        try (CallableStatement stmt = myConnection.prepareCall(sql)) {
+            stmt.setInt(1, p1);
+            stmt.setInt(2, p2);
+            stmt.execute();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
 }
 
