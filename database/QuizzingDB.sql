@@ -128,7 +128,29 @@ CREATE TABLE StudentBadges (
     FOREIGN KEY (badgeId) REFERENCES Badges(badgeId) ON DELETE CASCADE
 );
 
-/*
-CREATE TABLE ReadingMaterial ();
-CREATE TABLE ReadingObjective ();
-*/
+/*Makes sure that unneccessary learning objectives aren't displayed for a student!!!*/
+SELECT DISTINCT lo.*
+FROM LearningObjectives lo
+JOIN QuestionObjectives qo ON lo.objectiveId = qo.objectiveId;
+
+CREATE TABLE Readings (
+    readingId INT AUTO_INCREMENT PRIMARY KEY,
+    instructorId INT NOT NULL,
+    classId INT,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    filePath VARCHAR(500), 
+    uploadDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (instructorId) REFERENCES Instructors(instructorId) ON DELETE CASCADE,
+    FOREIGN KEY (classId) REFERENCES Classroom(classId) ON DELETE SET NULL
+);
+
+CREATE TABLE ReadingObjectives (
+    readingObjectiveId INT AUTO_INCREMENT PRIMARY KEY,
+    readingId INT NOT NULL,
+    objectiveName VARCHAR(255) NOT NULL,
+    objDescription TEXT,
+    -- confidenceScore DECIMAL(5,2),-- commented out for now...this is likely necessary as I implement machine learning s 
+    isApproved BOOLEAN DEFAULT FALSE, 
+    FOREIGN KEY (readingId) REFERENCES Readings(readingId) ON DELETE CASCADE
+);
