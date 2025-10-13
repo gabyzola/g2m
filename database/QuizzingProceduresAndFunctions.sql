@@ -289,6 +289,52 @@ DELIMITER ;
 
 /*QUIZ FUNCTIONALITY*/
 
+#Student chooses learning objective
+DELIMITER $$
+drop procedure if exists SelectStudentObjective $$
+CREATE PROCEDURE SelectStudentObjective (
+    IN myStudentId INT,
+    IN myQuizId INT,
+    IN myObjectiveName VARCHAR(200)
+)
+BEGIN
+    DECLARE myObjectiveId INT;
+    DECLARE numSelected INT;
+
+-- we need to look up objective id since it is pk, but i dont want students to be picking things by id
+    SELECT objectiveId INTO myObjectiveId
+    FROM LearningObjectives
+    WHERE objectiveName = myObjectiveName
+    LIMIT 1;
+
+    IF myObjectiveId IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Learning Objective not found.';
+    END IF;
+
+    SELECT COUNT(*) INTO numSelected
+    FROM StudentObjectives
+    WHERE studentId = myStudentId AND quizId = myQuizId;
+
+    IF numSelected >= 3 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'You may only select up to 3 learning objectives for this quiz.';
+    END IF;
+
+    IF EXISTS (
+        SELECT 1 FROM StudentObjectives
+        WHERE studentId = myStudentId AND quizId = myQuizId AND objectiveId = myObjectiveId
+    ) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'You have already selected this learning objective.';
+    END IF;
+
+    INSERT INTO StudentObjectives (studentId, quizId, objectiveId)
+    VALUES (myStudentId, myQuizId, myObjectiveId);
+END$$
+
+DELIMITER ;
+
 #student to move to next question
 DELIMITER $$
 drop procedure if exists GetNextQuestion $$

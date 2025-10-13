@@ -312,6 +312,29 @@ public class QuizDal {
         }
     }
 
+    //Student chooses learning objective before starting quiz
+    //ADD TO BUSINESS LAYER!!!- studentObjective table MUST reset after quiz is completed
+    public boolean chooseLearningObjective(int studentId, int objectiveId, String objectiveName) {
+        CallableStatement stmt = null;
+        try {
+            stmt = myConnection.prepareCall("{CALL SelectStudentObjective(?, ?, ?)}");
+            stmt.setInt(1, studentId);
+            stmt.setInt(2, objectiveId);
+            stmt.setString(3, objectiveName);
+
+            stmt.execute();
+            return true;
+        } catch (SQLException e) {
+            System.out.println("Error choosing learning objective.");
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                if (stmt != null) stmt.close();
+            } catch (SQLException e) { e.printStackTrace(); }
+        }
+    }
+
     //Get All Badges
     public ArrayList<Badge> getAllBadges() {
 
