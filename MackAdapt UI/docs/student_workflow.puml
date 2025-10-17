@@ -1,0 +1,37 @@
+@startuml
+title Student Workflow - MackAdapt System
+
+start
+
+:Login to MackAdapt;
+if (Authenticated successfully?) then (Yes)
+  :Redirect to Student Dashboard;
+else (No)
+  :Show login error message;
+  stop
+endif
+
+partition "Class Enrollment" {
+  :Receive class invitation link;
+  :Open "Accept Class Invitation" page;
+  :Confirm and join class;
+}
+
+partition "Quiz Interaction" {
+  :Navigate to assigned class;
+  :Select "Start Quiz";
+  :Choose learning objectives or goals (optional);
+  :Answer adaptive quiz questions;
+  :System adjusts difficulty based on performance;
+  :Submit quiz;
+}
+
+partition "Progress Review" {
+  :View quiz score and feedback;
+  :See learning objectives needing improvement;
+  :Track streaks, highscores, and previous results;
+  :Review overall progress by class;
+}
+
+stop
+@enduml

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enroll Students – MackAdapt</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ----- LAYOUT & STYLE ----- */
+    .wrap {
+      max-width: 900px;
+      margin: 3rem auto;
+      background: #fff;
+      padding: 1.5rem 1.25rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0,40,85,.1);
+    }
+
+    .row { display: flex; gap: .5rem; align-items: center; }
+    input[type="search"], button {
+      padding: .65rem .8rem;
+      border-radius: 6px;
+      border: 1px solid #ccd;
+    }
+    button {
+      background: var(--gold);
+      color: var(--navy);
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:hover { background: #e0b91f; }
+    .muted { color: #667; }
+
+    .lists {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .panel {
+      background: #f7f9ff;
+      border: 1px solid #e3e8f5;
+      border-radius: 8px;
+      padding: 1rem;
+    }
+    .panel h3 { margin-bottom: .5rem; }
+
+    .user {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: .45rem .5rem;
+      border-bottom: 1px solid #e7ecf7;
+    }
+    .user:last-child { border-bottom: none; }
+    .user small { color: #556; }
+    .empty { color: #889; }
+  </style>
+</head>
+
+<body>
+  <!-- ✅ SHARED HEADER -->
+  <header>
+    <h1>MackAdapt</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="classes.html" class="active" aria-current="page">Classes</a></li>
+        <li><a href="student-dashboard.html">Student Dashboard</a></li>
+        <li><a href="login.html">Login</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- ✅ MAIN ENROLL SECTION -->
+  <main class="wrap">
+    <h2>Enroll Students</h2>
+    <p class="muted">Search by email to add a student to this class. Demo-only; uses mock data for now.</p>
+
+    <!-- Search + Add Row -->
+    <div class="row" style="margin:.5rem 0 1rem">
+      <input id="search" type="search" placeholder="Search email (e.g., jstudent@merrimack.edu)" style="flex:1"/>
+      <button id="addBtn" type="button">Add</button>
+    </div>
+
+    <!-- Two-column layout: Search results + Enrolled students -->
+    <div class="lists">
+      <div class="panel">
+        <h3>Search Results</h3>
+        <div id="results"></div>
+      </div>
+      <div class="panel">
+        <h3>Enrolled Students</h3>
+        <div id="enrolled"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ✅ FOOTER -->
+  <footer>
+    <p>&copy; 2025 MackAdapt – Built for Merrimack College</p>
+  </footer>
+
+  <script>
+    /* ============================================================
+       ENROLL STUDENTS — FRONTEND MOCK
+       This file is structured to be easy to replace with real API calls later.
+       ============================================================ */
+
+    // --- Mock directory (simulates DB table: Students) ---
+    const DIRECTORY = [
+      { id: 1, name: 'Jamie Student', email: 'jstudent@merrimack.edu' },
+      { id: 2, name: 'Alex Learner', email: 'alearner@merrimack.edu' },
+      { id: 3, name: 'Taylor Rivera', email: 'trivera@merrimack.edu' },
+      { id: 4, name: 'Jordan Chen', email: 'jchen@merrimack.edu' },
+      { id: 5, name: 'Sam Patel', email: 'spatel@merrimack.edu' },
+    ];
+
+    // --- Mock roster (simulates DB table: Enrollments) ---
+    const roster = [
+      { id: 2, name: 'Alex Learner', email: 'alearner@merrimack.edu' },
+      { id: 4, name: 'Jordan Chen', email: 'jchen@merrimack.edu' },
+    ];
+
+    // --- Cached DOM elements ---
+    const $ = (id) => document.getElementById(id);
+    const results = $('results');
+    const enrolled = $('enrolled');
+    const search = $('search');
+    const addBtn = $('addBtn');
+
+    // --- Class name display based on ?class= param ---
+    const CLASS_MAP = {
+      psyc101: 'PSY 101 – Intro to Psychology',
+      csc2620: 'CSC 2620 – Algorithms',
+      stat201: 'STAT 201 – Statistics',
+    };
+    const params = new URLSearchParams(location.search);
+    const classId = params.get('class') || 'psyc101';
+    const className = CLASS_MAP[classId] || 'Selected Class';
+    const h2 = document.querySelector('main.wrap h2');
+    if (h2) h2.textContent = `Enroll Students — ${className}`;
+
+    // --- Back link under title ---
+    const wrap = document.querySelector('main.wrap');
+    const back = document.createElement('p');
+    back.className = 'small-text';
+    back.style.marginTop = '-.5rem';
+    back.innerHTML = `<a href="classes.html">← Back to Classes</a>`;
+    wrap.insertBefore(back, wrap.children[1]);
+
+    /* ============================================================
+       Helper functions (easy to convert into API requests later)
+       ============================================================ */
+
+    /**
+     * Render both the search results and enrolled students.
+     * @param {Array} matches - Array of matching users from DIRECTORY
+     */
+    function renderLists(matches = []) {
+      // --- Search Results ---
+      if (!matches.length) {
+        results.innerHTML = '<p class="empty">No matches. Try another email.</p>';
+      } else {
+        results.innerHTML = matches.map(u => `
+          <div class="user">
+            <div>
+              <strong>${u.name}</strong><br/>
+              <small>${u.email}</small>
+            </div>
+            <button type="button" data-email="${u.email}" data-name="${u.name}">Add</button>
+          </div>
+        `).join('');
+      }
+
+      // --- Enrolled Students List ---
+      if (!roster.length) {
+        enrolled.innerHTML = '<p class="empty">No students enrolled yet.</p>';
+      } else {
+        enrolled.innerHTML = roster.map(u => `
+          <div class="user">
+            <div>
+              <strong>${u.name}</strong><br/>
+              <small>${u.email}</small>
+            </div>
+            <button type="button" data-remove="${u.email}">Remove</button>
+          </div>
+        `).join('');
+      }
+    }
+
+    /**
+     * Search mock student directory.
+     * @param {string} query - Email text from search box.
+     */
+    function searchDirectory(query) {
+      query = (query || '').toLowerCase();
+      if (!query) return [];
+      return DIRECTORY.filter(u => u.email.toLowerCase().includes(query));
+    }
+
+    // --- Initial render ---
+    renderLists([]);
+
+    // --- Live search event ---
+    search.addEventListener('input', () => {
+      const matches = searchDirectory(search.value);
+      renderLists(matches);
+    });
+
+    // --- Click handling (Add / Remove buttons) ---
+    document.addEventListener('click', (e) => {
+      const addEl = e.target.closest('[data-email]');
+      const remEl = e.target.closest('[data-remove]');
+
+      // ADD student
+      if (addEl) {
+        const email = addEl.getAttribute('data-email');
+        const name = addEl.getAttribute('data-name');
+        if (!roster.find(r => r.email === email)) roster.push({ name, email });
+        renderLists(searchDirectory(search.value));
+      }
+
+      // REMOVE student
+      if (remEl) {
+        const email = remEl.getAttribute('data-remove');
+        const idx = roster.findIndex(r => r.email === email);
+        if (idx >= 0) roster.splice(idx, 1);
+        renderLists(searchDirectory(search.value));
+      }
+    });
+
+    // --- Add button (adds first matched result) ---
+    addBtn.addEventListener('click', () => {
+      const matches = searchDirectory(search.value);
+      if (matches[0]) {
+        const { name, email } = matches[0];
+        if (!roster.find(r => r.email === email)) roster.push({ name, email });
+        renderLists(matches);
+      }
+    });
+
+    /* ============================================================
+       🚀 Backend Integration Notes (Future Implementation)
+       ============================================================
+       1. Replace DIRECTORY with an API call:
+          fetch('/api/students?query=' + encodeURIComponent(search.value))
+             .then(r => r.json())
+             .then(data => renderLists(data))
+
+       2. Replace roster array with database-backed roster:
+          fetch('/api/classes/' + classId + '/students')
+
+       3. Hook up Add/Remove buttons to POST/DELETE routes:
+          POST   /api/classes/:id/students { email }
+          DELETE /api/classes/:id/students/:studentId
+
+       4. Secure endpoints with instructor authentication token.
+
+       5. Return JSON response with updated class roster for re-rendering.
+    ============================================================ */
+  </script>
+</body>
+</html>

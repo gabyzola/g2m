@@ -1,0 +1,38 @@
+@startuml
+title Instructor Workflow - MackAdapt System
+
+start
+
+:Login to MackAdapt;
+if (Authenticated via Microsoft or Demo?) then (Yes)
+  :Redirect to Instructor Dashboard;
+else (No)
+  :Show login error message;
+  stop
+endif
+
+:View Classes on Dashboard;
+partition "Class Management" {
+  :Create new class module;
+  :View existing classes;
+  :Click "Enroll Students" -> Navigate to Enroll Page;
+  :Search for students by email;
+  :Add or Remove students from roster;
+}
+
+partition "Quiz Creation" {
+  :Open Quiz Creation page;
+  :Upload or input quiz questions;
+  :Tag questions by difficulty and learning objectives;
+  :Save quiz and assign to class;
+}
+
+partition "Analytics" {
+  :Access Analytics Dashboard;
+  :View student performance by class;
+  :Identify learning objectives needing improvement;
+  :Export data (CSV) to Canvas or local file;
+}
+
+stop
+@enduml

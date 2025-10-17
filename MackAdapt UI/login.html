@@ -6,51 +6,340 @@
   <title>Login – MackAdapt</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://alcdn.msauth.net/browser/2.32.2/js/msal-browser.min.js"></script>
+
+  <style>
+    /* -------------------------------
+       Base Theme & Layout
+    --------------------------------*/
+    :root {
+      --navy: #002855;
+      --gold: #FFC72C;
+      --white: #ffffff;
+      --bg: #f5f7fb;
+      --ink: #1f2a44;
+      --muted: #6a7591;
+    }
+
+    body.login {
+      background: linear-gradient(180deg, #eef3ff, #f7f9ff);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* -------------------------------
+       Header & Footer
+    --------------------------------*/
+    header {
+      background-color: var(--navy);
+      color: var(--white);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      animation: fadeUp .4s ease-out both;
+    }
+    header h1 { font-size: 1.6rem; }
+    header nav ul {
+      list-style: none;
+      display: flex;
+      gap: 1.25rem;
+      margin: 0; padding: 0;
+    }
+    header nav a {
+      color: var(--gold);
+      text-decoration: none;
+      font-weight: bold;
+      transition: border-color .2s ease, color .2s ease;
+    }
+    header nav a:hover, header nav a.active {
+      color: var(--white);
+      border-bottom: 2px solid var(--gold);
+    }
+
+    footer {
+      background: var(--navy);
+      color: var(--white);
+      text-align: center;
+      padding: 1rem;
+      animation: fadeUp .4s ease-out both;
+    }
+
+    /* -------------------------------
+       Auth Card
+    --------------------------------*/
+    .auth-wrap {
+      flex: 1;
+      display: grid;
+      place-items: center;
+      padding: 24px 16px;
+    }
+    .auth-card {
+      width: 100%;
+      max-width: 440px;
+      background: var(--white);
+      border-radius: 14px;
+      box-shadow: 0 10px 24px rgba(0,40,85,0.12);
+      border: 1px solid rgba(0,40,85,0.08);
+      padding: 22px 20px;
+      animation: fadeUp .5s ease-out .05s both;
+    }
+    .auth-head {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .auth-head h2 {
+      margin: 6px 0 4px;
+      color: var(--ink);
+      font-size: 1.6rem;
+    }
+    .auth-head p {
+      margin: 0;
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    /* -------------------------------
+       Buttons & Inputs
+    --------------------------------*/
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-radius: 10px;
+      padding: 12px 14px;
+      cursor: pointer;
+      text-decoration: none;
+      font-weight: 700;
+      position: relative;
+      transition: transform .06s ease, filter .2s ease, opacity .2s ease;
+    }
+    .btn:active { transform: translateY(1px) scale(0.99); }
+
+    /* 💙 Navy breathing pulse animation */
+   @keyframes breathe {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 40, 85, 0.25),
+                0 0 8px 2px rgba(0, 40, 85, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(0, 40, 85, 0.12),
+                0 0 14px 4px rgba(0, 40, 85, 0.25);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 40, 85, 0.25),
+                0 0 8px 2px rgba(0, 40, 85, 0.2);
+  }
+}
+
+.btn-primary {
+  background: var(--navy);
+  color: var(--gold);
+  border: none;
+  animation: breathe 3.5s ease-in-out infinite;
+  transition: transform .1s ease, filter .25s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+    .btn-ghost {
+      background: #fff;
+      color: var(--ink);
+      border: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+      margin: 10px 0 12px;
+    }
+    .field label {
+      font-size: .9rem;
+      color: var(--ink);
+      font-weight: 600;
+    }
+    .field input {
+      border: 1px solid #d8deea;
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color .18s ease, box-shadow .18s ease, transform .12s ease;
+    }
+    .field input:focus {
+      border-color: #b7c4ee;
+      box-shadow: 0 0 0 3px rgba(110,168,254,.25);
+      transform: translateY(-1px);
+    }
+
+    .divider {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: .9rem;
+      margin: 14px 0;
+    }
+    .divider::before, .divider::after {
+      content: "";
+      height: 1px;
+      background: #e3e8f5;
+      display: block;
+    }
+
+    .aux {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 6px 0 2px;
+      font-size: .9rem;
+    }
+    .aux a { color: var(--ink); }
+
+    .subtle {
+      text-align: center;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    /* -------------------------------
+       Animations & Spinner
+    --------------------------------*/
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .btn.is-loading {
+      pointer-events: none;
+      opacity: .8;
+    }
+    .btn.is-loading > span { visibility: hidden; }
+    .btn.is-loading::after {
+      content: "";
+      position: absolute;
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,.4);
+      border-top-color: rgba(255,255,255,1);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      left: 50%; top: 50%;
+      transform: translate(-50%, -50%);
+    }
+  </style>
 </head>
-<body class="login-body">
-  <!-- ✅ Shared Header -->
+
+<body class="login">
+  <!-- ✅ Nav header -->
   <header>
     <h1>MackAdapt</h1>
-    <nav>
+    <nav aria-label="Primary">
       <ul>
         <li><a href="index.html">Home</a></li>
-        <li><a href="dashboard.html">Instructor Dashboard</a></li>
+        <li><a href="classes.html">Classes</a></li>
         <li><a href="student-dashboard.html">Student Dashboard</a></li>
-        <li><a href="classroom.html">Classroom</a></li>
         <li><a href="login.html" class="active" aria-current="page">Login</a></li>
       </ul>
     </nav>
   </header>
 
-  <div class="login-container">
-    <h2>Welcome to MackAdapt</h2>
-    <button id="ms-login">Sign in with Microsoft</button>
-    <p class="small-text">Need an account? Contact your instructor.</p>
-  </div>
+  <!-- ✅ Auth card -->
+  <main class="auth-wrap">
+    <section class="auth-card" aria-labelledby="authTitle">
+      <div class="auth-head">
+        <div aria-hidden="true" style="font-size:2rem;">🔐</div>
+        <h2 id="authTitle">Sign in to MackAdapt</h2>
+        <p>Use your Merrimack Microsoft account or demo login.</p>
+      </div>
 
+      <!-- Microsoft Sign-In -->
+      <button id="ms-login" class="btn btn-primary" type="button" style="width:100%">
+        <span>Sign in with Microsoft</span>
+      </button>
+
+      <div class="divider">or</div>
+
+      <!-- Demo Email/Password -->
+      <form id="demo-login" novalidate>
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" placeholder="you@merrimack.edu" required />
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" placeholder="••••••••" required />
+        </div>
+        <div class="aux">
+          <a href="#" aria-disabled="true">Forgot password?</a>
+          <button class="btn btn-ghost" type="submit"><span>Continue</span></button>
+        </div>
+      </form>
+
+      <p class="subtle">Need an account? Contact your instructor.</p>
+    </section>
+  </main>
+
+  <!-- ✅ Footer -->
   <footer>
     <p>&copy; 2025 MackAdapt – Built for Merrimack College</p>
   </footer>
 
+  <!-- ==============================
+       JS – Auth Logic
+  =============================== -->
   <script>
-    // Placeholder Azure AD login setup
+    // Microsoft login config
     const msalConfig = {
       auth: {
         clientId: "YOUR_AZURE_AD_CLIENT_ID",
         authority: "https://login.microsoftonline.com/common/",
-        redirectUri: window.location.origin + "/dashboard.html"
+        redirectUri: window.location.origin + "/classes.html"
       }
     };
     const msalInstance = new msal.PublicClientApplication(msalConfig);
 
-    document.getElementById("ms-login").onclick = async () => {
-      try {
+    // Add loading spinner utility
+    function withLoading(btn, fn) {
+      btn.classList.add('is-loading');
+      const done = () => btn.classList.remove('is-loading');
+      const safe = async () => { try { await fn(); } finally { done(); } };
+      safe();
+    }
+
+    // Microsoft button
+    const msBtn = document.getElementById("ms-login");
+    msBtn.addEventListener("click", () => {
+      withLoading(msBtn, async () => {
         await msalInstance.loginPopup({ scopes: ["User.Read"] });
-        window.location.href = "dashboard.html";
-      } catch (err) {
-        console.error(err);
+        window.location.href = "classes.html";
+      });
+    });
+
+    // Demo login simulation
+    const demoForm = document.getElementById("demo-login");
+    const demoSubmitBtn = demoForm.querySelector(".btn");
+    demoForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const email = (document.getElementById("email").value || "").trim();
+      const password = (document.getElementById("password").value || "").trim();
+      if (!email || !password) {
+        alert("Enter your email and password.");
+        return;
       }
-    };
+      withLoading(demoSubmitBtn, async () => {
+        await new Promise(res => setTimeout(res, 600)); // simulate async
+        window.location.href = "classes.html";
+      });
+    });
   </script>
 </body>
 </html>

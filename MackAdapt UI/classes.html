@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Classes – MackAdapt</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://alcdn.msauth.net/browser/2.32.2/js/msal-browser.min.js"></script>
+</head>
+<body>
+  <!-- ✅ Shared Header -->
+  <header>
+    <h1>MackAdapt</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="classes.html" class="active" aria-current="page">Classes</a></li>
+        <li><a href="student-dashboard.html">Student Dashboard</a></li>
+        <li><a href="login.html">Login</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <h2 id="welcome-text">Welcome 👋</h2>
+    <p id="user-email"></p>
+    <p>Select a class to view progress or manage quizzes:</p>
+
+  <div class="class-cards">
+  <div class="class-card">
+    <h3>PSY 101 – Intro to Psychology</h3>
+    <p>Progress: 60%</p>
+    <a href="class-enroll.html?class=psyc101">Manage Class</a>
+  </div>
+  <div class="class-card">
+    <h3>CSC 2620 – Algorithms</h3>
+    <p>Progress: 30%</p>
+    <a href="class-enroll.html?class=csc2620">Manage Class</a>
+  </div>
+</div>
+
+   <section style="margin-top:2rem">
+  <h3>Class Tools (Demo Links)</h3>
+  <a href="class-enroll.html?class=psyc101">Enroll Students</a> ·
+  <a href="quiz-create.html">Create Quiz</a> ·
+  <a href="analytics.html">Analytics</a>
+</section>
+
+  <!-- ✅ Shared Footer -->
+  <footer>
+    <p>&copy; 2025 MackAdapt – Built for Merrimack College</p>
+  </footer>
+
+  <script>
+    // Microsoft Login (Placeholder for now)
+    const msalConfig = {
+      auth: {
+        clientId: "YOUR_AZURE_AD_CLIENT_ID",
+        authority: "https://login.microsoftonline.com/common/",
+        redirectUri: window.location.origin + "/classes.html"
+      }
+    };
+
+    const msalInstance = new msal.PublicClientApplication(msalConfig);
+
+    msalInstance.handleRedirectPromise()
+      .then((response) => {
+        let account = response?.account || msalInstance.getActiveAccount();
+        if (account) {
+          document.getElementById("welcome-text").textContent = `Welcome, ${account.name} 👋`;
+          document.getElementById("user-email").textContent = account.username;
+        }
+      })
+      .catch(console.error);
+  </script>
+</body>
+</html>
