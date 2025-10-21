@@ -449,6 +449,23 @@ SELECT
 END$$
 DELIMITER ;
 
+#getInstructorClasses
+DELIMITER $$
+drop procedure if exists getInstructorClasses $$
+create procedure getInstructorClasses(
+myInstructorId int
+)
+BEGIN
+SELECT 
+        c.classId,
+        c.className,
+        c.firstName AS instructorFirstName,
+        c.lastName AS instructorLastName
+    FROM Classroom c
+    WHERE c.instructorId = myInstructorId;
+END$$
+DELIMITER ;
+
 #getStudentBadges
 
 #procedure that creates a csv report after each quiz is completed for that quizZ????? -> after DAL
