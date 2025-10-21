@@ -2,76 +2,91 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Classes – MackAdapt</title>
   <link rel="stylesheet" href="style.css" />
-  <script src="https://alcdn.msauth.net/browser/2.32.2/js/msal-browser.min.js"></script>
+  <script src="https://alcdn.msauth.net/browser/2.33.0/js/msal-browser.min.js"></script>
 </head>
 <body>
-  <!-- ✅ Shared Header -->
   <header>
     <h1>MackAdapt</h1>
     <nav>
       <ul>
         <li><a href="index.html">Home</a></li>
-        <li><a href="classes.html" class="active" aria-current="page">Classes</a></li>
+        <li><a href="classes.html" class="active">Classes</a></li>
         <li><a href="student-dashboard.html">Student Dashboard</a></li>
-        <li><a href="login.html">Login</a></li>
+        <li>
+          <button id="ms-login-header" style="background:none; border:none; color:var(--gold); font-weight:bold; cursor:pointer;">
+            Sign in
+          </button>
+        </li>
       </ul>
     </nav>
   </header>
 
   <main>
-    <h2 id="welcome-text">Welcome 👋</h2>
+    <h2 id="welcome-text">Welcome to your Classes!</h2>
     <p id="user-email"></p>
-    <p>Select a class to view progress or manage quizzes:</p>
 
-  <div class="class-cards">
-  <div class="class-card">
-    <h3>PSY 101 – Intro to Psychology</h3>
-    <p>Progress: 60%</p>
-    <a href="class-enroll.html?class=psyc101">Manage Class</a>
-  </div>
-  <div class="class-card">
-    <h3>CSC 2620 – Algorithms</h3>
-    <p>Progress: 30%</p>
-    <a href="class-enroll.html?class=csc2620">Manage Class</a>
-  </div>
-</div>
+    <!-- Example: List of classes -->
+    <section class="class-list">
+      <ul>
+        <li>Math 101</li>
+        <li>Biology 201</li>
+        <li>Chemistry 301</li>
+      </ul>
+    </section>
+  </main>
 
-   <section style="margin-top:2rem">
-  <h3>Class Tools (Demo Links)</h3>
-  <a href="class-enroll.html?class=psyc101">Enroll Students</a> ·
-  <a href="quiz-create.html">Create Quiz</a> ·
-  <a href="analytics.html">Analytics</a>
-</section>
-
-  <!-- ✅ Shared Footer -->
   <footer>
     <p>&copy; 2025 MackAdapt – Built for Merrimack College</p>
   </footer>
 
   <script>
-    // Microsoft Login (Placeholder for now)
     const msalConfig = {
       auth: {
-        clientId: "YOUR_AZURE_AD_CLIENT_ID",
-        authority: "https://login.microsoftonline.com/common/",
-        redirectUri: window.location.origin + "/classes.html"
-      }
+        clientId: "f1eb948d-5297-47ce-a4c4-419d1f699607",
+        authority: "https://login.microsoftonline.com/57e1236c-0fa3-4739-9edf-fd0721c8744d/",
+        redirectUri: window.location.origin + window.location.pathname
+      },
+      cache: { cacheLocation: "localStorage", storeAuthStateInCookie: false }
     };
 
     const msalInstance = new msal.PublicClientApplication(msalConfig);
+    const loginRequest = { scopes: ["openid","profile","email","User.Read"] };
+    const loginBtn = document.getElementById("ms-login-header");
 
-    msalInstance.handleRedirectPromise()
-      .then((response) => {
-        let account = response?.account || msalInstance.getActiveAccount();
-        if (account) {
-          document.getElementById("welcome-text").textContent = `Welcome, ${account.name} 👋`;
-          document.getElementById("user-email").textContent = account.username;
-        }
-      })
-      .catch(console.error);
+    // Handle header login button click
+    loginBtn.addEventListener("click", async () => {
+      try {
+        const response = await msalInstance.loginPopup(loginRequest);
+        msalInstance.setActiveAccount(response.account);
+        loginBtn.textContent = `Hello, ${response.account.name}`;
+        document.getElementById("welcome-text").textContent = `Welcome, ${response.account.name} 👋`;
+        document.getElementById("user-email").textContent = response.account.username;
+      } catch (err) {
+        console.error("Login failed:", err);
+        alert("Login failed. See console for details.");
+      }
+    });
+
+    // Handle redirect response or existing session
+    window.addEventListener("DOMContentLoaded", () => {
+      msalInstance.handleRedirectPromise()
+        .then(resp => {
+          const account = resp?.account || msalInstance.getActiveAccount();
+          if (account) {
+            msalInstance.setActiveAccount(account);
+            loginBtn.textContent = `Hello, ${account.name}`;
+            document.getElementById("welcome-text").textContent = `Welcome, ${account.name} 👋`;
+            document.getElementById("user-email").textContent = account.username;
+          } else {
+            // Not signed in → redirect to login
+            window.location.href = "login.html";
+          }
+        })
+        .catch(console.error);
+    });
   </script>
 </body>
 </html>
