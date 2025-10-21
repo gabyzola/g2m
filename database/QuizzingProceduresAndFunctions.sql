@@ -148,6 +148,7 @@ END $$
 DELIMITER ;
 
 #quiz creation procedure
+#add in some functions for error checking
 delimiter $$
 drop procedure if exists InsertNewQuiz;
 create procedure InsertNewQuiz (
@@ -156,15 +157,21 @@ myInstructorId int,
 myClassId int) 
 begin
 
-insert into Quizzes (quizName, instructorId, classId)
-    values (myQuizName, myInstructorId, myClassId);
+DECLARE newQuizId INT;
+ 
+insert into Quizzes (quizId, quizName, instructorId, classId)
+    values (newQuizId, myQuizName, myInstructorId, myClassId);
+    
+SET newQuizId = LAST_INSERT_ID();
 end $$
 delimiter ;
 
 #insert a question to a quiz with choices and objective
+#MAKE SURE QUIZID EXISTS
 delimiter $$
 DROP PROCEDURE IF EXISTS InsertNewQuestion $$
 CREATE PROCEDURE InsertNewQuestion (
+myQuestionNumber int,
 myQuestionText text,
 myDifficulty varchar(10),
 myChoiceA varchar(300),
@@ -289,7 +296,10 @@ DELIMITER ;
 
 /*QUIZ FUNCTIONALITY*/
 
+#GetQuizObjectives
+
 #Student chooses learning objective
+-- THESE CAN ONLY BE OBJECTIVES THAT ARE IN A QUIZ
 DELIMITER $$
 drop procedure if exists SelectStudentObjective $$
 CREATE PROCEDURE SelectStudentObjective (
@@ -438,6 +448,8 @@ SELECT
     WHERE ce.studentId = myStudentId;
 END$$
 DELIMITER ;
+
+#getStudentBadges
 
 #procedure that creates a csv report after each quiz is completed for that quizZ????? -> after DAL
 

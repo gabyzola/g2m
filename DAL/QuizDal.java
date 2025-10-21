@@ -271,6 +271,9 @@ public class QuizDal {
         return result;
     }
 
+    //getReadingObjectives
+    //When a student clicks "Take Quiz" or "Start Quiz", this must be called to display learning objectives for that quiz/reading
+
 
     //INSERT METHODS
 

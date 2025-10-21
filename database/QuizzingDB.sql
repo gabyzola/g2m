@@ -57,7 +57,7 @@ foreign key (studentId) references Students(studentId) on delete cascade
 );
 
 CREATE TABLE Quizzes (
-    quizId int primary key,
+    quizId int primary key auto_increment,
     quizName varchar(100),
     instructorId INT, #instructor who created it
     classId int not null,
@@ -74,6 +74,7 @@ CREATE TABLE LearningObjectives (
 
 CREATE TABLE Questions (
     questionId INT PRIMARY KEY AUTO_INCREMENT,
+    questionNumber int,
     questionText TEXT NOT NULL,
     quizId INT NOT NULL,
     difficulty ENUM('easy','medium','hard') NOT NULL,

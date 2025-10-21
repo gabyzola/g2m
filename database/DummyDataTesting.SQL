@@ -1,3 +1,4 @@
+/*DUMMY DATA*/
 USE QuizzingDB;   
 
 INSERT INTO Badges (badgeName, description, pointThreshold)
@@ -20,9 +21,11 @@ select * from Questions;
 select * from QuestionChoices;
 select * from QuestionObjectives;
 select * from Attempts;
+select * from Badges;
 */
 
 /*TC 1: Insert a bunch of users*/
+-- Method: InsertNewUser
 CALL InsertNewUser("ashley_burnett", "burnetta@merrimack.edu", FALSE, "Computer Science", NULL, "Ashley", "Burnett"); -- student, 1
 CALL InsertNewUser("lorelai_gilmore", "gilmorel@merrimack.edu", FALSE, "Computer Science", NULL, "Lorelai", "Gilmore"); -- student 2
 CALL InsertNewUser("harry_potter", "potterh@merrimack.edu", FALSE, "Computer Science", NULL, "Harry", "Potter"); -- student 3
@@ -38,6 +41,7 @@ CALL InsertNewUser("lucas_danes", "danesl@merrimack.edu", FALSE, "Computer Scien
 CALL InsertNewUser("ron_weasley", "weasleyw@merrimack.edu", FALSE, "Computer Science", NULL, "Ron", "Weasley"); -- student 13
 
 /*TC 1.1: Insert a bunch of classes*/
+-- Method: InsertNewClass
 CALL InsertNewClass(101, "Chemistry", "phillipsa@merrimack.edu"); -- Abigail Phillips
 CALL InsertNewClass(102, "Biology", "grangerh@merrimack.edu"); -- Hermione Granger
 CALL InsertNewClass(103, "Psychology", "grangerh@merrimack.edu"); -- Hermione Granger
@@ -49,7 +53,7 @@ CALL InsertNewClass(108, "Asian History", "grangerh@merrimack.edu"); -- Hermione
 CALL InsertNewClass(109, "Geometry", "washingtong@merrimack.edu"); -- George Washington
 
 /*TC 1.3: Insert ClassEnrollees*/
-/* Enrollments for new students */
+-- Method: EnrollStudent
 CALL EnrollStudent(105, "gilmorel@merrimack.edu");   -- Lorelai Gilmore → OOP
 CALL EnrollStudent(105, "mulones@merrimack.edu");    -- Sam Mulone → OOP
 CALL EnrollStudent(106, "wilsond@merrimack.edu");    -- David Wilson → Calculus
@@ -71,11 +75,34 @@ CALL EnrollStudent(104, "weasleyw@merrimack.edu");   -- Ron Weasley → Sociolog
 CALL EnrollStudent(104, "potterh@merrimack.edu");    -- Harry Potter -> Sociology
  
  /*TC 4.1: Professor gets all class enrollee*/
- -- SUCCESS
+ -- Method: getEnrolleesByClass
  call getEnrolleesByClass(105); -- should be lorelai and sam
  
+ -- Method: getStudentsByClass
  call getStudentsClasses(3); -- soc and geometry
-
  
+ -- Method: InsertNewQuiz
+call InsertNewQuiz("Fall Of Prussia", 4, 107);
  
+ -- Method: InsertNewQuestion
+call InsertNewQuestion();
+ 
+ -- Method: DeleteQuestion
+ 
+-- Method: DeleteClass
+  
+-- Method: DeleteClassEnrollee
+   
+-- Method: DeleteChoice
+    
+-- Method: DeleteUser
 
+-- Method: DeleteQuiz
+
+-- Method: SelectStudentObjective
+
+-- Method: GetNextQuestion
+
+-- Method: SubmitAnswer
+
+-- Method: GetQuizScore
