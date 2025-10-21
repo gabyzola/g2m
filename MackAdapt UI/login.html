@@ -1,385 +1,202 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login – MackAdapt</title>
-    <link rel="stylesheet" href="style.css" />
-    <script src="https://alcdn.msauth.net/browser/2.32.2/js/msal-browser.min.js"></script>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login – MackAdapt</title>
 
-    <style>
-      /* -------------------------------
-       Base Theme & Layout
-    --------------------------------*/
-      :root {
-        --navy: #002855;
-        --gold: #ffc72c;
-        --white: #ffffff;
-        --bg: #f5f7fb;
-        --ink: #1f2a44;
-        --muted: #6a7591;
-      }
+  <!-- Vite-compatible CSS path -->
+  <link rel="stylesheet" href="/style.css" />
 
-      body.login {
-        background: linear-gradient(180deg, #eef3ff, #f7f9ff);
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-      }
+  <!-- MSAL.js -->
+  <script src="https://alcdn.msauth.net/browser/2.32.2/js/msal-browser.min.js"></script>
 
-      /* -------------------------------
-       Header & Footer
-    --------------------------------*/
-      header {
-        background-color: var(--navy);
-        color: var(--white);
-        padding: 1rem 2rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        animation: fadeUp 0.4s ease-out both;
-      }
-      header h1 {
-        font-size: 1.6rem;
-      }
-      header nav ul {
-        list-style: none;
-        display: flex;
-        gap: 1.25rem;
-        margin: 0;
-        padding: 0;
-      }
-      header nav a {
-        color: var(--gold);
-        text-decoration: none;
-        font-weight: bold;
-        transition: border-color 0.2s ease, color 0.2s ease;
-      }
-      header nav a:hover,
-      header nav a.active {
-        color: var(--white);
-        border-bottom: 2px solid var(--gold);
-      }
+  <style>
+    :root {
+      --navy: #002855;
+      --gold: #ffc72c;
+      --white: #ffffff;
+      --bg: #f5f7fb;
+      --ink: #1f2a44;
+      --muted: #6a7591;
+    }
 
-      footer {
-        background: var(--navy);
-        color: var(--white);
-        text-align: center;
-        padding: 1rem;
-        animation: fadeUp 0.4s ease-out both;
-      }
+    body.login {
+      background: linear-gradient(180deg, #eef3ff, #f7f9ff);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
 
-      /* -------------------------------
-       Auth Card
-    --------------------------------*/
-      .auth-wrap {
-        flex: 1;
-        display: grid;
-        place-items: center;
-        padding: 24px 16px;
-      }
-      .auth-card {
-        width: 100%;
-        max-width: 440px;
-        background: var(--white);
-        border-radius: 14px;
-        box-shadow: 0 10px 24px rgba(0, 40, 85, 0.12);
-        border: 1px solid rgba(0, 40, 85, 0.08);
-        padding: 22px 20px;
-        animation: fadeUp 0.5s ease-out 0.05s both;
-      }
-      .auth-head {
-        text-align: center;
-        margin-bottom: 16px;
-      }
-      .auth-head h2 {
-        margin: 6px 0 4px;
-        color: var(--ink);
-        font-size: 1.6rem;
-      }
-      .auth-head p {
-        margin: 0;
-        color: var(--muted);
-        font-size: 0.95rem;
-      }
+    header {
+      background-color: var(--navy);
+      color: var(--white);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 { font-size: 1.6rem; }
+    header nav ul { list-style: none; display: flex; gap: 1.25rem; margin:0; padding:0; }
+    header nav a { color: var(--gold); text-decoration: none; font-weight:bold; }
+    header nav a.active { color: var(--white); border-bottom: 2px solid var(--gold); }
 
-      /* -------------------------------
-       Buttons & Inputs
-    --------------------------------*/
-      .btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        border-radius: 10px;
-        padding: 12px 14px;
-        cursor: pointer;
-        text-decoration: none;
-        font-weight: 700;
-        position: relative;
-        transition: transform 0.06s ease, filter 0.2s ease, opacity 0.2s ease;
-      }
-      .btn:active {
-        transform: translateY(1px) scale(0.99);
-      }
+    footer {
+      background: var(--navy);
+      color: var(--white);
+      text-align: center;
+      padding: 1rem;
+    }
 
-      /* 💙 Navy breathing pulse animation */
-      @keyframes breathe {
-        0% {
-          box-shadow: 0 0 0 0 rgba(0, 40, 85, 0.25),
-            0 0 8px 2px rgba(0, 40, 85, 0.2);
-        }
-        50% {
-          box-shadow: 0 0 0 8px rgba(0, 40, 85, 0.12),
-            0 0 14px 4px rgba(0, 40, 85, 0.25);
-        }
-        100% {
-          box-shadow: 0 0 0 0 rgba(0, 40, 85, 0.25),
-            0 0 8px 2px rgba(0, 40, 85, 0.2);
-        }
-      }
+    .auth-wrap {
+      flex: 1;
+      display: grid;
+      place-items: center;
+      padding: 24px 16px;
+    }
+    .auth-card {
+      width: 100%;
+      max-width: 440px;
+      background: var(--white);
+      border-radius: 14px;
+      box-shadow: 0 10px 24px rgba(0, 40, 85, 0.12);
+      border: 1px solid rgba(0,40,85,0.08);
+      padding: 22px 20px;
+    }
 
-      .btn-primary {
-        background: var(--navy);
-        color: var(--gold);
-        border: none;
-        animation: breathe 3.5s ease-in-out infinite;
-        transition: transform 0.1s ease, filter 0.25s ease;
-      }
+    .auth-head { text-align: center; margin-bottom: 16px; }
+    .auth-head h2 { margin:6px 0 4px; color:var(--ink); font-size:1.6rem; }
+    .auth-head p { margin:0; color:var(--muted); font-size:0.95rem; }
 
-      .btn-primary:hover {
-        transform: translateY(-1px);
-        filter: brightness(1.05);
-      }
+    .btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; border-radius:10px; padding:12px 14px; cursor:pointer; font-weight:700; position:relative; }
+    .btn-primary { background: var(--navy); color: var(--gold); border:none; }
+    .btn-ghost { background:#fff; color: var(--ink); border:1px solid rgba(0,0,0,0.08); width:100%; }
 
-      .btn-ghost {
-        background: #fff;
-        color: var(--ink);
-        border: 1px solid rgba(0, 0, 0, 0.08);
-      }
+    .field { display:grid; gap:6px; margin:10px 0 12px; }
+    .field label { font-size:0.9rem; color:var(--ink); font-weight:600; }
+    .field input { border:1px solid #d8deea; border-radius:10px; padding:12px; font-size:1rem; outline:none; }
 
-      .field {
-        display: grid;
-        gap: 6px;
-        margin: 10px 0 12px;
-      }
-      .field label {
-        font-size: 0.9rem;
-        color: var(--ink);
-        font-weight: 600;
-      }
-      .field input {
-        border: 1px solid #d8deea;
-        border-radius: 10px;
-        padding: 12px;
-        font-size: 1rem;
-        outline: none;
-        transition: border-color 0.18s ease, box-shadow 0.18s ease,
-          transform 0.12s ease;
-      }
-      .field input:focus {
-        border-color: #b7c4ee;
-        box-shadow: 0 0 0 3px rgba(110, 168, 254, 0.25);
-        transform: translateY(-1px);
-      }
+    .divider { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:10px; color:var(--muted); font-size:0.9rem; margin:14px 0; }
+    .divider::before, .divider::after { content:""; height:1px; background:#e3e8f5; display:block; }
 
-      .divider {
-        display: grid;
-        grid-template-columns: 1fr auto 1fr;
-        align-items: center;
-        gap: 10px;
-        color: var(--muted);
-        font-size: 0.9rem;
-        margin: 14px 0;
-      }
-      .divider::before,
-      .divider::after {
-        content: "";
-        height: 1px;
-        background: #e3e8f5;
-        display: block;
-      }
+    .aux { display:flex; justify-content:space-between; align-items:center; margin:6px 0 2px; font-size:0.9rem; }
+    .aux a { color:var(--ink); }
+    .subtle { text-align:center; margin-top:10px; color:var(--muted); font-size:0.9rem; }
 
-      .aux {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin: 6px 0 2px;
-        font-size: 0.9rem;
-      }
-      .aux a {
-        color: var(--ink);
-      }
+    .btn.is-loading { pointer-events:none; opacity:0.8; }
+    .btn.is-loading::after {
+      content:"";
+      position:absolute;
+      width:18px; height:18px;
+      border:2px solid rgba(255,255,255,0.4);
+      border-top-color: rgba(255,255,255,1);
+      border-radius:50%;
+      animation: spin 0.7s linear infinite;
+      left:50%; top:50%; transform:translate(-50%,-50%);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
 
-      .subtle {
-        text-align: center;
-        margin-top: 10px;
-        color: var(--muted);
-        font-size: 0.9rem;
-      }
+<body class="login">
+  <header>
+    <h1>MackAdapt</h1>
+    <nav aria-label="Primary">
+      <ul>
+        <li><a href="/index.html">Home</a></li>
+        <li><a href="/classes.html">Classes</a></li>
+        <li><a href="/student-dashboard.html">Student Dashboard</a></li>
+        <li><a href="/login.html" class="active">Login</a></li>
+      </ul>
+    </nav>
+  </header>
 
-      /* -------------------------------
-       Animations & Spinner
-    --------------------------------*/
-      @keyframes fadeUp {
-        from {
-          opacity: 0;
-          transform: translateY(12px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
-      }
+  <main class="auth-wrap">
+    <section class="auth-card" aria-labelledby="authTitle">
+      <div class="auth-head">
+        <div aria-hidden="true" style="font-size:2rem">🔐</div>
+        <h2 id="authTitle">Sign in to MackAdapt</h2>
+        <p>Use your Merrimack Microsoft account or demo login.</p>
+      </div>
 
-      .btn.is-loading {
-        pointer-events: none;
-        opacity: 0.8;
-      }
-      .btn.is-loading > span {
-        visibility: hidden;
-      }
-      .btn.is-loading::after {
-        content: "";
-        position: absolute;
-        width: 18px;
-        height: 18px;
-        border: 2px solid rgba(255, 255, 255, 0.4);
-        border-top-color: rgba(255, 255, 255, 1);
-        border-radius: 50%;
-        animation: spin 0.7s linear infinite;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-      }
-    </style>
-  </head>
+      <button id="ms-login" class="btn btn-primary">
+        <span>Sign in with Microsoft</span>
+      </button>
 
-  <body class="login">
-    <!-- ✅ Nav header -->
-    <header>
-      <h1>MackAdapt</h1>
-      <nav aria-label="Primary">
-        <ul>
-          <li><a href="index.html">Home</a></li>
-          <li><a href="classes.html">Classes</a></li>
-          <li><a href="student-dashboard.html">Student Dashboard</a></li>
-          <li>
-            <a href="login.html" class="active" aria-current="page">Login</a>
-          </li>
-        </ul>
-      </nav>
-    </header>
+      <div class="divider">or</div>
 
-    <!-- ✅ Auth card -->
-    <main class="auth-wrap">
-      <section class="auth-card" aria-labelledby="authTitle">
-        <div class="auth-head">
-          <div aria-hidden="true" style="font-size: 2rem">🔐</div>
-          <h2 id="authTitle">Sign in to MackAdapt</h2>
-          <p>Use your Merrimack Microsoft account or demo login.</p>
+      <form id="demo-login" novalidate>
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" type="email" placeholder="you@merrimack.edu" required />
         </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" type="password" placeholder="••••••••" required />
+        </div>
+        <div class="aux">
+          <a href="#" aria-disabled="true">Forgot password?</a>
+          <button class="btn btn-ghost" type="submit"><span>Continue</span></button>
+        </div>
+      </form>
 
-        <!-- Microsoft Sign-In -->
-        <button
-          id="ms-login"
-          class="btn btn-primary"
-          type="button"
-          style="width: 100%"
-        >
-          <span>Sign in with Microsoft</span>
-        </button>
+      <p class="subtle">Need an account? Contact your instructor.</p>
+    </section>
+  </main>
 
-        <div class="divider">or</div>
+  <footer>
+    <p>&copy; 2025 MackAdapt – Built for Merrimack College</p>
+  </footer>
 
-        <!-- Demo Email/Password -->
-        <form id="demo-login" novalidate>
-          <div class="field">
-            <label for="email">Email</label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="you@merrimack.edu"
-              required
-            />
-          </div>
-          <div class="field">
-            <label for="password">Password</label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              placeholder="••••••••"
-              required
-            />
-          </div>
-          <div class="aux">
-            <a href="#" aria-disabled="true">Forgot password?</a>
-            <button class="btn btn-ghost" type="submit">
-              <span>Continue</span>
-            </button>
-          </div>
-        </form>
+  <script>
+    // ---------------------------
+    // MSAL Config
+    // ---------------------------
+    const msalConfig = {
+      auth: {
+        clientId: "f1eb948d-5297-47ce-a4c4-419d1f699607",
+        authority: "https://login.microsoftonline.com/57e1236c-0fa3-4739-9edf-fd0721c8744d/",
+        redirectUri: window.location.origin + "/classes.html"
+      },
+      cache: { cacheLocation: "localStorage", storeAuthStateInCookie: false }
+    };
 
-        <p class="subtle">Need an account? Contact your instructor.</p>
-      </section>
-    </main>
+    const msalInstance = new msal.PublicClientApplication(msalConfig);
+    const loginRequest = { scopes: ["openid","profile","email","User.Read"] };
 
-    <!-- ✅ Footer -->
-    <footer>
-      <p>&copy; 2025 MackAdapt – Built for Merrimack College</p>
-    </footer>
+    // ---------------------------
+    // Microsoft Login Button
+    // ---------------------------
+    document.getElementById("ms-login").addEventListener("click", async () => {
+      try {
+        const response = await msalInstance.loginPopup(loginRequest);
+        msalInstance.setActiveAccount(response.account);
+        window.location.href = "/classes.html";
+      } catch (err) {
+        console.error("MS login failed:", err);
+        alert("Login failed. Check console for details.");
+      }
+    });
 
-    <script>
-      // -------------------------------
-      // MSAL.js config (dynamic redirect)
-      // -------------------------------
-      const msalConfig = {
-        auth: {
-          clientId: "f1eb948d-5297-47ce-a4c4-419d1f699607",
-          authority: "https://login.microsoftonline.com/57e1236c-0fa3-4739-9edf-fd0721c8744d/",
-          redirectUri: window.location.origin + window.location.pathname
-        },
-        cache: { cacheLocation: "localStorage", storeAuthStateInCookie: false }
-      };
-    
-      const msalInstance = new msal.PublicClientApplication(msalConfig);
-      const loginRequest = { scopes: ["openid","profile","email","User.Read"] };
-    
-      // -------------------------------
-      // Microsoft login button
-      // -------------------------------
-      document.getElementById("ms-login").addEventListener("click", async () => {
-        try {
-          const response = await msalInstance.loginPopup(loginRequest);
-          msalInstance.setActiveAccount(response.account);
-          window.location.href = window.location.pathname; // redirect back to this page
-        } catch (err) { console.error(err); alert("Login failed. Check console."); }
-      });
-    
-      // -------------------------------
-      // Demo login
-      // -------------------------------
-      document.getElementById("demo-login").addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const email = document.getElementById("email").value.trim();
-        const password = document.getElementById("password").value.trim();
-        if (!email || !password) return alert("Enter email and password.");
-        await new Promise(res => setTimeout(res, 600));
-        window.location.href = "classes.html";
-      });
-    
-      // -------------------------------
-      // Auto-login check
-      // -------------------------------
-      window.addEventListener("DOMContentLoaded", () => {
-        const accounts = msalInstance.getAllAccounts();
-        if (accounts.length) msalInstance.setActiveAccount(accounts[0]);
-      });
-    </script>
+    // ---------------------------
+    // Demo login
+    // ---------------------------
+    document.getElementById("demo-login").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      if (!email || !password) return alert("Enter email and password.");
+      await new Promise(res => setTimeout(res, 600));
+      window.location.href = "/classes.html";
+    });
+
+    // ---------------------------
+    // Auto-login check
+    // ---------------------------
+    window.addEventListener("DOMContentLoaded", () => {
+      const accounts = msalInstance.getAllAccounts();
+      if (accounts.length) msalInstance.setActiveAccount(accounts[0]);
+    });
+  </script>
+</body>
+</html>
