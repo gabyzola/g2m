@@ -19,23 +19,23 @@ public class Badge {
         return badgeId;
     }
 
-    public void setbadgeId(int badgeId) {
+    public void setBadgeId(int badgeId) {
         this.badgeId = badgeId;
     }
 
-    public String getbadgeName() {
+    public String getBadgeName() {
         return badgeName;
     }
 
-    public void setbadgeName(String badgeName) {
+    public void setBadgeName(String badgeName) {
         this.badgeName = badgeName;
     }
 
-    public int getpointThreshold() {
+    public int getPointThreshold() {
         return pointThreshold;
     }
 
-    public void setpointThreshold(int pointThreshold) {
+    public void setPointThreshold(int pointThreshold) {
         this.pointThreshold = pointThreshold;
     }
 

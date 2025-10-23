@@ -22,6 +22,8 @@ select * from QuestionChoices;
 select * from QuestionObjectives;
 select * from Attempts;
 select * from Badges;
+select * from Readings;
+select * from readingObjectives;
 */
 
 /*TC 1: Insert a bunch of users*/
@@ -81,13 +83,61 @@ CALL EnrollStudent(104, "potterh@merrimack.edu");    -- Harry Potter -> Sociolog
  -- Method: getStudentsByClass
  call getStudentsClasses(3); -- soc and geometry
  
+ -- Method: getInstructorClasses
+call getInstructorClasses(8);
+ 
  -- Method: InsertNewQuiz
 call InsertNewQuiz("Fall Of Prussia", 4, 107);
+
+-- ADD READINGS (INSERTS FOR NOW)
+INSERT INTO Readings (instructorId, classId, readingName, filePath, uploadDate)
+VALUES
+(4, 107, "Prussian History", "Documents/prussia.pdf", null),
+(5, 101, "Intro to Molecules", "Documents/introtomolecules.pdf", null),
+(5, 105, "Objects In Java", "Documents/Objectsinjava.pdf", null),
+(8, 106, "Derivatives", "Documents/derivatives.pdf", null);
+
+select * from Readings;
+
+-- ADD LEARNING OBJECTIVES FROM READING
+INSERT INTO readingObjectives (readingId, classId, objectiveName, isApproved)
+VALUES
+(1, 107, "Emperors", null),
+(1, 107, "Politics", null),
+(1, 107, "Geography", null),
+(1, 107, "Military", null),
+(2, 101, "Scientific Method", null),
+(2, 101, "Molecules", null),
+(2, 101, "Elements", null),
+(2, 101, "Interactions", null),
+(3, 105, "Objects", null),
+(3, 105, "Methods", null),
+(3, 105, "Testing", null),
+(3, 105, "Java Language", null),
+(3, 105, "Algorithms", null),
+(4, 106, "Integrals", null),
+(4, 106, "Graphing", null);
+
+ select * from readingObjectives;
  
- -- Method: InsertNewQuestion
-call InsertNewQuestion();
+-- Method: InsertNewQuestion
+-- Question number: 1, question text: Question 1, difficulty: medium, choices: 1-4, correct choice: A, LO: 4 military, Quiz: 1
+call InsertNewQuestion(1, "Why did Prussia fall?", "Medium", "Military", "Government", "Revolution", "All of the above", "A", 4, 1);
+call InsertNewQuestion(2, "Why was military bad?", "Easy", "No training", "Outdated tactics", "They were surrounded", "Revolution", "C", 4, 1);
+call InsertNewQuestion(3, "Question 3", "hard", "A1", "A2", "A3", "A4", "A", 4, 1);
+
+call InsertNewQuestion(4, "Question 4", "Medium", "A1", "A2", "A3", "A4", "A", 2, 1);
+call InsertNewQuestion(5, "Question 5", "Easy", "A1", "A2", "A3", "A4", "A", 2, 1);
+call InsertNewQuestion(6, "Question 6", "Medium", "A1", "A2", "A3", "A4", "A", 2, 1);
+
+call InsertNewQuestion(7, "Question 7", "hard", "A1", "A2", "A3", "A4", "A", 3, 1);
+
+select * from Questions, QuestionObjectives, QuestionChoices; -- everything looks correct
+ 
+ -- GOOD UP UNTIL HERE
  
  -- Method: DeleteQuestion
+call DeleteQuestion(3); -- deletes question number 4!
  
 -- Method: DeleteClass
   
@@ -106,3 +156,29 @@ call InsertNewQuestion();
 -- Method: SubmitAnswer
 
 -- Method: GetQuizScore
+
+#display quiz info as a whole
+select q.quizName, qu.questionText, qc.choiceLabel, qc.choiceText
+from Quizzes q
+join Questions qu on q.quizId = qu.quizId
+join QuestionChoices qc on qu.questionId = qc.questionId
+where q.quizId = 1;
+
+#display quiz questions
+select q.quizName, qu.questionText, qc.choiceLabel, qc.choiceText
+from Quizzes q
+join Questions qu on q.quizId = qu.quizId
+join QuestionChoices qc on qu.questionId = qc.questionId
+where q.quizId = 1;
+
+#display options per question -> double check this when you make it into a proc
+select qc.choiceLabel, qc.choiceText
+from QuestionChoices qc
+join Questions qu on qc.questionId = qu.questionId
+where qu.questionId = 1;
+ 
+ SELECT 
+        q.quizName
+    FROM Quizzes q
+    WHERE q.classId = 107;
+ 

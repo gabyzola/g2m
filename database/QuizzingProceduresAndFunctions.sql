@@ -167,7 +167,7 @@ end $$
 delimiter ;
 
 #insert a question to a quiz with choices and objective
-#MAKE SURE QUIZID EXISTS
+#MAKE SURE QUIZID EXISTS, MAKE SURE LEARNING OBJECTIVE IS RELEVANT 
 delimiter $$
 DROP PROCEDURE IF EXISTS InsertNewQuestion $$
 CREATE PROCEDURE InsertNewQuestion (
@@ -187,8 +187,8 @@ declare newQuestionId int;
 declare correctChoiceId int;
 
 if not doesQuestionExist(myQuestionText) then
-        insert into Questions (questionText, difficulty, quizId)
-        values (myQuestionText, myDifficulty, myQuizId);
+        insert into Questions (questionNumber, questionText, difficulty, quizId)
+        values (myQuestionNumber, myQuestionText, myDifficulty, myQuizId);
         
         set newQuestionId = LAST_INSERT_ID();
         
@@ -217,7 +217,11 @@ if not doesQuestionExist(myQuestionText) then
 end $$
 delimiter ;
 
-#Add to attempts table
+#insert new reading
+
+#Insert new readingObjective
+
+#insert objective into a question
 
 /*DELETE FROM TABLES*/
 
@@ -313,7 +317,7 @@ BEGIN
 
 -- we need to look up objective id since it is pk, but i dont want students to be picking things by id
     SELECT objectiveId INTO myObjectiveId
-    FROM LearningObjectives
+    FROM readingObjectives
     WHERE objectiveName = myObjectiveName
     LIMIT 1;
 
@@ -397,6 +401,13 @@ END$$
 DELIMITER ;
 
 #submit quiz as a whole
+
+
+-- =========================
+-- GET VALUES BASED ON ATTRIBUTES
+-- =========================
+
+#get quiz score
 DELIMITER $$
 drop procedure if exists GetQuizScore $$
 CREATE PROCEDURE GetQuizScore (
@@ -412,10 +423,6 @@ BEGIN
       AND quizId = myQuizId;
 END$$
 DELIMITER ;
-
--- =========================
--- GET VALUES BASED ON ATTRIBUTES
--- =========================
 
 #search class enrollees by classId
 DELIMITER $$
@@ -449,6 +456,21 @@ SELECT
 END$$
 DELIMITER ;
 
+#getStudentBadges
+DELIMITER $$
+drop procedure if exists getStudentBadges $$
+create procedure getStudentBadges(
+myStudentId int
+)
+BEGIN
+SELECT 
+        b.badgeName
+    FROM studentBadges sb
+    JOIN Badges b ON sb.badgeId= b.badgeId
+    WHERE sb.studentId = myStudentId;
+END$$
+DELIMITER ;
+
 #getInstructorClasses
 DELIMITER $$
 drop procedure if exists getInstructorClasses $$
@@ -466,24 +488,17 @@ SELECT
 END$$
 DELIMITER ;
 
-#getStudentBadges
-
-#procedure that creates a csv report after each quiz is completed for that quizZ????? -> after DAL
-
-/*
-#assign more objectives to a question
-#use: if a professor wants to add more than one objective
+#getQuizzesByClass
+#getInstructorClasses
 DELIMITER $$
-DROP PROCEDURE IF EXISTS AssignObjective $$
-CREATE PROCEDURE AssignObjective (
+drop procedure if exists getQuizzesByClass $$
+create procedure getQuizzesByClass(
+myclassId int
 )
 BEGIN
-END $$
+SELECT 
+        q.quizName
+    FROM Quizzes q
+    WHERE q.classId = myClassId;
+END$$
 DELIMITER ;
-*/
-
-/*Gamification
-#procedure to assign badges at point thresholds
-
-*/
-

@@ -22,11 +22,11 @@ public class BusinessLogic {
     }
 
     /**
-     * Used in searching for books based on filters by title, author, or genre
+     * Used in searching for students based on filters by email, name, or studentId
      * 
-     * @param filterType title, author, or genre
+     * @param filterType 
      * @param query      the search query input by the user
-     * @return an array list of books meeting the query's search criteria
+     * @return array list of objects meeting the query's search criteria
      */
     public ArrayList<Student> getStudentByQuery(String filterType, String query) {
 
@@ -52,6 +52,9 @@ public class BusinessLogic {
     }
 
     //get all students
+    public ArrayList<Student> getAllStudents() {
+        return dal.getAllStudents();
+    }
 
 
     //Enroll student in a class

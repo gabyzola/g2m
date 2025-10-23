@@ -65,13 +65,6 @@ CREATE TABLE Quizzes (
     foreign key (classId) references Classroom(classId) on delete cascade
 );
 
-
-CREATE TABLE LearningObjectives (
-    objectiveId INT PRIMARY KEY AUTO_INCREMENT,
-    objectiveName VARCHAR(200) NOT NULL, #i will eventually just make a bank of objectives
-    objDescript TEXT
-);
-
 CREATE TABLE Questions (
     questionId INT PRIMARY KEY AUTO_INCREMENT,
     questionNumber int,
@@ -95,13 +88,6 @@ ALTER TABLE Questions
 ADD CONSTRAINT fk_correct_choice
 FOREIGN KEY (correct_choice_id) REFERENCES QuestionChoices(choiceId);
 
-CREATE TABLE QuestionObjectives (
-    questionId INT,
-    objectiveId INT,
-    PRIMARY KEY (questionId, objectiveId),
-    FOREIGN KEY (questionId) REFERENCES Questions(questionId),
-    FOREIGN KEY (objectiveId) REFERENCES LearningObjectives(objectiveId)
-);
 
 CREATE TABLE Attempts (
     attemptId SERIAL PRIMARY KEY,
@@ -129,17 +115,11 @@ CREATE TABLE StudentBadges (
     FOREIGN KEY (badgeId) REFERENCES Badges(badgeId) ON DELETE CASCADE
 );
 
-/*Makes sure that unneccessary learning objectives aren't displayed for a student!!!*/
-SELECT DISTINCT lo.*
-FROM LearningObjectives lo
-JOIN QuestionObjectives qo ON lo.objectiveId = qo.objectiveId;
-
 CREATE TABLE Readings (
     readingId INT AUTO_INCREMENT PRIMARY KEY,
     instructorId INT NOT NULL,
     classId INT,
-    title VARCHAR(255) NOT NULL,
-    description TEXT,
+    readingName VARCHAR(255) NOT NULL,
     filePath VARCHAR(500), 
     uploadDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (instructorId) REFERENCES Instructors(instructorId) ON DELETE CASCADE,
@@ -147,11 +127,25 @@ CREATE TABLE Readings (
 );
 
 CREATE TABLE ReadingObjectives (
-    readingObjectiveId INT AUTO_INCREMENT PRIMARY KEY,
+    objectiveId INT AUTO_INCREMENT PRIMARY KEY,
     readingId INT NOT NULL,
+    classId int not null,
     objectiveName VARCHAR(255) NOT NULL,
-    objDescription TEXT,
     -- confidenceScore DECIMAL(5,2),-- commented out for now...this is likely necessary as I implement machine learning s 
     isApproved BOOLEAN DEFAULT FALSE, 
-    FOREIGN KEY (readingId) REFERENCES Readings(readingId) ON DELETE CASCADE
+    FOREIGN KEY (readingId) REFERENCES Readings(readingId) ON DELETE CASCADE,
+    FOREIGN KEY (classId) REFERENCES Classroom(classId) ON DELETE CASCADE
 );
+
+CREATE TABLE QuestionObjectives (
+    questionId INT,
+    objectiveId INT,
+    PRIMARY KEY (questionId, objectiveId),
+    FOREIGN KEY (questionId) REFERENCES Questions(questionId) ON DELETE CASCADE,
+    FOREIGN KEY (objectiveId) REFERENCES readingObjectives(objectiveId) ON DELETE CASCADE
+);
+
+/*Makes sure that unneccessary learning objectives aren't displayed for a student!!!*/
+SELECT DISTINCT lo.*
+FROM readingObjectives lo
+JOIN QuestionObjectives qo ON lo.objectiveId = qo.objectiveId;

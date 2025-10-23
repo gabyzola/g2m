@@ -10,9 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-// import java.util.Scanner;
-// import java.​lang.​Throwable;
-// import java.util.concurrent.Callable;
+
 
 import g2m.DAL.javaSQLobjects.Student;
 // import g2m.DAL.javaSQLobjects.classEnrollee;
@@ -20,8 +18,8 @@ import g2m.DAL.javaSQLobjects.Badge;
 
 public class QuizDal {
 
-    //creates connection object (final)
-    final Connection myConnection;
+    //creates connection object
+    private Connection myConnection;
 
     //establishes connection with name, username, and password
     public QuizDal(String databaseName, String user, String password) {
@@ -52,7 +50,7 @@ public class QuizDal {
         try {
             myStatement = myConnection.createStatement();
             //get relations via a sql query
-            ResultSet myRelation = myStatement.executeQuery("SELECT * FROM Student");
+            ResultSet myRelation = myStatement.executeQuery("SELECT * FROM Students");
 
             //create students arraylist
             ArrayList<Student> Students = new ArrayList<>();
@@ -102,7 +100,7 @@ public class QuizDal {
     //LOOK UP STUDENT BY EMAIL
     public ArrayList<Student> searchForStudentByEmail(String emailQuery) {
         ArrayList<Student> students = new ArrayList<>();
-        String sql = "SELECT s.studentId, u.username, u.email, s.major, s.totalPoints " +
+        String sql = "SELECT s.badge, s.studentId, u.username, u.email, s.major, s.totalPoints " +
                     "FROM Students s " +
                     "JOIN UserAccounts u ON s.studentId = u.userId " +
                     "WHERE u.email LIKE ?";
@@ -127,7 +125,7 @@ public class QuizDal {
         return students;
     }
 
-    //searchForStudentByEmail
+    //searchForStudentByName
     //LOOK UP STUDENT BY NAME
     public ArrayList<Student> searchForStudentByName(String nameQuery) {
         ArrayList<Student> students = new ArrayList<>();
@@ -231,8 +229,62 @@ public class QuizDal {
         return results;
     }
 
+    //GetStudentBadges
+    //for displaying badges earned by student on student dashboard
+    public List<Map<String, Object>> getStudentBadges(int studentId) {
+        List<Map<String, Object>> results = new ArrayList<>();
+        try (CallableStatement cs = myConnection.prepareCall("{CALL getStudentBadges(?)}")) {
+            cs.setInt(1, studentId);
+            ResultSet rs = cs.executeQuery();
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("badgeName", rs.getString("badgeName"));
+                results.add(row);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return results;
+    }
+
     //getInstructorClasses
     //gets all classes for a specific instructor --> this is for displaying classes instructor is teaching when instructor clicks "View Classes" in UI
+    public List<Map<String, Object>> getInstructorClasses(int instructorId) {
+        List<Map<String, Object>> results = new ArrayList<>();
+        try (CallableStatement cs = myConnection.prepareCall("{CALL getInstructorClasses(?)}")) {
+            cs.setInt(1, instructorId);
+            ResultSet rs = cs.executeQuery();
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("classId", rs.getInt("classId"));
+                row.put("className", rs.getString("className"));
+                row.put("instructorFirstName", rs.getString("instructorFirstName"));
+                row.put("instructorLastName", rs.getString("instructorLastName"));
+                results.add(row);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return results;
+    }
+
+    //getQuizzesByClass
+    //gets all quizzes for a specific class --> for displaying quizzes when student/instructor clicks on a class in UI
+    public List<Map<String, Object>> getQuizzesByClass(int classId) {
+        List<Map<String, Object>> results = new ArrayList<>();
+        try (CallableStatement cs = myConnection.prepareCall("{CALL getQuizzesByClass(?)}")) {
+            cs.setInt(1, classId);
+            ResultSet rs = cs.executeQuery();
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("quizName", rs.getString("quizName"));
+                results.add(row);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return results;
+    }
 
     //getNextQuestion
     //for quizzing process --> called everytime a student clicks "Next Question" in UI
@@ -321,7 +373,7 @@ public class QuizDal {
     public boolean insertNewUser(String username, String email, boolean isInstructor, String major, String schoolSubject, String firstName, String lastName) {
         CallableStatement stmt = null;
         try {
-            stmt = myConnection.prepareCall("{CALL InsertNewUser(?, ?, ?, ?, ?, ?)}");
+            stmt = myConnection.prepareCall("{CALL InsertNewUser(?, ?, ?, ?, ?, ?, ?)}");
             stmt.setString(1, username);
             stmt.setString(2, email);
             stmt.setBoolean(3, isInstructor);
@@ -400,8 +452,37 @@ public class QuizDal {
         }
     }
 
+    // Insert new question with choices and objective
+    public boolean insertNewQuestion(String questionText, String difficulty,
+                                    String choiceA, String choiceB, String choiceC, String choiceD,
+                                    char correctAnswer, int objectiveId, int quizId) {
+        CallableStatement stmt = null;
+        try {
+            stmt = myConnection.prepareCall("{CALL InsertNewQuestion(?, ?, ?, ?, ?, ?, ?, ?, ?)}");
+            stmt.setString(1, questionText);
+            stmt.setString(2, difficulty);
+            stmt.setString(3, choiceA);
+            stmt.setString(4, choiceB);
+            stmt.setString(5, choiceC);
+            stmt.setString(6, choiceD);
+            stmt.setString(7, String.valueOf(correctAnswer));
+            stmt.setInt(8, objectiveId);
+            stmt.setInt(9, quizId);
 
-    //Student chooses learning objective before starting quiz
+            stmt.execute();
+            return true;
+        } catch (SQLException e) {
+            System.out.println("Error inserting new question.");
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                if (stmt != null) stmt.close();
+            } catch (SQLException e) { e.printStackTrace(); }
+        }
+    }
+
+    //Student chooses learning objective before starting quiz-- from display of readingObjectives for the quiz
     //ADD TO BUSINESS LAYER!!!- studentObjective table MUST reset after quiz is completed
     public boolean chooseLearningObjective(int studentId, int objectiveId, String objectiveName) {
         CallableStatement stmt = null;
@@ -443,7 +524,7 @@ public class QuizDal {
     }
 
     //submitQuiz
-    //Called when there is no getNextQuesrion --> student clicks "Submit Quiz", badge MAY be assigned here
+    //Called when there is no getNextQuestion --> student clicks "Submit Quiz", badge MAY be assigned here
 
     //insertNewQuestion
     //Instructors can insert questions while creating quiz. Called when they click "Create Quiz" and called if they click "Add Another Question"
@@ -495,41 +576,24 @@ public class QuizDal {
         }
     }
 
-}
-
-/* Methods im unsire about keeping-- may be useful later*/
-/*
-    // Insert new question with choices and objective
-    public boolean insertNewQuestion(String questionText, String difficulty,
-                                    String choiceA, String choiceB, String choiceC, String choiceD,
-                                    char correctAnswer, int objectiveId, int quizId) {
-        CallableStatement stmt = null;
+    public void close() {
         try {
-            stmt = myConnection.prepareCall("{CALL InsertNewQuestion(?, ?, ?, ?, ?, ?, ?, ?, ?)}");
-            stmt.setString(1, questionText);
-            stmt.setString(2, difficulty);
-            stmt.setString(3, choiceA);
-            stmt.setString(4, choiceB);
-            stmt.setString(5, choiceC);
-            stmt.setString(6, choiceD);
-            stmt.setString(7, String.valueOf(correctAnswer));
-            stmt.setInt(8, objectiveId);
-            stmt.setInt(9, quizId);
-
-            stmt.execute();
-            return true;
+            if (myConnection != null && !myConnection.isClosed()) {
+                myConnection.close();
+            }
         } catch (SQLException e) {
-            System.out.println("Error inserting new question.");
             e.printStackTrace();
-            return false;
-        } finally {
-            try {
-                if (stmt != null) stmt.close();
-            } catch (SQLException e) { e.printStackTrace(); }
         }
     }
-    */
 
+}
+
+/* Methods im unsure about keeping-- may be useful later*/
+/*
+SELECT DISTINCT lo.*
+FROM readingObjectives lo
+JOIN QuestionObjectives qo ON lo.objectiveId = qo.objectiveId;
+*/
 
     
            
