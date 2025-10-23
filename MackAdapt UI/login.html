@@ -170,6 +170,7 @@
     document.getElementById("ms-login").addEventListener("click", async () => {
       try {
         const response = await msalInstance.loginPopup(loginRequest);
+        console.log(repsonse);
         msalInstance.setActiveAccount(response.account);
         window.location.href = "/classes.html";
       } catch (err) {
