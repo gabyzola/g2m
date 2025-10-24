@@ -10,27 +10,35 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet" />
   <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+  <script src="https://alcdn.msauth.net/browser/2.33.0/js/msal-browser.min.js"></script>
 </head>
 
 <body>
+  <!-- Header -->
   <header>
     <h1>MackAdapt</h1>
     <nav>
       <ul>
-        <li><a href="index.html" class="active" aria-current="page">Home</a></li>
-        <li><a href="dashboard.html">Classes</a></li>
-        <li><a href="student-dashboard.html">Student Dashboard</a></li>
-        <li><a href="login.html">Login</a></li>
+        <li><a href="/index.html" class="active">Home</a></li>
+        <li><a href="/classes.html">Classes</a></li>
+        <li><a href="/student-dashboard.html">Student Dashboard</a></li>
+        <li>
+          <button id="ms-login-header" style="background:none; border:none; color:var(--gold); font-weight:bold; cursor:pointer;">
+            Sign in
+          </button>
+        </li>
       </ul>
     </nav>
   </header>
+  
+  </header>
 
-  <!--  Main Page Content -->
+  <!-- Main Page Content -->
   <main>
     <!-- Hero Banner -->
     <section class="hero-image" data-aos="fade-up">
       <div class="hero-text">
-        <h2>Smarter Quizzes. Better Learning.</h2>
+        <h2 id="welcome-text">Smarter Quizzes. Better Learning.</h2>
         <p>MackAdapt is Merrimack College's next-gen adaptive quiz platform designed to help students master material efficiently and confidently.</p>
         <a href="login.html"><button>Get Started</button></a>
       </div>
@@ -93,109 +101,59 @@
     </section>
   </main>
 
-  <!--  Shared Footer -->
+  <!-- Footer -->
   <footer>
     <p>&copy; 2025 MackAdapt – Built for Merrimack College</p>
   </footer>
 
-  <!-- Animation Library Init -->
+  <!-- Initialize AOS -->
   <script>
     AOS.init();
   </script>
 
-  <!-- Local Page Styles -->
-  <style>
-    .about {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 3rem 2rem;
-      background-color: var(--white);
-    }
+  <!-- MSAL Integration -->
+  <script>
+    const msalConfig = {
+      auth: {
+        clientId: "f1eb948d-5297-47ce-a4c4-419d1f699607",
+        authority: "https://login.microsoftonline.com/57e1236c-0fa3-4739-9edf-fd0721c8744d/",
+        redirectUri: window.location.origin + window.location.pathname
+      },
+      cache: { cacheLocation: "localStorage", storeAuthStateInCookie: false }
+    };
 
-    .about-container {
-      display: flex;
-      gap: 2rem;
-      max-width: 1100px;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: center;
-    }
+    const msalInstance = new msal.PublicClientApplication(msalConfig);
+    const loginRequest = { scopes: ["openid","profile","email","User.Read"] };
 
-    .about-image img {
-      max-width: 400px;
-      border-radius: 10px;
-      box-shadow: 0 5px 15px rgba(0, 40, 85, 0.1);
-    }
+    const loginBtn = document.getElementById("ms-login-header");
 
-    .about-text {
-      max-width: 600px;
-    }
+    // Login on header button click
+    loginBtn.addEventListener("click", async () => {
+      try {
+        const response = await msalInstance.loginPopup(loginRequest);
+        msalInstance.setActiveAccount(response.account);
+        loginBtn.textContent = `Hello, ${response.account.name}`;
+        document.getElementById("welcome-text").textContent = `Welcome, ${response.account.name} 👋`;
+      } catch (err) {
+        console.error("Login failed:", err);
+        alert("Login failed. Check console for details.");
+      }
+    });
 
-    .about-text h3 {
-      font-size: 1.8rem;
-      margin-bottom: 1rem;
-    }
+    // Handle existing session / redirect responses
+    window.addEventListener("DOMContentLoaded", () => {
+      msalInstance.handleRedirectPromise()
+        .then(response => {
+          const account = response?.account || msalInstance.getActiveAccount();
+          if (account) {
+            msalInstance.setActiveAccount(account);
+            loginBtn.textContent = `Hello, ${account.name}`;
+            document.getElementById("welcome-text").textContent = `Welcome, ${account.name} 👋`;
+          }
+        })
+        .catch(console.error);
+    });
+  </script>
 
-    .about-text p {
-      margin-bottom: 1rem;
-      font-size: 1.1rem;
-    }
-
-    .about-text ul {
-      list-style: none;
-      padding-left: 0;
-    }
-
-    .about-text ul li {
-      margin-bottom: 0.75rem;
-      font-size: 1rem;
-    }
-
-    .about-text ul i {
-      color: var(--gold);
-      margin-right: 0.5rem;
-    }
-
-    .how-it-works {
-      padding: 4rem 2rem;
-      background-color: var(--white);
-      text-align: center;
-    }
-
-    .how-it-works h3 {
-      font-size: 2rem;
-      margin-bottom: 2rem;
-    }
-
-    .steps {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 2rem;
-    }
-
-    .step {
-      width: 250px;
-      background: var(--light-gray);
-      padding: 1.5rem;
-      border-radius: 10px;
-      box-shadow: 0 0 12px rgba(0,0,0,0.05);
-    }
-
-    .step i {
-      font-size: 2rem;
-      color: var(--gold);
-      margin-bottom: 1rem;
-    }
-
-    .divider {
-      height: 2px;
-      background: var(--light-gray);
-      margin: 4rem auto;
-      width: 80%;
-      border-radius: 4px;
-    }
-  </style>
 </body>
 </html>
