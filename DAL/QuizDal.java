@@ -31,13 +31,17 @@ public class QuizDal {
     //establishes connection to the database-- this is a local instance!
     private Connection getMySQLConnection(String databaseName, String user, String password) {
         try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
             Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/" + databaseName, user, password);
             System.out.println("Connection to " + databaseName + " database successful! Ready for use.");
             return con;
+        }
+         catch (ClassNotFoundException e) {
+        System.out.println("JDBC Driver not found: " + e.getMessage());
         } catch (SQLException exception) {
             System.out.println("Failed to connect to the database" + exception.getMessage());
-            return null;
         }
+        return null;
     }
 
     //GET METHODS

@@ -1,144 +1,169 @@
 package g2m.DAL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
 
+//import g2m.DAL.QuizDal;
 import g2m.DAL.javaSQLobjects.Student;
 import g2m.DAL.javaSQLobjects.Badge;
+
+import java.util.*;
 
 public class BusinessLogic {
 
     private QuizDal dal;
 
+    // store cached data
     private ArrayList<Student> students = new ArrayList<>();
     private ArrayList<Badge> badges = new ArrayList<>();
 
     public BusinessLogic(QuizDal dal) {
         this.dal = dal;
-
-        students = dal.getAllStudents(); 
+        this.students = dal.getAllStudents();
+        this.badges = dal.getAllBadges();
     }
 
-    /**
-     * Used in searching for students based on filters by email, name, or studentId
-     * 
-     * @param filterType 
-     * @param query      the search query input by the user
-     * @return array list of objects meeting the query's search criteria
-     */
-    public ArrayList<Student> getStudentByQuery(String filterType, String query) {
+    /* ============================
+       STUDENT MANAGEMENT
+       ============================ */
 
-        if (filterType.equalsIgnoreCase("email")) {
-        return dal.searchForStudentByEmail(query);
-    } else if (filterType.equalsIgnoreCase("name")) {
-        return dal.searchForStudentByName(query);
-    } else if (filterType.equalsIgnoreCase("studentId")) {
-        return dal.searchForStudentById(query);
-    } else {
-        return null;
-    }
+    // Register a new user (student or instructor)
+    public boolean registerUser(String username, String email, boolean isInstructor,
+                                String major, String schoolSubject, String firstName, String lastName) {
+        return dal.insertNewUser(username, email, isInstructor, major, schoolSubject, firstName, lastName);
     }
 
-    public static String printStudents(ArrayList<Student> students) {
-        String toReturn = "";
-        for (int i = 0; i < students.size(); i++) {
-            toReturn += "\n" + students.get(i);
-            toReturn += "\n";
+    // Search for a student by email, name, or ID
+    public ArrayList<Student> searchStudent(String filterType, String query) {
+        switch (filterType.toLowerCase()) {
+            case "email":
+                return dal.searchForStudentByEmail(query);
+            case "name":
+                return dal.searchForStudentByName(query);
+            case "id":
+                return dal.searchForStudentById(query);
+            default:
+                System.out.println("Invalid search type. Use: email, name, or id.");
+                return new ArrayList<>();
         }
-
-        return toReturn;
     }
 
-    //get all students
-    public ArrayList<Student> getAllStudents() {
-        return dal.getAllStudents();
-    }
-
-
-    //Enroll student in a class
-    public boolean enrollStudent(int classId, String email) {
+    // Enroll a student in a class by email
+    public boolean enrollStudentInClass(int classId, String email) {
         return dal.enrollStudent(classId, email);
     }
 
-    //Returns quiz by id
-    public ArrayList<String> GetQuiz(int quizId) {
-        return dal.getQuiz(quizId);
+    // View all classes for a student
+    public void viewStudentClasses(int studentId) {
+        List<Map<String, Object>> classes = dal.getStudentsClasses(studentId);
+        if (classes.isEmpty()) {
+            System.out.println("No classes found for student ID: " + studentId);
+            return;
+        }
+        System.out.println("\nClasses Enrolled:");
+        for (Map<String, Object> c : classes) {
+            System.out.println("- " + c.get("className") + " (Instructor: " +
+                    c.get("instructorFirstName") + " " + c.get("instructorLastName") + ")");
+        }
     }
 
-    //returns all quizzes in a class
+    /* ============================
+       INSTRUCTOR MANAGEMENT
+       ============================ */
 
-    //returns all badges based on username
-    public boolean getBadges(int username) {
-        return dal.getBadges(username);
+    public boolean createClass(int classId, String className, String instructorEmail) {
+        return dal.insertNewClass(classId, className, instructorEmail);
     }
 
-    //returns all badges in the system
-    public static String printBadges(ArrayList<Badge> badges) {
-        String toReturn = "";
-        for (int i = 0; i < badges.size(); i++) {
-            toReturn += "\n" + badges.get(i);
-            toReturn += "\n";
+    public boolean createQuiz(String quizName, int instructorId, int classId) {
+        return dal.insertNewQuiz(quizName, instructorId, classId);
+    }
+
+    public boolean addQuestionToQuiz(String questionText, String difficulty,
+                                     String choiceA, String choiceB, String choiceC, String choiceD,
+                                     char correctAnswer, int objectiveId, int quizId) {
+        return dal.insertNewQuestion(questionText, difficulty, choiceA, choiceB, choiceC, choiceD,
+                correctAnswer, objectiveId, quizId);
+    }
+
+    /* ============================
+       QUIZ WORKFLOW
+       ============================ */
+
+    // Start a quiz session
+    public void takeQuiz(int studentId, int quizId, Scanner in) {
+        System.out.println("Starting quiz...");
+
+        boolean moreQuestions = true;
+
+        while (moreQuestions) {
+            Map<String, Object> question = dal.getNextQuestion(quizId, studentId);
+
+            if (question == null || question.isEmpty()) {
+                System.out.println("No more questions available. Submitting quiz...");
+                moreQuestions = false;
+                break;
+            }
+
+            System.out.println("\nQuestion: " + question.get("questionText"));
+            System.out.println("A. " + question.get("choiceText"));
+
+            System.out.print("Enter your answer (A/B/C/D): ");
+            String answer = in.nextLine().trim().toUpperCase();
+
+            // Simulate answer checking
+            Map<String, Object> response = dal.submitAnswer(
+                    studentId,
+                    quizId,
+                    (int) question.get("questionId"),
+                    (int) question.get("choiceId")
+            );
+
+            if (response != null && response.containsKey("isCorrect")) {
+                boolean isCorrect = (boolean) response.get("isCorrect");
+                System.out.println(isCorrect ? "✅ Correct!" : "❌ Incorrect.");
+            }
         }
 
-        return toReturn;
-    }
-
-    //returns attempt by studentid
-
-    //returns all students in a class by classId
-    //print enrollees by class
-    public void printEnrollees(int myClassId) {
-
-        List<Map<String, Object>> results =  dal.searchForEnrolleesByClass(myClassId);
-
-        for (Map<String, Object> row : results) {
-        System.out.println(row.get("firstName"));
+        Map<String, Object> score = dal.getQuizScore(studentId, quizId);
+        if (!score.isEmpty()) {
+            System.out.println("\n=== Quiz Completed ===");
+            System.out.println("Score: " + score.get("totalScore") + "/" + score.get("totalQuestions"));
+            System.out.println("Percentage: " + score.get("percentage") + "%");
         }
-
     }
 
-    //returns all classes under a professor
+    /* ============================
+       BADGES & PROGRESS
+       ============================ */
 
-    //returns all classes in the database
-
-    //returns all instructors in the database
-
-    //returns specific instructor by query
-
-    //returns questions under a quizid
-
-    //returns all questions
-
-    //get next question (machine learning)
-
-    //choose learning objective (called in takeQuiz)
-
-    //takeQuiz
-
-    //return score
-
-    //submit quiz (calls return score)
-
-    //returns learning objective based on reading (readingId)
-
-    //add difficulty (machine learning)
-
-    //Login
-
-    //Assign Badge
-
-    //create quiz
-
-    //create class
-
-    
-    //sort all lists
-    public ArrayList<String> sortList(ArrayList<String> listToSort){
-         Collections.sort(listToSort);
-
-         return listToSort;
+    public void displayStudentBadges(int studentId) {
+        List<Map<String, Object>> badges = dal.getStudentBadges(studentId);
+        if (badges.isEmpty()) {
+            System.out.println("No badges earned yet!");
+        } else {
+            System.out.println("Badges earned:");
+            for (Map<String, Object> b : badges) {
+                System.out.println("- " + b.get("badgeName"));
+            }
+        }
     }
 
+    public void displayAllBadges() {
+        System.out.println("All Available Badges:");
+        for (Badge badge : badges) {
+            System.out.println("- " + badge.getBadgeName() + " (Requires " + badge.getPointThreshold() + " pts)");
+        }
+    }
+
+    /* ============================
+       UTILITY METHODS
+       ============================ */
+
+    public static void printStudents(ArrayList<Student> students) {
+        for (Student s : students) {
+            System.out.println(s);
+        }
+    }
+
+    public void closeConnection() {
+        dal.close();
+    }
 }
