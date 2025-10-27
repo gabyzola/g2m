@@ -3,6 +3,10 @@ package g2m.DAL;
 import java.io.Console;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 //import g2m.DAL.BusinessLogic;
 //import g2m.DAL.QuizDal;
@@ -19,6 +23,7 @@ public class PresentationLayer {
     - Assign badge to student (after quiz completion, check if badge earned, if so assign badge)
     - View quizzes for a class (when student clicks on class, display quizzes associated with that class)
     - View Instructor Classes
+    - Get all badges
     - Complete quiz process (machine learning is creating a slight block but im on it)
     */
 
@@ -44,6 +49,8 @@ public class PresentationLayer {
         System.out.println("8. Instructor: Add Question to Quiz"); //i might delete this...this should be integrated into Create Quiz
         //needs testing
         System.out.println("9. Search for a Student"); //for search results when enrolling students...instructors will search by email and the search query results should popup, then they can enroll the student
+        //working
+        System.out.println("10. Display All Badges"); //for displaying all available badges somewhere in the UI (so students know what they can work towards)
         System.out.println("Type 'exit' to quit.");
         System.out.println("==============================\n");
     }
@@ -167,6 +174,7 @@ public class PresentationLayer {
                         break;
 
                     case "8":
+                        //integrate "Add another question" option into Create Quiz instead of having it separate
                     case "instructor: add question to quiz":
                         System.out.print("Enter quiz ID: ");
                         int quizId = Integer.parseInt(in.nextLine());
@@ -203,6 +211,11 @@ public class PresentationLayer {
                             System.out.println("Search results:");
                             BusinessLogic.printStudents(students);
                         }
+                        break;
+
+                    case "10":
+                    case "display all badges":
+                        logic.displayAllBadges();
                         break;
 
                     default:
