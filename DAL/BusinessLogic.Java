@@ -64,6 +64,48 @@ public class BusinessLogic {
         }
     }
 
+    //View instructors classes
+    public void viewInstructorClasses(int instructorId) {
+        List<Map<String, Object>> classes = dal.getInstructorClasses(instructorId);
+        if (classes.isEmpty()) {
+            System.out.println("No classes found for instructor ID: " + instructorId);
+            return;
+        }
+        System.out.println("\nClasses Taught:");
+        for (Map<String, Object> c : classes) {
+            System.out.println("- " + c.get("className") + " (Class ID: " +
+                    c.get("classId") + ")");
+        }
+    }
+
+    //View all class enrollees for a class
+    public void viewClassEnrollees(int classId) {
+        List<Map<String, Object>> enrollees = dal.searchForEnrolleesByClass(classId);
+        if (enrollees.isEmpty()) {
+            System.out.println("No enrollees found for class ID: " + classId);
+            return;
+        }
+        System.out.println("\nClass Enrollees:");
+        for (Map<String, Object> e : enrollees) {
+            System.out.println("- " + e.get("firstName") + " " + e.get("lastName") + " (Email: " +
+                    e.get("email") + ")");
+        }
+    }
+
+    public void viewQuizzesByClass(int classId) {
+        List<Map<String, Object>> quizzes = dal.getQuizzesByClass(classId);
+        if (quizzes.isEmpty()) {
+            System.out.println("No quizzes found for class ID: " + classId);
+            return;
+        }
+        System.out.println("\nQuizzes for Class ID " + classId + ":");
+        for (Map<String, Object> q : quizzes) {
+            System.out.println("- " + q.get("quizName") + " (Quiz ID: " +
+                    q.get("quizId") + ")");
+        }
+    }
+
+
     /* ============================
        INSTRUCTOR MANAGEMENT
        ============================ */
@@ -91,9 +133,13 @@ public class BusinessLogic {
     public void takeQuiz(int studentId, int quizId, Scanner in) {
         System.out.println("Starting quiz...");
 
+        //add section where student can choose learning objectives from relevant readings
+
         boolean moreQuestions = true;
 
         while (moreQuestions) {
+            //machine learning here that compares student's chosen objectives to the available pot of questions
+            //machine learning that also takes a students previous question answer (right or wrong) and adjusts the difficulty of the next question
             Map<String, Object> question = dal.getNextQuestion(quizId, studentId);
 
             if (question == null || question.isEmpty()) {
@@ -118,7 +164,7 @@ public class BusinessLogic {
 
             if (response != null && response.containsKey("isCorrect")) {
                 boolean isCorrect = (boolean) response.get("isCorrect");
-                System.out.println(isCorrect ? "✅ Correct!" : "❌ Incorrect.");
+                System.out.println(isCorrect ? "Correct!" : "Incorrect.");
             }
         }
 
@@ -152,6 +198,12 @@ public class BusinessLogic {
             System.out.println("- " + badge.getBadgeName() + " (Requires " + badge.getPointThreshold() + " pts)");
         }
     }
+
+    //add readings
+    //when the instructor puts a reading in MackAdapt, the name and filepath will be saved in the db and associated with that classID which is also automatically passed in
+    //machine learning in this method that scans the reading and generates learning objectives based on the content of the reading
+
+    //getAllReadingsForClass
 
     /* ============================
        UTILITY METHODS

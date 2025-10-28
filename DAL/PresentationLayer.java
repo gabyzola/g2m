@@ -51,6 +51,8 @@ public class PresentationLayer {
         System.out.println("9. Search for a Student"); //for search results when enrolling students...instructors will search by email and the search query results should popup, then they can enroll the student
         //working
         System.out.println("10. Display All Badges"); //for displaying all available badges somewhere in the UI (so students know what they can work towards)
+        //needs testing
+        System.out.println("11. Get All Quizzes for a Class"); //when a student clicks on a class, display all quizzes associated with that class
         System.out.println("Type 'exit' to quit.");
         System.out.println("==============================\n");
     }
@@ -90,7 +92,7 @@ public class PresentationLayer {
             }
 
             try {
-                //FIX!!!!: user is added, but not student/instructor...need to add to both tables
+                //fixed
                 switch (input.toLowerCase()) {
                     case "1":
                     case "register new user":
@@ -100,6 +102,7 @@ public class PresentationLayer {
                         String email = in.nextLine();
                         System.out.print("Is this an instructor account? (Y/N): ");
                         boolean isInstructor = in.nextLine().equalsIgnoreCase("Y");
+                        System.out.print(isInstructor);
 
                         System.out.print("Enter first name: ");
                         String firstName = in.nextLine();
@@ -216,6 +219,13 @@ public class PresentationLayer {
                     case "10":
                     case "display all badges":
                         logic.displayAllBadges();
+                        break;
+
+                    case "11":
+                    case "get all quizzes for a class":
+                        System.out.print("Enter class ID: ");
+                        int ClassId = Integer.parseInt(in.nextLine());
+                        logic.viewQuizzesByClass(ClassId);
                         break;
 
                     default:
