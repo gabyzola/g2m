@@ -31,13 +31,13 @@ public class PresentationLayer {
     //these are commands available now
     public static void printCommands() {
         System.out.println("\n===== Available Commands =====");
-        //needs a fix
+        //NEEDS FIX
         System.out.println("1. Register New User"); //login method
         //working
         System.out.println("2. Enroll Student in Class"); //enrolls student into class, called after instructor searches student by email when they click "Enroll Stduent"
         //working
         System.out.println("3. View Student Classes"); //for displaying a student's specific classes under the "Classes" section
-        //needs testing
+        //NEEDS FIX
         System.out.println("4. Take a Quiz"); //for when a student clicks on a quiz to take it
         //needs testing
         System.out.println("5. View Student Badges"); //for displaying a student's specific badges under the "Badges" section
@@ -53,6 +53,10 @@ public class PresentationLayer {
         System.out.println("10. Display All Badges"); //for displaying all available badges somewhere in the UI (so students know what they can work towards)
         //needs testing
         System.out.println("11. Get All Quizzes for a Class"); //when a student clicks on a class, display all quizzes associated with that class
+        //needs testing
+        System.out.println("12. Delete Enrollee From Class"); //instructor can delete a class enrollee
+        //needs testing
+        System.out.println("13. Instructor: Delete Class"); //instructor can remove a class
         System.out.println("Type 'exit' to quit.");
         System.out.println("==============================\n");
     }

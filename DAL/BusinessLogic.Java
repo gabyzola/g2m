@@ -129,45 +129,79 @@ public class BusinessLogic {
        QUIZ WORKFLOW
        ============================ */
 
-    // Start a quiz session
     public void takeQuiz(int studentId, int quizId, Scanner in) {
         System.out.println("Starting quiz...");
-
-        //add section where student can choose learning objectives from relevant readings
 
         boolean moreQuestions = true;
 
         while (moreQuestions) {
-            //machine learning here that compares student's chosen objectives to the available pot of questions
-            //machine learning that also takes a students previous question answer (right or wrong) and adjusts the difficulty of the next question
-            Map<String, Object> question = dal.getNextQuestion(quizId, studentId);
+            // Get next question (all choices flattened into one Map)
+            Map<String, Object> questionData = dal.getNextQuestion(quizId, studentId);
 
-            if (question == null || question.isEmpty()) {
+            if (questionData == null || questionData.isEmpty()) {
                 System.out.println("No more questions available. Submitting quiz...");
                 moreQuestions = false;
                 break;
             }
 
-            System.out.println("\nQuestion: " + question.get("questionText"));
-            System.out.println("A. " + question.get("choiceText"));
+            // Extract question text and ID
+            String questionText = (String) questionData.get("questionText");
+            int questionId = (int) questionData.get("questionId");
+
+            System.out.println("\nQuestion: " + questionText);
+
+            // Create a map to link labels (A/B/C/D) to choiceIds
+            Map<String, Integer> choiceMap = new HashMap<>();
+
+            // Loop through possible choices (A–D)
+            for (char label = 'A'; label <= 'D'; label++) {
+                String textKey = "choice" + label + "_Text";
+                String idKey = "choice" + label + "_Id";
+
+                if (questionData.containsKey(textKey) && questionData.get(textKey) != null) {
+                    System.out.println(label + ". " + questionData.get(textKey));
+                    choiceMap.put(String.valueOf(label), (int) questionData.get(idKey));
+                }
+            }
 
             System.out.print("Enter your answer (A/B/C/D): ");
             String answer = in.nextLine().trim().toUpperCase();
 
-            // Simulate answer checking
+            // Validate the student's input
+            if (!choiceMap.containsKey(answer)) {
+                System.out.println("Invalid choice. Try again.");
+                continue;
+            }
+
+            int chosenChoiceId = choiceMap.get(answer);
+
+            // Submit the answer
             Map<String, Object> response = dal.submitAnswer(
                     studentId,
                     quizId,
-                    (int) question.get("questionId"),
-                    (int) question.get("choiceId")
+                    questionId,
+                    chosenChoiceId
             );
 
+            // Handle the response
             if (response != null && response.containsKey("isCorrect")) {
-                boolean isCorrect = (boolean) response.get("isCorrect");
+                boolean isCorrect;
+
+                // MySQL returns tinyint(1) as Integer sometimes, so convert safely
+                Object rawValue = response.get("isCorrect");
+                if (rawValue instanceof Boolean) {
+                    isCorrect = (Boolean) rawValue;
+                } else if (rawValue instanceof Number) {
+                    isCorrect = ((Number) rawValue).intValue() == 1;
+                } else {
+                    isCorrect = Boolean.parseBoolean(rawValue.toString());
+                }
+
                 System.out.println(isCorrect ? "Correct!" : "Incorrect.");
             }
         }
 
+        // After quiz ends, show score
         Map<String, Object> score = dal.getQuizScore(studentId, quizId);
         if (!score.isEmpty()) {
             System.out.println("\n=== Quiz Completed ===");
@@ -175,6 +209,7 @@ public class BusinessLogic {
             System.out.println("Percentage: " + score.get("percentage") + "%");
         }
     }
+
 
     /* ============================
        BADGES & PROGRESS
