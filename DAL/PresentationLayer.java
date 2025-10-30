@@ -1,15 +1,8 @@
 package g2m.DAL;
-
 import java.io.Console;
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
-//import g2m.DAL.BusinessLogic;
-//import g2m.DAL.QuizDal;
 import g2m.DAL.javaSQLobjects.Student;
 
 

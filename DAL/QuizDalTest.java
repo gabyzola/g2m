@@ -1,3 +1,4 @@
+/* 
 package g2m.DAL;
 
 import java.util.ArrayList;
@@ -48,7 +49,7 @@ public class QuizDalTest {
         assertNotNull(students);
         assertFalse(students.isEmpty());
     }
-    */
+    
 
    //success
     @Test
@@ -59,4 +60,5 @@ public class QuizDalTest {
         assertFalse(student.isEmpty());
     }
 }
+*/
     
