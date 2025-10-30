@@ -62,7 +62,7 @@ public class PresentationLayer {
         String user = in.nextLine();
 
         Console console = System.console();
-        String password = System.getenv("DB_PASS");
+        String password;
         if (console != null) {
             char[] passwordArray = console.readPassword("Enter your password: ");
             password = new String(passwordArray);
