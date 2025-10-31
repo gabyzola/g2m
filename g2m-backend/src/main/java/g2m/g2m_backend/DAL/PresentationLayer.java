@@ -1,15 +1,8 @@
 package g2m.DAL;
-
 import java.io.Console;
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
-//import g2m.DAL.BusinessLogic;
-//import g2m.DAL.QuizDal;
 import g2m.DAL.javaSQLobjects.Student;
 
 
@@ -31,7 +24,7 @@ public class PresentationLayer {
     //these are commands available now
     public static void printCommands() {
         System.out.println("\n===== Available Commands =====");
-        //NEEDS FIX
+        //working
         System.out.println("1. Register New User"); //login method
         //working
         System.out.println("2. Enroll Student in Class"); //enrolls student into class, called after instructor searches student by email when they click "Enroll Stduent"
@@ -63,20 +56,18 @@ public class PresentationLayer {
 
     public static void main(String[] args) {
 
+        //take username and password for db access
         Scanner in = new Scanner(System.in);
-
-        System.out.print("Enter your database username: ");
+        System.out.print("Enter your username: ");
         String user = in.nextLine();
 
+        //makes pw invisible
         Console console = System.console();
-        String password = System.getenv("DB_PASS");
-        if (console != null) {
-            char[] passwordArray = console.readPassword("Enter your password: ");
-            password = new String(passwordArray);
-        } else {
-            System.out.print("Enter your password: ");
-            password = in.nextLine();
-        }
+        String password;
+        char[] passwordArray = console.readPassword("Enter your password: ");
+        password = new String(passwordArray);
+        //password = in.nextLine();
+    
 
         QuizDal dal = new QuizDal("QuizzingDb", user, password);
         BusinessLogic logic = new BusinessLogic(dal);
@@ -116,6 +107,12 @@ public class PresentationLayer {
                         System.out.print("Enter major (students) or subject (instructors): ");
                         String major = in.nextLine();
                         String subject = isInstructor ? major : null;
+                        System.out.print(major);
+                        System.out.print(subject);
+                        System.out.print(firstName);
+                        System.out.print(lastName);
+                        System.out.print(email);
+                        System.out.println(username);
 
                         boolean registered = logic.registerUser(username, email, isInstructor, major, subject, firstName, lastName);
                         System.out.println(registered ? "User successfully registered!" : "Registration failed.");

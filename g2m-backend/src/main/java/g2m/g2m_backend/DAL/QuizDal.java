@@ -13,7 +13,6 @@ import java.util.Map;
 
 
 import g2m.DAL.javaSQLobjects.Student;
-// import g2m.DAL.javaSQLobjects.classEnrollee;
 import g2m.DAL.javaSQLobjects.Badge;
 
 public class QuizDal {
@@ -386,15 +385,6 @@ public class QuizDal {
             stmt.setString(6, firstName);
             stmt.setString(7, lastName);
 
-            // Major only for students
-            if (!isInstructor) {
-                stmt.setString(5, major);
-                stmt.setNull(6, java.sql.Types.VARCHAR);
-            } else {
-                stmt.setNull(5, java.sql.Types.VARCHAR);
-                stmt.setString(6, schoolSubject);
-            }
-
             stmt.execute();
             return true;
         } catch (SQLException e) {
@@ -598,6 +588,11 @@ SELECT DISTINCT lo.*
 FROM readingObjectives lo
 JOIN QuestionObjectives qo ON lo.objectiveId = qo.objectiveId;
 */
+
+    
+           
+
+
 
     
            

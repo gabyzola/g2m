@@ -11,8 +11,8 @@ public class BusinessLogic {
     private QuizDal dal;
 
     // store cached data
-    private ArrayList<Student> students = new ArrayList<>();
-    private ArrayList<Badge> badges = new ArrayList<>();
+    public ArrayList<Student> students = new ArrayList<>();
+    public ArrayList<Badge> badges = new ArrayList<>();
 
     public BusinessLogic(QuizDal dal) {
         this.dal = dal;
@@ -20,17 +20,15 @@ public class BusinessLogic {
         this.badges = dal.getAllBadges();
     }
 
-    /* ============================
-       STUDENT MANAGEMENT
-       ============================ */
+    /*STUDENT MANAGEMENT*/
 
-    // Register a new user (student or instructor)
+    //register a new user (student or instructor)
     public boolean registerUser(String username, String email, boolean isInstructor,
                                 String major, String schoolSubject, String firstName, String lastName) {
         return dal.insertNewUser(username, email, isInstructor, major, schoolSubject, firstName, lastName);
     }
 
-    // Search for a student by email, name, or ID
+    //search for a student by email, name, or ID
     public ArrayList<Student> searchStudent(String filterType, String query) {
         switch (filterType.toLowerCase()) {
             case "email":
@@ -45,12 +43,12 @@ public class BusinessLogic {
         }
     }
 
-    // Enroll a student in a class by email
+    //enroll a student in a class by email
     public boolean enrollStudentInClass(int classId, String email) {
         return dal.enrollStudent(classId, email);
     }
 
-    // View all classes for a student
+    //view all classes for a student
     public void viewStudentClasses(int studentId) {
         List<Map<String, Object>> classes = dal.getStudentsClasses(studentId);
         if (classes.isEmpty()) {
@@ -64,7 +62,7 @@ public class BusinessLogic {
         }
     }
 
-    //View instructors classes
+    //view instructors classes
     public void viewInstructorClasses(int instructorId) {
         List<Map<String, Object>> classes = dal.getInstructorClasses(instructorId);
         if (classes.isEmpty()) {
@@ -78,7 +76,7 @@ public class BusinessLogic {
         }
     }
 
-    //View all class enrollees for a class
+    //view all class enrollees for a class
     public void viewClassEnrollees(int classId) {
         List<Map<String, Object>> enrollees = dal.searchForEnrolleesByClass(classId);
         if (enrollees.isEmpty()) {
@@ -92,6 +90,7 @@ public class BusinessLogic {
         }
     }
 
+    /*view all quizzes in a specific class */
     public void viewQuizzesByClass(int classId) {
         List<Map<String, Object>> quizzes = dal.getQuizzesByClass(classId);
         if (quizzes.isEmpty()) {
@@ -106,9 +105,7 @@ public class BusinessLogic {
     }
 
 
-    /* ============================
-       INSTRUCTOR MANAGEMENT
-       ============================ */
+    /*INSTRUCTOR MANAGEMENT*/
 
     public boolean createClass(int classId, String className, String instructorEmail) {
         return dal.insertNewClass(classId, className, instructorEmail);
@@ -125,17 +122,16 @@ public class BusinessLogic {
                 correctAnswer, objectiveId, quizId);
     }
 
-    /* ============================
-       QUIZ WORKFLOW
-       ============================ */
+    /*QUIZ WORKFLOW*/
 
+    //take a quiz
     public void takeQuiz(int studentId, int quizId, Scanner in) {
         System.out.println("Starting quiz...");
 
         boolean moreQuestions = true;
 
         while (moreQuestions) {
-            // Get next question (all choices flattened into one Map)
+            //get the next question (will soon be machine learning)
             Map<String, Object> questionData = dal.getNextQuestion(quizId, studentId);
 
             if (questionData == null || questionData.isEmpty()) {
@@ -144,16 +140,16 @@ public class BusinessLogic {
                 break;
             }
 
-            // Extract question text and ID
+            //get question text and id (maybe not id we'll see)
             String questionText = (String) questionData.get("questionText");
             int questionId = (int) questionData.get("questionId");
 
             System.out.println("\nQuestion: " + questionText);
 
-            // Create a map to link labels (A/B/C/D) to choiceIds
+            //create a map to link labels (A/B/C/D) to choiceIds
             Map<String, Integer> choiceMap = new HashMap<>();
 
-            // Loop through possible choices (A–D)
+            //loop through possible choices (A–D)
             for (char label = 'A'; label <= 'D'; label++) {
                 String textKey = "choice" + label + "_Text";
                 String idKey = "choice" + label + "_Id";
@@ -167,7 +163,7 @@ public class BusinessLogic {
             System.out.print("Enter your answer (A/B/C/D): ");
             String answer = in.nextLine().trim().toUpperCase();
 
-            // Validate the student's input
+            //check student's input
             if (!choiceMap.containsKey(answer)) {
                 System.out.println("Invalid choice. Try again.");
                 continue;
@@ -175,7 +171,7 @@ public class BusinessLogic {
 
             int chosenChoiceId = choiceMap.get(answer);
 
-            // Submit the answer
+            //submit the answer
             Map<String, Object> response = dal.submitAnswer(
                     studentId,
                     quizId,
@@ -183,7 +179,7 @@ public class BusinessLogic {
                     chosenChoiceId
             );
 
-            // Handle the response
+            //handle the response
             if (response != null && response.containsKey("isCorrect")) {
                 boolean isCorrect;
 
@@ -201,7 +197,7 @@ public class BusinessLogic {
             }
         }
 
-        // After quiz ends, show score
+        //after quiz ends, show score
         Map<String, Object> score = dal.getQuizScore(studentId, quizId);
         if (!score.isEmpty()) {
             System.out.println("\n=== Quiz Completed ===");
@@ -211,9 +207,7 @@ public class BusinessLogic {
     }
 
 
-    /* ============================
-       BADGES & PROGRESS
-       ============================ */
+    /*BADGES & PROGRESS*/
 
     public void displayStudentBadges(int studentId) {
         List<Map<String, Object>> badges = dal.getStudentBadges(studentId);
@@ -240,9 +234,7 @@ public class BusinessLogic {
 
     //getAllReadingsForClass
 
-    /* ============================
-       UTILITY METHODS
-       ============================ */
+    /*UTILITY METHODS*/
 
     public static void printStudents(ArrayList<Student> students) {
         for (Student s : students) {
