@@ -1,4 +1,4 @@
-package g2m.DAL.javaSQLobjects;
+package g2m.g2m_backend.DAL.javaSQLobjects;
 
 public class StudentBadges {
     private int studentId;

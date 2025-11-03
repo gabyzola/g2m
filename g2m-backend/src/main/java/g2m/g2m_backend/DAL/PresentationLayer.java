@@ -1,10 +1,10 @@
-package g2m.DAL;
+package g2m.g2m_backend.DAL;
 import java.io.Console;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-import g2m.DAL.javaSQLobjects.Student;
-
+import g2m.g2m_backend.DAL.javaSQLobjects.Student;
+import g2m.g2m_backend.business.BusinessLogic;
 
 //COMMENTS ARE FOR HOW TO USE THESE IN THE UI
 //all student ids will be automatically taken from their login info

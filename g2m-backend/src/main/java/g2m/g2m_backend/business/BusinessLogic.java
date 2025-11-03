@@ -1,8 +1,11 @@
-package g2m.DAL;
+package g2m.g2m_backend.business;
 
 //import g2m.DAL.QuizDal;
-import g2m.DAL.javaSQLobjects.Student;
-import g2m.DAL.javaSQLobjects.Badge;
+import g2m.g2m_backend.DAL.javaSQLobjects.Student;
+import g2m.g2m_backend.DAL.javaSQLobjects.Badge;
+import g2m.g2m_backend.DAL.QuizDal;
+
+
 
 import java.util.*;
 
@@ -205,7 +208,6 @@ public class BusinessLogic {
             System.out.println("Percentage: " + score.get("percentage") + "%");
         }
     }
-
 
     /*BADGES & PROGRESS*/
 

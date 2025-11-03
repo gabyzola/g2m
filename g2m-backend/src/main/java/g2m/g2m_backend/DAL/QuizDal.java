@@ -1,4 +1,4 @@
-package g2m.DAL;
+package g2m.g2m_backend.DAL;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.DriverManager;
@@ -12,8 +12,8 @@ import java.util.List;
 import java.util.Map;
 
 
-import g2m.DAL.javaSQLobjects.Student;
-import g2m.DAL.javaSQLobjects.Badge;
+import g2m.g2m_backend.DAL.javaSQLobjects.Student;
+import g2m.g2m_backend.DAL.javaSQLobjects.Badge;
 
 public class QuizDal {
 
