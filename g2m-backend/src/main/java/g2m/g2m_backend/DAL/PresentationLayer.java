@@ -69,7 +69,7 @@ public class PresentationLayer {
         //password = in.nextLine();
     
 
-        QuizDal dal = new QuizDal("QuizzingDb", user, password);
+        QuizDal dal = new QuizDal();
         BusinessLogic logic = new BusinessLogic(dal);
 
         System.out.println("Welcome to MackAdapt!\n");

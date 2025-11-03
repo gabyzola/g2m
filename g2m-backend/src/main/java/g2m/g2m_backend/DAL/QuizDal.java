@@ -11,8 +11,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Repository;
+
 
 import g2m.g2m_backend.DAL.javaSQLobjects.Student;
+import jakarta.annotation.PostConstruct;
 import g2m.g2m_backend.DAL.javaSQLobjects.Badge;
 
 public class QuizDal {
@@ -20,10 +24,21 @@ public class QuizDal {
     //creates connection object
     private Connection myConnection;
 
-    //establishes connection with name, username, and password
-    public QuizDal(String databaseName, String user, String password) {
-        myConnection = getMySQLConnection(databaseName, user, password);
+    @Value("${spring.datasource.url}")
+    private String dbUrl;
 
+    @Value("${spring.datasource.username}")
+    private String user;
+
+    @Value("${spring.datasource.password}")
+    private String password;
+
+    // No-arg constructor (Spring will inject the values)
+    public QuizDal() {}
+
+    @PostConstruct
+    public void init() {
+        myConnection = getMySQLConnection(dbUrl, user, password);
     }
 
     //getMySQLConnection
