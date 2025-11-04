@@ -1,8 +1,10 @@
 package g2m.g2m_backend.DAL;
 import java.io.Console;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
+import g2m.g2m_backend.DAL.javaSQLobjects.QuestionData;
 import g2m.g2m_backend.DAL.javaSQLobjects.Student;
 import g2m.g2m_backend.business.BusinessLogic;
 
@@ -170,10 +172,21 @@ public class PresentationLayer {
                         System.out.print("Enter quiz name: ");
                         String quizName = in.nextLine();
                         System.out.print("Enter instructor ID: ");
-                        int instrId = Integer.parseInt(in.nextLine());
+                        int instructorId = Integer.parseInt(in.nextLine());
                         System.out.print("Enter class ID: ");
                         int classForQuiz = Integer.parseInt(in.nextLine());
-                        boolean quizCreated = logic.createQuiz(quizName, instrId, classForQuiz);
+                        List<QuestionData> questions = new ArrayList<>();
+                        questions.add(new QuestionData(
+                            "What is 2 + 2?", "easy",
+                            "3", "4", "5", "6",
+                            'B', 1, 0
+                        ));
+                        questions.add(new QuestionData(
+                            "Which planet is closest to the Sun?", "easy",
+                            "Earth", "Venus", "Mercury", "Mars",
+                            'C', 1, 0
+                        ));
+                        boolean quizCreated = logic.createQuiz(quizName, instructorId, classForQuiz, questions);
                         System.out.println(quizCreated ? "Quiz created successfully!" : "Quiz creation failed.");
                         break;
 
@@ -198,8 +211,8 @@ public class PresentationLayer {
                         char correct = in.nextLine().toUpperCase().charAt(0);
                         System.out.print("Enter objective ID: ");
                         int objId = Integer.parseInt(in.nextLine());
-                        boolean added = logic.addQuestionToQuiz(qText, diff, choiceA, choiceB, choiceC, choiceD, correct, objId, quizId);
-                        System.out.println(added ? "Question added successfully!" : "Failed to add question.");
+                        //boolean added = logic.addQuestionToQuiz(qText, diff, choiceA, choiceB, choiceC, choiceD, correct, objId, quizId);
+                        //System.out.println(added ? "Question added successfully!" : "Failed to add question.");
                         break;
 
                     case "9":

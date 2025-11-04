@@ -3,6 +3,7 @@ package g2m.g2m_backend.business;
 //import g2m.DAL.QuizDal;
 import g2m.g2m_backend.DAL.javaSQLobjects.Student;
 import g2m.g2m_backend.DAL.javaSQLobjects.Badge;
+import g2m.g2m_backend.DAL.javaSQLobjects.QuestionData;
 import g2m.g2m_backend.DAL.QuizDal;
 
 
@@ -89,15 +90,46 @@ public class BusinessLogic {
     //get learning objectives from reading and store it in the db
 
     //create quiz + add questions
-    public boolean createQuiz(String quizName, int instructorId, int classId) {
-        return dal.insertNewQuiz(quizName, instructorId, classId);
-    }
+    public boolean createQuiz(String quizName, int instructorId, int classId,
+                              List<QuestionData> questions) {
+        try {
+            //add in basic info
+            boolean quizCreated = dal.insertNewQuiz(quizName, instructorId, classId);
+            if (!quizCreated) {
+                System.out.println("Failed to create quiz.");
+                return false;
+            }
+            System.out.println("Quiz created successfully.");
 
-    public boolean addQuestionToQuiz(String questionText, String difficulty,
-                                     String choiceA, String choiceB, String choiceC, String choiceD,
-                                     char correctAnswer, int objectiveId, int quizId) {
-        return dal.insertNewQuestion(questionText, difficulty, choiceA, choiceB, choiceC, choiceD,
-                correctAnswer, objectiveId, quizId);
+            // add each question to seperate class for storage
+            for (QuestionData q : questions) {
+                boolean questionAdded = dal.insertNewQuestion(
+                        q.getQuestionText(),
+                        q.getDifficulty(),
+                        q.getChoiceA(),
+                        q.getChoiceB(),
+                        q.getChoiceC(),
+                        q.getChoiceD(),
+                        q.getCorrectAnswer(),
+                        q.getObjectiveId(),
+                        q.getQuizId() 
+                );
+
+                if (questionAdded) {
+                    System.out.println("Question added: " + q.getQuestionText());
+                } else {
+                    System.out.println("Failed to add question: " + q.getQuestionText());
+                }
+            }
+
+            //placeholder for testing
+            System.out.println("Quiz published successfully!");
+            return true;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     //display quizzes
