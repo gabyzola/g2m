@@ -58,6 +58,160 @@ public class QuizDal {
         return null;
     }
 
+    //register new user
+    public boolean insertNewUser(String username, String email, boolean isInstructor, String major, String schoolSubject, String firstName, String lastName) {
+        CallableStatement stmt = null;
+        try {
+            stmt = myConnection.prepareCall("{CALL InsertNewUser(?, ?, ?, ?, ?, ?, ?)}");
+            stmt.setString(1, username);
+            stmt.setString(2, email);
+            stmt.setBoolean(3, isInstructor);
+            stmt.setString(4, major);
+            stmt.setString(5, schoolSubject);
+            stmt.setString(6, firstName);
+            stmt.setString(7, lastName);
+
+            stmt.execute();
+            return true;
+        } catch (SQLException e) {
+            System.out.println("Error inserting new user.");
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                if (stmt != null) stmt.close();
+            } catch (SQLException e) { e.printStackTrace(); }
+        }
+    }
+
+    //create class- instructor does this!
+    public boolean insertNewClass(int classId, String className, String instructorEmail) {
+        CallableStatement stmt = null;
+        try {
+            stmt = myConnection.prepareCall("{CALL InsertNewClass(?, ?, ?)}");
+            stmt.setInt(1, classId);
+            stmt.setString(2, className);
+            stmt.setString(3, instructorEmail);
+
+            stmt.execute();
+            return true;
+        } catch (SQLException e) {
+            System.out.println("Error inserting new class.");
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                if (stmt != null) stmt.close();
+            } catch (SQLException e) { e.printStackTrace(); }
+        }
+    }
+
+    //display instructor's classes
+    public List<Map<String, Object>> getInstructorClasses(int instructorId) {
+        List<Map<String, Object>> results = new ArrayList<>();
+        try (CallableStatement cs = myConnection.prepareCall("{CALL getInstructorClasses(?)}")) {
+            cs.setInt(1, instructorId);
+            ResultSet rs = cs.executeQuery();
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("classId", rs.getInt("classId"));
+                row.put("className", rs.getString("className"));
+                row.put("instructorFirstName", rs.getString("instructorFirstName"));
+                row.put("instructorLastName", rs.getString("instructorLastName"));
+                results.add(row);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return results;
+    }
+
+    //enroll student in a class- owner of the class will only have this privilege
+    public boolean enrollStudent(int classId, String email) {
+        CallableStatement stmt = null;
+        ResultSet rs = null;
+        try {
+            stmt = myConnection.prepareCall("{CALL EnrollStudent(?, ?)}");
+            stmt.setInt(1, classId);
+            stmt.setString(2, email);
+
+            boolean hadResultSet = stmt.execute();
+
+            if (hadResultSet) {
+                rs = stmt.getResultSet();
+                if (rs.next()) {
+                    String message = rs.getString("message");
+                    System.out.println(message);
+                    return false;
+                }
+            }
+            return true;
+
+        } catch (SQLException e) {
+            System.out.println("Error enrolling student.");
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                if (rs != null)
+                    rs.close();
+                if (stmt != null)
+                    stmt.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    //lists class enrollees
+
+    //lists student's classes
+    public List<Map<String, Object>> getStudentsClasses(int studentId) {
+        List<Map<String, Object>> results = new ArrayList<>();
+        try (CallableStatement cs = myConnection.prepareCall("{CALL getStudentsClasses(?)}")) {
+            cs.setInt(1, studentId);
+            ResultSet rs = cs.executeQuery();
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("classId", rs.getInt("classId"));
+                row.put("className", rs.getString("className"));
+                row.put("instructorFirstName", rs.getString("instructorFirstName"));
+                row.put("instructorLastName", rs.getString("instructorLastName"));
+                results.add(row);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return results;
+    }
+
+    //insert reading into class module- another instructor only priv
+
+    //insert reading objectives into proper table (see business layer)
+
+    //create quiz- instructor priv
+    public boolean insertNewQuiz(String quizName, int instructorId, int classId) {
+        CallableStatement stmt = null;
+        try {
+            //InsertNewQuiz calls InsertNewQuestion inside of it
+            stmt = myConnection.prepareCall("{CALL InsertNewQuiz(?, ?, ?)}");
+            stmt.setString(1, quizName);
+            stmt.setInt(2, instructorId);
+            stmt.setInt(3, classId);
+
+            stmt.execute();
+            return true;
+        } catch (SQLException e) {
+            System.out.println("Error inserting new quiz.");
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                if (stmt != null) stmt.close();
+            } catch (SQLException e) { e.printStackTrace(); }
+        }
+    }
+
     //GET METHODS
 
     //getAllStudents
@@ -226,26 +380,7 @@ public class QuizDal {
         }
     }
 
-    //getStudentClasses
-    //gets all classes for a specific student --> this is for displaying classes student is enrolled in when student clicks "View Classes" in UI
-    public List<Map<String, Object>> getStudentsClasses(int studentId) {
-        List<Map<String, Object>> results = new ArrayList<>();
-        try (CallableStatement cs = myConnection.prepareCall("{CALL getStudentsClasses(?)}")) {
-            cs.setInt(1, studentId);
-            ResultSet rs = cs.executeQuery();
-            while (rs.next()) {
-                Map<String, Object> row = new HashMap<>();
-                row.put("classId", rs.getInt("classId"));
-                row.put("className", rs.getString("className"));
-                row.put("instructorFirstName", rs.getString("instructorFirstName"));
-                row.put("instructorLastName", rs.getString("instructorLastName"));
-                results.add(row);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return results;
-    }
+    
 
     //GetStudentBadges
     //for displaying badges earned by student on student dashboard
@@ -265,26 +400,7 @@ public class QuizDal {
         return results;
     }
 
-    //getInstructorClasses
-    //gets all classes for a specific instructor --> this is for displaying classes instructor is teaching when instructor clicks "View Classes" in UI
-    public List<Map<String, Object>> getInstructorClasses(int instructorId) {
-        List<Map<String, Object>> results = new ArrayList<>();
-        try (CallableStatement cs = myConnection.prepareCall("{CALL getInstructorClasses(?)}")) {
-            cs.setInt(1, instructorId);
-            ResultSet rs = cs.executeQuery();
-            while (rs.next()) {
-                Map<String, Object> row = new HashMap<>();
-                row.put("classId", rs.getInt("classId"));
-                row.put("className", rs.getString("className"));
-                row.put("instructorFirstName", rs.getString("instructorFirstName"));
-                row.put("instructorLastName", rs.getString("instructorLastName"));
-                results.add(row);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return results;
-    }
+   
 
     //getQuizzesByClass
     //gets all quizzes for a specific class --> for displaying quizzes when student/instructor clicks on a class in UI
@@ -347,119 +463,7 @@ public class QuizDal {
 
     //INSERT METHODS
 
-    //enrollStudent
-    //Enroll student in class --> inserts into classEnrollee table
-    public boolean enrollStudent(int classId, String email) {
-        CallableStatement stmt = null;
-        ResultSet rs = null;
-        try {
-            stmt = myConnection.prepareCall("{CALL EnrollStudent(?, ?)}");
-            stmt.setInt(1, classId);
-            stmt.setString(2, email);
-
-            boolean hadResultSet = stmt.execute();
-
-            if (hadResultSet) {
-                rs = stmt.getResultSet();
-                if (rs.next()) {
-                    String message = rs.getString("message");
-                    System.out.println(message);
-                    return false;
-                }
-            }
-            return true;
-
-        // LOOK INTO THIS !!!!
-        } catch (SQLException e) {
-            System.out.println("Error enrolling student.");
-            e.printStackTrace();
-            return false;
-        } finally {
-            try {
-                if (rs != null)
-                    rs.close();
-                if (stmt != null)
-                    stmt.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    //insertNewUser
-    // Insert new user (login) --> make sure this also adds to student or instructor table!
-    public boolean insertNewUser(String username, String email, boolean isInstructor, String major, String schoolSubject, String firstName, String lastName) {
-        CallableStatement stmt = null;
-        try {
-            stmt = myConnection.prepareCall("{CALL InsertNewUser(?, ?, ?, ?, ?, ?, ?)}");
-            stmt.setString(1, username);
-            stmt.setString(2, email);
-            stmt.setBoolean(3, isInstructor);
-            stmt.setString(4, major);
-            stmt.setString(5, schoolSubject);
-            stmt.setString(6, firstName);
-            stmt.setString(7, lastName);
-
-            stmt.execute();
-            return true;
-        } catch (SQLException e) {
-            System.out.println("Error inserting new user.");
-            e.printStackTrace();
-            return false;
-        } finally {
-            try {
-                if (stmt != null) stmt.close();
-            } catch (SQLException e) { e.printStackTrace(); }
-        }
-    }
-
-
-    // insertNewClass
-    //For professors to create new class
-    public boolean insertNewClass(int classId, String className, String instructorEmail) {
-        CallableStatement stmt = null;
-        try {
-            stmt = myConnection.prepareCall("{CALL InsertNewClass(?, ?, ?)}");
-            stmt.setInt(1, classId);
-            stmt.setString(2, className);
-            stmt.setString(3, instructorEmail);
-
-            stmt.execute();
-            return true;
-        } catch (SQLException e) {
-            System.out.println("Error inserting new class.");
-            e.printStackTrace();
-            return false;
-        } finally {
-            try {
-                if (stmt != null) stmt.close();
-            } catch (SQLException e) { e.printStackTrace(); }
-        }
-    }
-
-    //insertNewQuiz
-    // Instructors can create quizzes--> this must call insertnewquestion
-    public boolean insertNewQuiz(String quizName, int instructorId, int classId) {
-        CallableStatement stmt = null;
-        try {
-            //InsertNewQuiz calls InsertNewQuestion inside of it
-            stmt = myConnection.prepareCall("{CALL InsertNewQuiz(?, ?, ?)}");
-            stmt.setString(1, quizName);
-            stmt.setInt(2, instructorId);
-            stmt.setInt(3, classId);
-
-            stmt.execute();
-            return true;
-        } catch (SQLException e) {
-            System.out.println("Error inserting new quiz.");
-            e.printStackTrace();
-            return false;
-        } finally {
-            try {
-                if (stmt != null) stmt.close();
-            } catch (SQLException e) { e.printStackTrace(); }
-        }
-    }
+    
 
     // Insert new question with choices and objective
     public boolean insertNewQuestion(String questionText, String difficulty,
