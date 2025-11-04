@@ -24,8 +24,6 @@ public class BusinessLogic {
         this.badges = dal.getAllBadges();
     }
 
-    /*STUDENT MANAGEMENT*/
-
     //register a new user 
     public boolean registerUser(String username, String email, boolean isInstructor,
                                 String major, String schoolSubject, String firstName, String lastName) {
@@ -254,8 +252,6 @@ public class BusinessLogic {
             System.out.println("Percentage: " + score.get("percentage") + "%");
         }
     }
-
-
 
     /*misc*/
 

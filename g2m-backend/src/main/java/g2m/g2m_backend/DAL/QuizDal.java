@@ -208,8 +208,49 @@ public class QuizDal {
     }
 
     //insert reading into class module- another instructor only priv
+    public boolean insertNewReading(int instructorId, int classId, String readingName, String filePath) {
+        CallableStatement stmt = null;
+        try {
+            stmt = myConnection.prepareCall("{CALL InsertNewReading(?, ?, ?, ?)}");
+            stmt.setInt(1, instructorId);
+            stmt.setInt(2, classId);
+            stmt.setString(3, readingName);
+            stmt.setString(4, filePath);
+
+            stmt.execute();
+            return true;
+        } catch (SQLException e) {
+            System.out.println("Error adding reading.");
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                if (stmt != null) stmt.close();
+            } catch (SQLException e) { e.printStackTrace(); }
+        }
+    }
 
     //insert reading objectives into proper table (see business layer)
+    public boolean insertNewReadingObjective(int readingId, int classId, String objectiveName) {
+        CallableStatement stmt = null;
+        try {
+            stmt = myConnection.prepareCall("{CALL InsertNewReading(?, ?, ?)}");
+            stmt.setInt(1, readingId);
+            stmt.setInt(2, classId);
+            stmt.setString(3, objectiveName);
+
+            stmt.execute();
+            return true;
+        } catch (SQLException e) {
+            System.out.println("Error adding objective.");
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                if (stmt != null) stmt.close();
+            } catch (SQLException e) { e.printStackTrace(); }
+        }
+    }
 
     //create quiz- instructor priv
     public boolean insertNewQuiz(String quizName, int instructorId, int classId) {
