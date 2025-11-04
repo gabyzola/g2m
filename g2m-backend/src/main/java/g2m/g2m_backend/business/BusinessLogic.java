@@ -83,21 +83,66 @@ public class BusinessLogic {
         }
     }
 
-    //add reading to a class module
+    //add reading to a class module + get learning objectives from reading and store it in the db
+    public boolean uploadReading(int instructorId, int classId, String readingName, String filePath) {
+        try {
+            // verify that path is valid
+            if (filePath == null || !filePath.isEmpty()) {
+                System.out.println("Invalid reading file.");
+                return false;
+            }
 
-    //get learning objectives from reading and store it in the db
+            //String filePath = readingFile.getAbsolutePath();
+            boolean readingInserted = dal.insertNewReading(instructorId, classId, readingName, filePath);
+
+            if (!readingInserted) {
+                System.out.println("Failed to insert new reading.");
+                return false;
+            }
+
+            // machine learning not ready yet, this is a placeholder
+            List<String> extractedObjectives = new ArrayList<>();
+            extractedObjectives.add("Understand key concepts from the text");
+            extractedObjectives.add("Analyze author’s argument and tone");
+            extractedObjectives.add("Summarize main ideas and supporting details");
+
+        
+            for (String objective : extractedObjectives) {
+                boolean objectiveInserted = dal.insertNewReadingObjective(0, classId, objective);
+                if (!objectiveInserted) {
+                    System.out.println("Failed to insert objective: " + objective);
+                }
+            }
+
+            System.out.println("Reading and objectives uploaded successfully!");
+            return true;
+
+        } catch (Exception e) {
+            System.out.println("Error uploading reading.");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 
     //create quiz + add questions
-    public boolean createQuiz(String quizName, int instructorId, int classId,
+    public boolean createQuiz(String quizName, int instructorId, int classId, List<Integer> readingIds,
                               List<QuestionData> questions) {
         try {
             //add in basic info
-            boolean quizCreated = dal.insertNewQuiz(quizName, instructorId, classId);
-            if (!quizCreated) {
+            int quizId = dal.insertNewQuiz(quizName, instructorId, classId);
+            if (quizId == -1) {
                 System.out.println("Failed to create quiz.");
                 return false;
             }
-            System.out.println("Quiz created successfully.");
+            System.out.println("Quiz created successfully with ID: " + quizId);
+
+            for (int readingId : readingIds) {
+            boolean linked = dal.insertQuizReading(quizId, readingId);
+                if (!linked) {
+                    System.out.println("Failed to link reading " + readingId + " to quiz.");
+                }
+            }
 
             // add each question to seperate class for storage
             for (QuestionData q : questions) {

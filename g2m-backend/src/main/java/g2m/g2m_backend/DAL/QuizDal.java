@@ -234,7 +234,7 @@ public class QuizDal {
     public boolean insertNewReadingObjective(int readingId, int classId, String objectiveName) {
         CallableStatement stmt = null;
         try {
-            stmt = myConnection.prepareCall("{CALL InsertNewReading(?, ?, ?)}");
+            stmt = myConnection.prepareCall("{CALL InsertNewReadingObjective(?, ?, ?)}");
             stmt.setInt(1, readingId);
             stmt.setInt(2, classId);
             stmt.setString(3, objectiveName);
@@ -253,27 +253,49 @@ public class QuizDal {
     }
 
     //create quiz- instructor priv
-    public boolean insertNewQuiz(String quizName, int instructorId, int classId) {
+    public int insertNewQuiz(String quizName, int instructorId, int classId) {
         CallableStatement stmt = null;
         try {
-            //InsertNewQuiz calls InsertNewQuestion inside of it
-            stmt = myConnection.prepareCall("{CALL InsertNewQuiz(?, ?, ?)}");
+            stmt = myConnection.prepareCall("{CALL InsertNewQuiz(?, ?, ?, ?)}");
             stmt.setString(1, quizName);
             stmt.setInt(2, instructorId);
             stmt.setInt(3, classId);
+            stmt.registerOutParameter(4, java.sql.Types.INTEGER);
 
             stmt.execute();
-            return true;
+
+            int newQuizId = stmt.getInt(4); // retrieve the OUT parameter
+            System.out.println("New quiz inserted with ID: " + newQuizId);
+            return newQuizId;
+
         } catch (SQLException e) {
             System.out.println("Error inserting new quiz.");
             e.printStackTrace();
-            return false;
+            return -1;
         } finally {
-            try {
-                if (stmt != null) stmt.close();
-            } catch (SQLException e) { e.printStackTrace(); }
+            try { if (stmt != null) stmt.close(); } catch (SQLException e) { e.printStackTrace(); }
         }
     }
+
+
+    //assign reading to quiz
+    public boolean insertQuizReading(int quizId, int readingId) {
+        CallableStatement stmt = null;
+        try {
+            stmt = myConnection.prepareCall("{CALL InsertQuizReading(?, ?)}");
+            stmt.setInt(1, quizId);
+            stmt.setInt(2, readingId);
+            stmt.execute();
+            return true;
+        } catch (SQLException e) {
+            System.out.println("Error linking quiz and reading.");
+            e.printStackTrace();
+            return false;
+        } finally {
+            try { if (stmt != null) stmt.close(); } catch (SQLException e) { e.printStackTrace(); }
+        }
+    }
+
 
     //insert new question + their objectives
     public boolean insertNewQuestion(String questionText, String difficulty,
@@ -564,6 +586,29 @@ public class QuizDal {
 
         return students;
     }
+
+    // get the most recent quiz created by this instructor
+    public int getLastQuizId(int instructorId) {
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        try {
+            stmt = myConnection.prepareStatement(
+                "SELECT quizId FROM Quizzes WHERE instructorId = ? ORDER BY quizId DESC LIMIT 1"
+            );
+            stmt.setInt(1, instructorId);
+            rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("quizId");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try { if (rs != null) rs.close(); } catch (SQLException e) { e.printStackTrace(); }
+            try { if (stmt != null) stmt.close(); } catch (SQLException e) { e.printStackTrace(); }
+        }
+        return -1; // failed
+    }
+
 
     //searchForStudentById
     //LOOK UP STUDENT BY ID

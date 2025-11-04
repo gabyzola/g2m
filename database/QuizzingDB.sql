@@ -145,6 +145,14 @@ CREATE TABLE QuestionObjectives (
     FOREIGN KEY (objectiveId) REFERENCES readingObjectives(objectiveId) ON DELETE CASCADE
 );
 
+CREATE TABLE QuizReadings (
+    quizId INT NOT NULL,
+    readingId INT NOT NULL,
+    PRIMARY KEY (quizId, readingId),
+    FOREIGN KEY (quizId) REFERENCES Quizzes(quizId) ON DELETE CASCADE,
+    FOREIGN KEY (readingId) REFERENCES Readings(readingId) ON DELETE CASCADE
+);
+
 /*Makes sure that unneccessary learning objectives aren't displayed for a student!!!*/
 SELECT DISTINCT lo.*
 FROM readingObjectives lo
