@@ -212,10 +212,210 @@ public class QuizDal {
         }
     }
 
-    //GET METHODS
+    //insert new question + their objectives
+    public boolean insertNewQuestion(String questionText, String difficulty,
+                                    String choiceA, String choiceB, String choiceC, String choiceD,
+                                    char correctAnswer, int objectiveId, int quizId) {
+        CallableStatement stmt = null;
+        try {
+            stmt = myConnection.prepareCall("{CALL InsertNewQuestion(?, ?, ?, ?, ?, ?, ?, ?, ?)}");
+            stmt.setString(1, questionText);
+            stmt.setString(2, difficulty);
+            stmt.setString(3, choiceA);
+            stmt.setString(4, choiceB);
+            stmt.setString(5, choiceC);
+            stmt.setString(6, choiceD);
+            stmt.setString(7, String.valueOf(correctAnswer));
+            stmt.setInt(8, objectiveId);
+            stmt.setInt(9, quizId);
 
+            stmt.execute();
+            return true;
+        } catch (SQLException e) {
+            System.out.println("Error inserting new question.");
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                if (stmt != null) stmt.close();
+            } catch (SQLException e) { e.printStackTrace(); }
+        }
+    }
+
+    //display quizzes within a class
+    public List<Map<String, Object>> getQuizzesByClass(int classId) {
+        List<Map<String, Object>> results = new ArrayList<>();
+        try (CallableStatement cs = myConnection.prepareCall("{CALL getQuizzesByClass(?)}")) {
+            cs.setInt(1, classId);
+            ResultSet rs = cs.executeQuery();
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("quizName", rs.getString("quizName"));
+                results.add(row);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return results;
+    }
+
+    //display relevant quiz objectives to choose from
+
+    //student selects objective before taking the quiz
+    public boolean chooseLearningObjective(int studentId, int objectiveId, String objectiveName) {
+        CallableStatement stmt = null;
+        try {
+            stmt = myConnection.prepareCall("{CALL SelectStudentObjective(?, ?, ?)}");
+            stmt.setInt(1, studentId);
+            stmt.setInt(2, objectiveId);
+            stmt.setString(3, objectiveName);
+
+            stmt.execute();
+            return true;
+        } catch (SQLException e) {
+            System.out.println("Error choosing learning objective.");
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                if (stmt != null) stmt.close();
+            } catch (SQLException e) { e.printStackTrace(); }
+        }
+    }
+
+    //get next question (or first question)
+    public Map<String, Object> getNextQuestion(int quizId, int studentId) {
+        Map<String, Object> result = new HashMap<>();
+        try (CallableStatement cs = myConnection.prepareCall("{CALL GetNextQuestion(?, ?)}")) {
+            cs.setInt(1, quizId);
+            cs.setInt(2, studentId);
+            ResultSet rs = cs.executeQuery();
+            if (rs.next()) {
+                result.put("questionId", rs.getInt("questionId"));
+                result.put("questionText", rs.getString("questionText"));
+                result.put("choiceId", rs.getInt("choiceId"));
+                result.put("choiceLabel", rs.getString("choiceLabel"));
+                result.put("choiceText", rs.getString("choiceText"));
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return result;
+    }
+
+    //submit answer-- student gets feedback after each question
+    public Map<String, Object> submitAnswer(int studentId, int quizId, int questionId, int choiceId) {
+        Map<String, Object> result = new HashMap<>();
+        try (CallableStatement cs = myConnection.prepareCall("{CALL SubmitAnswer(?, ?, ?, ?)}")) {
+            cs.setInt(1, studentId);
+            cs.setInt(2, quizId);
+            cs.setInt(3, questionId);
+            cs.setInt(4, choiceId);
+            ResultSet rs = cs.executeQuery();
+            if (rs.next()) {
+                result.put("isCorrect", rs.getBoolean("isCorrect"));
+                result.put("correctChoiceId", rs.getInt("correctChoiceId"));
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return result;
+    }
+
+    //get quiz score after last question is answered
+    public Map<String, Object> getQuizScore(int studentId, int quizId) {
+        Map<String, Object> result = new HashMap<>();
+        try (CallableStatement cs = myConnection.prepareCall("{CALL GetQuizScore(?, ?)}")) {
+            cs.setInt(1, studentId);
+            cs.setInt(2, quizId);
+            ResultSet rs = cs.executeQuery();
+            if (rs.next()) {
+                result.put("totalScore", rs.getInt("totalScore"));
+                result.put("totalQuestions", rs.getInt("totalQuestions"));
+                result.put("percentage", rs.getDouble("percentage"));
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return result;
+    }
+
+    //assign badge
+
+    //display all the students badges
+    public List<Map<String, Object>> getStudentBadges(int studentId) {
+        List<Map<String, Object>> results = new ArrayList<>();
+        try (CallableStatement cs = myConnection.prepareCall("{CALL getStudentBadges(?)}")) {
+            cs.setInt(1, studentId);
+            ResultSet rs = cs.executeQuery();
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("badgeName", rs.getString("badgeName"));
+                results.add(row);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return results;
+    }
+
+    //display all badges that can be earned
+    public ArrayList<Badge> getAllBadges() {
+
+        Statement myStatement;
+        try {
+            myStatement = myConnection.createStatement();
+            //get relations via a sql query
+            ResultSet myRelation = myStatement.executeQuery("SELECT * FROM Badges");
+            ArrayList<Badge> Badges = new ArrayList<>();
+
+            //add each relation into arraylist-- studentid, badge, totalPoints, major
+            while (myRelation.next()) {
+                Badge newBadge = new Badge(myRelation.getInt("badgeId"), myRelation.getString("badgeName"), myRelation.getInt("pointThreshold"));
+                Badges.add(newBadge);
+
+            }
+
+            return Badges; // return the array list of Students
+
+        } catch (SQLException e) { 
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    
+    /*DELETIONS */
+    public boolean deleteQuestion(int questionId) { return executeSimpleDelete("{CALL DeleteQuestion(?)}", questionId); }
+    public boolean deleteQuiz(int quizId) { return executeSimpleDelete("{CALL DeleteQuiz(?)}", quizId); }
+    public boolean deleteClass(int classId) { return executeSimpleDelete("{CALL DeleteClass(?)}", classId); }
+    public boolean deleteUser(int userId) { return executeSimpleDelete("{CALL DeleteUser(?)}", userId); }
+    public boolean deleteClassEnrollee(int classId, int studentId) {
+        return executeDoubleDelete("{CALL DeleteClassEnrollee(?, ?)}", classId, studentId);
+    }
+    public boolean deleteChoice(int choiceId) { return executeSimpleDelete("{CALL DeleteChoice(?)}", choiceId); }
+
+    private boolean executeSimpleDelete(String sql, int param) {
+        try (CallableStatement stmt = myConnection.prepareCall(sql)) {
+            stmt.setInt(1, param);
+            stmt.execute();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private boolean executeDoubleDelete(String sql, int p1, int p2) {
+        try (CallableStatement stmt = myConnection.prepareCall(sql)) {
+            stmt.setInt(1, p1);
+            stmt.setInt(2, p2);
+            stmt.execute();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    
+    /*misc. testing procs */
     //getAllStudents
-    // Get all Students stored in the database returns as an arraylist
+
     public ArrayList<Student> getAllStudents() {
 
         Statement myStatement;
@@ -352,241 +552,6 @@ public class QuizDal {
         }
 
         return students;
-    }
-
-    //getAllBadges
-    //This must be called in order to display badges in the UI
-    public ArrayList<Badge> getAllBadges() {
-
-        Statement myStatement;
-        try {
-            myStatement = myConnection.createStatement();
-            //get relations via a sql query
-            ResultSet myRelation = myStatement.executeQuery("SELECT * FROM Badges");
-            ArrayList<Badge> Badges = new ArrayList<>();
-
-            //add each relation into arraylist-- studentid, badge, totalPoints, major
-            while (myRelation.next()) {
-                Badge newBadge = new Badge(myRelation.getInt("badgeId"), myRelation.getString("badgeName"), myRelation.getInt("pointThreshold"));
-                Badges.add(newBadge);
-
-            }
-
-            return Badges; // return the array list of Students
-
-        } catch (SQLException e) { 
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    
-
-    //GetStudentBadges
-    //for displaying badges earned by student on student dashboard
-    public List<Map<String, Object>> getStudentBadges(int studentId) {
-        List<Map<String, Object>> results = new ArrayList<>();
-        try (CallableStatement cs = myConnection.prepareCall("{CALL getStudentBadges(?)}")) {
-            cs.setInt(1, studentId);
-            ResultSet rs = cs.executeQuery();
-            while (rs.next()) {
-                Map<String, Object> row = new HashMap<>();
-                row.put("badgeName", rs.getString("badgeName"));
-                results.add(row);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return results;
-    }
-
-   
-
-    //getQuizzesByClass
-    //gets all quizzes for a specific class --> for displaying quizzes when student/instructor clicks on a class in UI
-    public List<Map<String, Object>> getQuizzesByClass(int classId) {
-        List<Map<String, Object>> results = new ArrayList<>();
-        try (CallableStatement cs = myConnection.prepareCall("{CALL getQuizzesByClass(?)}")) {
-            cs.setInt(1, classId);
-            ResultSet rs = cs.executeQuery();
-            while (rs.next()) {
-                Map<String, Object> row = new HashMap<>();
-                row.put("quizName", rs.getString("quizName"));
-                results.add(row);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return results;
-    }
-
-    //getNextQuestion
-    //for quizzing process --> called everytime a student clicks "Next Question" in UI
-    //VERY LIKELY THAT THIS WILL CHANGE DUE TO MACHINE LEARNINFG INTEGRATION
-    public Map<String, Object> getNextQuestion(int quizId, int studentId) {
-        Map<String, Object> result = new HashMap<>();
-        try (CallableStatement cs = myConnection.prepareCall("{CALL GetNextQuestion(?, ?)}")) {
-            cs.setInt(1, quizId);
-            cs.setInt(2, studentId);
-            ResultSet rs = cs.executeQuery();
-            if (rs.next()) {
-                result.put("questionId", rs.getInt("questionId"));
-                result.put("questionText", rs.getString("questionText"));
-                result.put("choiceId", rs.getInt("choiceId"));
-                result.put("choiceLabel", rs.getString("choiceLabel"));
-                result.put("choiceText", rs.getString("choiceText"));
-            }
-        } catch (SQLException e) { e.printStackTrace(); }
-        return result;
-    }
-
-    //getQuizScore
-    // Get quiz score --> good for csv, this must be called when student clicks "Submit Quiz" to display their score in UI,also for analytics on studentDashboard
-    public Map<String, Object> getQuizScore(int studentId, int quizId) {
-        Map<String, Object> result = new HashMap<>();
-        try (CallableStatement cs = myConnection.prepareCall("{CALL GetQuizScore(?, ?)}")) {
-            cs.setInt(1, studentId);
-            cs.setInt(2, quizId);
-            ResultSet rs = cs.executeQuery();
-            if (rs.next()) {
-                result.put("totalScore", rs.getInt("totalScore"));
-                result.put("totalQuestions", rs.getInt("totalQuestions"));
-                result.put("percentage", rs.getDouble("percentage"));
-            }
-        } catch (SQLException e) { e.printStackTrace(); }
-        return result;
-    }
-
-    //getReadingObjectives
-    //When a student clicks "Take Quiz" or "Start Quiz", this must be called to display learning objectives for that quiz/reading
-
-
-    //INSERT METHODS
-
-    
-
-    // Insert new question with choices and objective
-    public boolean insertNewQuestion(String questionText, String difficulty,
-                                    String choiceA, String choiceB, String choiceC, String choiceD,
-                                    char correctAnswer, int objectiveId, int quizId) {
-        CallableStatement stmt = null;
-        try {
-            stmt = myConnection.prepareCall("{CALL InsertNewQuestion(?, ?, ?, ?, ?, ?, ?, ?, ?)}");
-            stmt.setString(1, questionText);
-            stmt.setString(2, difficulty);
-            stmt.setString(3, choiceA);
-            stmt.setString(4, choiceB);
-            stmt.setString(5, choiceC);
-            stmt.setString(6, choiceD);
-            stmt.setString(7, String.valueOf(correctAnswer));
-            stmt.setInt(8, objectiveId);
-            stmt.setInt(9, quizId);
-
-            stmt.execute();
-            return true;
-        } catch (SQLException e) {
-            System.out.println("Error inserting new question.");
-            e.printStackTrace();
-            return false;
-        } finally {
-            try {
-                if (stmt != null) stmt.close();
-            } catch (SQLException e) { e.printStackTrace(); }
-        }
-    }
-
-    //Student chooses learning objective before starting quiz-- from display of readingObjectives for the quiz
-    //ADD TO BUSINESS LAYER!!!- studentObjective table MUST reset after quiz is completed
-    public boolean chooseLearningObjective(int studentId, int objectiveId, String objectiveName) {
-        CallableStatement stmt = null;
-        try {
-            stmt = myConnection.prepareCall("{CALL SelectStudentObjective(?, ?, ?)}");
-            stmt.setInt(1, studentId);
-            stmt.setInt(2, objectiveId);
-            stmt.setString(3, objectiveName);
-
-            stmt.execute();
-            return true;
-        } catch (SQLException e) {
-            System.out.println("Error choosing learning objective.");
-            e.printStackTrace();
-            return false;
-        } finally {
-            try {
-                if (stmt != null) stmt.close();
-            } catch (SQLException e) { e.printStackTrace(); }
-        }
-    }
-
-    // submitAnswer
-    //adds to TEMPORARY??? attempts table --> this needs to be expanded upon for analytics purposes
-    public Map<String, Object> submitAnswer(int studentId, int quizId, int questionId, int choiceId) {
-        Map<String, Object> result = new HashMap<>();
-        try (CallableStatement cs = myConnection.prepareCall("{CALL SubmitAnswer(?, ?, ?, ?)}")) {
-            cs.setInt(1, studentId);
-            cs.setInt(2, quizId);
-            cs.setInt(3, questionId);
-            cs.setInt(4, choiceId);
-            ResultSet rs = cs.executeQuery();
-            if (rs.next()) {
-                result.put("isCorrect", rs.getBoolean("isCorrect"));
-                result.put("correctChoiceId", rs.getInt("correctChoiceId"));
-            }
-        } catch (SQLException e) { e.printStackTrace(); }
-        return result;
-    }
-
-    //submitQuiz
-    //Called when there is no getNextQuestion --> student clicks "Submit Quiz", badge MAY be assigned here
-
-    //insertNewQuestion
-    //Instructors can insert questions while creating quiz. Called when they click "Create Quiz" and called if they click "Add Another Question"
-    
-    //assignNewBadge
-    //Called if student points exceed badge threshold upon quiz submission
-
-    //MODIFY EXISTING DATA IN DATABASE 
-
-    //modify question
-
-    //modify class
-
-    //modify quiz
-
-    //modify user info
-
-    //DELETIONS
-
-    public boolean deleteQuestion(int questionId) { return executeSimpleDelete("{CALL DeleteQuestion(?)}", questionId); }
-    public boolean deleteQuiz(int quizId) { return executeSimpleDelete("{CALL DeleteQuiz(?)}", quizId); }
-    public boolean deleteClass(int classId) { return executeSimpleDelete("{CALL DeleteClass(?)}", classId); }
-    public boolean deleteUser(int userId) { return executeSimpleDelete("{CALL DeleteUser(?)}", userId); }
-    public boolean deleteClassEnrollee(int classId, int studentId) {
-        return executeDoubleDelete("{CALL DeleteClassEnrollee(?, ?)}", classId, studentId);
-    }
-    public boolean deleteChoice(int choiceId) { return executeSimpleDelete("{CALL DeleteChoice(?)}", choiceId); }
-
-    private boolean executeSimpleDelete(String sql, int param) {
-        try (CallableStatement stmt = myConnection.prepareCall(sql)) {
-            stmt.setInt(1, param);
-            stmt.execute();
-            return true;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    private boolean executeDoubleDelete(String sql, int p1, int p2) {
-        try (CallableStatement stmt = myConnection.prepareCall(sql)) {
-            stmt.setInt(1, p1);
-            stmt.setInt(2, p2);
-            stmt.execute();
-            return true;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
     }
 
     public void close() {
