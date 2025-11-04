@@ -164,6 +164,28 @@ public class QuizDal {
     }
 
     //lists class enrollees
+    public List<Map<String, Object>> searchForEnrolleesByClass(int classId) {
+        List<Map<String, Object>> results = new ArrayList<>();
+        try (CallableStatement cs = myConnection.prepareCall("{Call getEnrolleeByClass(?)}")) {
+            
+            cs.setInt(1, classId);
+            ResultSet rs = cs.executeQuery();
+
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("studentId", rs.getInt("studentId"));
+                row.put("firstName", rs.getString("firstName"));
+                row.put("lastName", rs.getString("lastName"));
+                results.add(row);
+            }
+        } catch (SQLException e) {
+            System.out.println("Failed to call searchForEnrolleesByClass stored procedure.");
+            e.printStackTrace();
+            return null;
+        }
+
+        return results;
+    }
 
     //lists student's classes
     public List<Map<String, Object>> getStudentsClasses(int studentId) {
@@ -443,30 +465,6 @@ public class QuizDal {
         }
     }
 
-    //searchForEnrolleesByClass
-    //Get all classEnrollees from specific class-- include student name (gets this from Students table)
-    public List<Map<String, Object>> searchForEnrolleesByClass(int classId) {
-        List<Map<String, Object>> results = new ArrayList<>();
-        try (CallableStatement cs = myConnection.prepareCall("{Call getEnrolleeByClass(?)}")) {
-            
-            cs.setInt(1, classId);
-            ResultSet rs = cs.executeQuery();
-
-            while (rs.next()) {
-                Map<String, Object> row = new HashMap<>();
-                row.put("studentId", rs.getInt("studentId"));
-                row.put("firstName", rs.getString("firstName"));
-                row.put("lastName", rs.getString("lastName"));
-                results.add(row);
-            }
-        } catch (SQLException e) {
-            System.out.println("Failed to call searchForEnrolleesByClass stored procedure.");
-            e.printStackTrace();
-            return null;
-        }
-
-        return results;
-    }
 
     //searchForStudentByEmail
     //LOOK UP STUDENT BY EMAIL
