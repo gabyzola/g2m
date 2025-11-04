@@ -190,6 +190,18 @@ public class BusinessLogic {
     }
 
     //display relavant learning objectives based on the quiz
+    public void viewObjectivesByQuiz(int quizId) {
+        List<Map<String, Object>> objectives = dal.getObjectivesByQuiz(quizId);
+        if (objectives.isEmpty()) {
+            System.out.println("No quizzes found for class ID: " + quizId);
+            return;
+        }
+        System.out.println("\nObjectives for Quiz ID " + quizId + ":");
+        for (Map<String, Object> o : objectives) {
+            System.out.println("- " + o.get("objectiveName") + " (Objective ID: " +
+                    o.get("objectiveId") + ")");
+        }
+    }
 
     //take quiz + select learning objective + get questions + get score (+ maybe get badge!)
 

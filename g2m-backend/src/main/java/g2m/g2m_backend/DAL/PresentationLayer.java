@@ -186,7 +186,8 @@ public class PresentationLayer {
                             "Earth", "Venus", "Mercury", "Mars",
                             'C', 1, 0
                         ));
-                        boolean quizCreated = logic.createQuiz(quizName, instructorId, classForQuiz, questions);
+                        List<Integer> readingIds = new ArrayList<>();
+                        boolean quizCreated = logic.createQuiz(quizName, instructorId, classForQuiz, readingIds, questions);
                         System.out.println(quizCreated ? "Quiz created successfully!" : "Quiz creation failed.");
                         break;
 

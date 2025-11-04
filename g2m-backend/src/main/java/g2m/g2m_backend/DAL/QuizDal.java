@@ -345,6 +345,21 @@ public class QuizDal {
     }
 
     //display relevant quiz objectives to choose from
+    public List<Map<String, Object>> getObjectivesByQuiz(int quizId) {
+        List<Map<String, Object>> results = new ArrayList<>();
+        try (CallableStatement cs = myConnection.prepareCall("{CALL getQuizObjectives(?)}")) {
+            cs.setInt(1, quizId);
+            ResultSet rs = cs.executeQuery();
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("quizName", rs.getString("quizName"));
+                results.add(row);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return results;
+    }
 
     //student selects objective before taking the quiz
     public boolean chooseLearningObjective(int studentId, int objectiveId, String objectiveName) {
