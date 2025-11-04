@@ -204,33 +204,40 @@ public class BusinessLogic {
     }
 
     //take quiz + select learning objective + get questions + get score (+ maybe get badge!)
-
-    //display student's badges
-    public void displayStudentBadges(int studentId) {
-        List<Map<String, Object>> badges = dal.getStudentBadges(studentId);
-        if (badges.isEmpty()) {
-            System.out.println("No badges earned yet!");
-        } else {
-            System.out.println("Badges earned:");
-            for (Map<String, Object> b : badges) {
-                System.out.println("- " + b.get("badgeName"));
-            }
-        }
-    }
-
-    //display all badges available to earn
-    public void displayAllBadges() {
-        System.out.println("All Available Badges:");
-        for (Badge badge : badges) {
-            System.out.println("- " + badge.getBadgeName() + " (Requires " + badge.getPointThreshold() + " pts)");
-        }
-    }
-    
-
-
-    //take a quiz
     public void takeQuiz(int studentId, int quizId, Scanner in) {
         System.out.println("Starting quiz...");
+
+        List<Map<String, Object>> objectives = dal.getObjectivesByQuiz(quizId);
+        if (objectives.isEmpty()) {
+            System.out.println("No learning objectives available for this quiz.");
+        } else {
+            System.out.println("Available Learning Objectives:");
+            for (int i = 0; i < objectives.size(); i++) {
+                String objName = (String) objectives.get(i).get("objectiveName"); 
+                System.out.println((i + 1) + ". " + objName);
+            }
+
+            //max amount of objectives is 3, i can chamge this later
+            System.out.print("How many objectives would you like to select (max 3)? ");
+            int numToSelect = Integer.parseInt(in.nextLine());
+            if (numToSelect > 3) numToSelect = 3;
+
+            for (int i = 0; i < numToSelect; i++) {
+                System.out.print("Enter the number of objective #" + (i + 1) + ": ");
+                int choice = Integer.parseInt(in.nextLine());
+                if (choice >= 1 && choice <= objectives.size()) {
+                    String chosenObjectiveName = (String) objectives.get(choice - 1).get("objectiveName");
+                    boolean selected = dal.chooseLearningObjective(studentId, quizId, chosenObjectiveName);
+                    if (selected) {
+                        System.out.println("Selected: " + chosenObjectiveName);
+                    } else {
+                        System.out.println("Failed to select objective: " + chosenObjectiveName);
+                    }
+                } else {
+                    System.out.println("Invalid selection. Skipping...");
+                }
+            }
+        }
 
         boolean moreQuestions = true;
 
@@ -307,6 +314,27 @@ public class BusinessLogic {
             System.out.println("\n=== Quiz Completed ===");
             System.out.println("Score: " + score.get("totalScore") + "/" + score.get("totalQuestions"));
             System.out.println("Percentage: " + score.get("percentage") + "%");
+        }
+    }
+
+    //display student's badges
+    public void displayStudentBadges(int studentId) {
+        List<Map<String, Object>> badges = dal.getStudentBadges(studentId);
+        if (badges.isEmpty()) {
+            System.out.println("No badges earned yet!");
+        } else {
+            System.out.println("Badges earned:");
+            for (Map<String, Object> b : badges) {
+                System.out.println("- " + b.get("badgeName"));
+            }
+        }
+    }
+
+    //display all badges available to earn
+    public void displayAllBadges() {
+        System.out.println("All Available Badges:");
+        for (Badge badge : badges) {
+            System.out.println("- " + badge.getBadgeName() + " (Requires " + badge.getPointThreshold() + " pts)");
         }
     }
 
