@@ -1,5 +1,6 @@
 package g2m.DAL.javaSQLobjects;
 
+
 public class Attempts {
     private int attemptId;
     private int studentId;

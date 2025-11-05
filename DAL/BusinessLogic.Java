@@ -3,6 +3,7 @@ package g2m.DAL;
 //import g2m.DAL.QuizDal;
 import g2m.DAL.javaSQLobjects.Student;
 import g2m.DAL.javaSQLobjects.Badge;
+import g2m.DAL.javaSQLobjects.QuestionData;
 
 import java.util.*;
 
@@ -20,49 +21,18 @@ public class BusinessLogic {
         this.badges = dal.getAllBadges();
     }
 
-    /*STUDENT MANAGEMENT*/
-
-    //register a new user (student or instructor)
+    //register a new user 
     public boolean registerUser(String username, String email, boolean isInstructor,
                                 String major, String schoolSubject, String firstName, String lastName) {
         return dal.insertNewUser(username, email, isInstructor, major, schoolSubject, firstName, lastName);
     }
 
-    //search for a student by email, name, or ID
-    public ArrayList<Student> searchStudent(String filterType, String query) {
-        switch (filterType.toLowerCase()) {
-            case "email":
-                return dal.searchForStudentByEmail(query);
-            case "name":
-                return dal.searchForStudentByName(query);
-            case "id":
-                return dal.searchForStudentById(query);
-            default:
-                System.out.println("Invalid search type. Use: email, name, or id.");
-                return new ArrayList<>();
-        }
+    //create new class
+    public boolean createClass(int classId, String className, String instructorEmail) {
+        return dal.insertNewClass(classId, className, instructorEmail);
     }
 
-    //enroll a student in a class by email
-    public boolean enrollStudentInClass(int classId, String email) {
-        return dal.enrollStudent(classId, email);
-    }
-
-    //view all classes for a student
-    public void viewStudentClasses(int studentId) {
-        List<Map<String, Object>> classes = dal.getStudentsClasses(studentId);
-        if (classes.isEmpty()) {
-            System.out.println("No classes found for student ID: " + studentId);
-            return;
-        }
-        System.out.println("\nClasses Enrolled:");
-        for (Map<String, Object> c : classes) {
-            System.out.println("- " + c.get("className") + " (Instructor: " +
-                    c.get("instructorFirstName") + " " + c.get("instructorLastName") + ")");
-        }
-    }
-
-    //view instructors classes
+    //display instructor classes
     public void viewInstructorClasses(int instructorId) {
         List<Map<String, Object>> classes = dal.getInstructorClasses(instructorId);
         if (classes.isEmpty()) {
@@ -76,6 +46,12 @@ public class BusinessLogic {
         }
     }
 
+    //enroll a student in a class by email
+    public boolean enrollStudentInClass(int classId, String email) {
+        return dal.enrollStudent(classId, email);
+    }
+
+    //list class enrollees
     //view all class enrollees for a class
     public void viewClassEnrollees(int classId) {
         List<Map<String, Object>> enrollees = dal.searchForEnrolleesByClass(classId);
@@ -90,7 +66,113 @@ public class BusinessLogic {
         }
     }
 
-    /*view all quizzes in a specific class */
+    //display student classes
+    public void viewStudentClasses(int studentId) {
+        List<Map<String, Object>> classes = dal.getStudentsClasses(studentId);
+        if (classes.isEmpty()) {
+            System.out.println("No classes found for student ID: " + studentId);
+            return;
+        }
+        System.out.println("\nClasses Enrolled:");
+        for (Map<String, Object> c : classes) {
+            System.out.println("- " + c.get("className") + " (Instructor: " +
+                    c.get("instructorFirstName") + " " + c.get("instructorLastName") + ")");
+        }
+    }
+
+    //add reading to a class module + get learning objectives from reading and store it in the db
+    public boolean uploadReading(int instructorId, int classId, String readingName, String filePath) {
+        try {
+            // verify that path is valid
+            if (filePath == null || !filePath.isEmpty()) {
+                System.out.println("Invalid reading file.");
+                return false;
+            }
+
+            //String filePath = readingFile.getAbsolutePath();
+            boolean readingInserted = dal.insertNewReading(instructorId, classId, readingName, filePath);
+
+            if (!readingInserted) {
+                System.out.println("Failed to insert new reading.");
+                return false;
+            }
+
+            // machine learning not ready yet, this is a placeholder
+            List<String> extractedObjectives = new ArrayList<>();
+            extractedObjectives.add("Understand key concepts from the text");
+            extractedObjectives.add("Analyze author’s argument and tone");
+            extractedObjectives.add("Summarize main ideas and supporting details");
+
+        
+            for (String objective : extractedObjectives) {
+                boolean objectiveInserted = dal.insertNewReadingObjective(0, classId, objective);
+                if (!objectiveInserted) {
+                    System.out.println("Failed to insert objective: " + objective);
+                }
+            }
+
+            System.out.println("Reading and objectives uploaded successfully!");
+            return true;
+
+        } catch (Exception e) {
+            System.out.println("Error uploading reading.");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+    //create quiz + add questions
+    public boolean createQuiz(String quizName, int instructorId, int classId, List<Integer> readingIds,
+                              List<QuestionData> questions) {
+        try {
+            //add in basic info
+            int quizId = dal.insertNewQuiz(quizName, instructorId, classId);
+            if (quizId == -1) {
+                System.out.println("Failed to create quiz.");
+                return false;
+            }
+            System.out.println("Quiz created successfully with ID: " + quizId);
+
+            for (int readingId : readingIds) {
+            boolean linked = dal.insertQuizReading(quizId, readingId);
+                if (!linked) {
+                    System.out.println("Failed to link reading " + readingId + " to quiz.");
+                }
+            }
+
+            // add each question to seperate class for storage
+            for (QuestionData q : questions) {
+                boolean questionAdded = dal.insertNewQuestion(
+                        q.getQuestionText(),
+                        q.getDifficulty(),
+                        q.getChoiceA(),
+                        q.getChoiceB(),
+                        q.getChoiceC(),
+                        q.getChoiceD(),
+                        q.getCorrectAnswer(),
+                        q.getObjectiveId(),
+                        q.getQuizId() 
+                );
+
+                if (questionAdded) {
+                    System.out.println("Question added: " + q.getQuestionText());
+                } else {
+                    System.out.println("Failed to add question: " + q.getQuestionText());
+                }
+            }
+
+            //placeholder for testing
+            System.out.println("Quiz published successfully!");
+            return true;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    //display quizzes
     public void viewQuizzesByClass(int classId) {
         List<Map<String, Object>> quizzes = dal.getQuizzesByClass(classId);
         if (quizzes.isEmpty()) {
@@ -104,29 +186,55 @@ public class BusinessLogic {
         }
     }
 
-
-    /*INSTRUCTOR MANAGEMENT*/
-
-    public boolean createClass(int classId, String className, String instructorEmail) {
-        return dal.insertNewClass(classId, className, instructorEmail);
+    //display relavant learning objectives based on the quiz
+    public void viewObjectivesByQuiz(int quizId) {
+        List<Map<String, Object>> objectives = dal.getObjectivesByQuiz(quizId);
+        if (objectives.isEmpty()) {
+            System.out.println("No quizzes found for class ID: " + quizId);
+            return;
+        }
+        System.out.println("\nObjectives for Quiz ID " + quizId + ":");
+        for (Map<String, Object> o : objectives) {
+            System.out.println("- " + o.get("objectiveName") + " (Objective ID: " +
+                    o.get("objectiveId") + ")");
+        }
     }
 
-    public boolean createQuiz(String quizName, int instructorId, int classId) {
-        return dal.insertNewQuiz(quizName, instructorId, classId);
-    }
-
-    public boolean addQuestionToQuiz(String questionText, String difficulty,
-                                     String choiceA, String choiceB, String choiceC, String choiceD,
-                                     char correctAnswer, int objectiveId, int quizId) {
-        return dal.insertNewQuestion(questionText, difficulty, choiceA, choiceB, choiceC, choiceD,
-                correctAnswer, objectiveId, quizId);
-    }
-
-    /*QUIZ WORKFLOW*/
-
-    //take a quiz
+    //take quiz + select learning objective + get questions + get score (+ maybe get badge!)
     public void takeQuiz(int studentId, int quizId, Scanner in) {
         System.out.println("Starting quiz...");
+
+        List<Map<String, Object>> objectives = dal.getObjectivesByQuiz(quizId);
+        if (objectives.isEmpty()) {
+            System.out.println("No learning objectives available for this quiz.");
+        } else {
+            System.out.println("Available Learning Objectives:");
+            for (int i = 0; i < objectives.size(); i++) {
+                String objName = (String) objectives.get(i).get("objectiveName"); 
+                System.out.println((i + 1) + ". " + objName);
+            }
+
+            //max amount of objectives is 3, i can chamge this later
+            System.out.print("How many objectives would you like to select (max 3)? ");
+            int numToSelect = Integer.parseInt(in.nextLine());
+            if (numToSelect > 3) numToSelect = 3;
+
+            for (int i = 0; i < numToSelect; i++) {
+                System.out.print("Enter the number of objective #" + (i + 1) + ": ");
+                int choice = Integer.parseInt(in.nextLine());
+                if (choice >= 1 && choice <= objectives.size()) {
+                    String chosenObjectiveName = (String) objectives.get(choice - 1).get("objectiveName");
+                    boolean selected = dal.chooseLearningObjective(studentId, quizId, chosenObjectiveName);
+                    if (selected) {
+                        System.out.println("Selected: " + chosenObjectiveName);
+                    } else {
+                        System.out.println("Failed to select objective: " + chosenObjectiveName);
+                    }
+                } else {
+                    System.out.println("Invalid selection. Skipping...");
+                }
+            }
+        }
 
         boolean moreQuestions = true;
 
@@ -206,9 +314,7 @@ public class BusinessLogic {
         }
     }
 
-
-    /*BADGES & PROGRESS*/
-
+    //display student's badges
     public void displayStudentBadges(int studentId) {
         List<Map<String, Object>> badges = dal.getStudentBadges(studentId);
         if (badges.isEmpty()) {
@@ -221,6 +327,7 @@ public class BusinessLogic {
         }
     }
 
+    //display all badges available to earn
     public void displayAllBadges() {
         System.out.println("All Available Badges:");
         for (Badge badge : badges) {
@@ -228,13 +335,22 @@ public class BusinessLogic {
         }
     }
 
-    //add readings
-    //when the instructor puts a reading in MackAdapt, the name and filepath will be saved in the db and associated with that classID which is also automatically passed in
-    //machine learning in this method that scans the reading and generates learning objectives based on the content of the reading
+    /*misc*/
 
-    //getAllReadingsForClass
-
-    /*UTILITY METHODS*/
+    //search for a student by email, name, or ID
+    public ArrayList<Student> searchStudent(String filterType, String query) {
+        switch (filterType.toLowerCase()) {
+            case "email":
+                return dal.searchForStudentByEmail(query);
+            case "name":
+                return dal.searchForStudentByName(query);
+            case "id":
+                return dal.searchForStudentById(query);
+            default:
+                System.out.println("Invalid search type. Use: email, name, or id.");
+                return new ArrayList<>();
+        }
+    }
 
     public static void printStudents(ArrayList<Student> students) {
         for (Student s : students) {

@@ -1,8 +1,10 @@
 package g2m.DAL;
 import java.io.Console;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
+import g2m.DAL.javaSQLobjects.QuestionData;
 import g2m.DAL.javaSQLobjects.Student;
 
 
@@ -24,7 +26,7 @@ public class PresentationLayer {
     //these are commands available now
     public static void printCommands() {
         System.out.println("\n===== Available Commands =====");
-        //NEEDS FIX
+        //working
         System.out.println("1. Register New User"); //login method
         //working
         System.out.println("2. Enroll Student in Class"); //enrolls student into class, called after instructor searches student by email when they click "Enroll Stduent"
@@ -56,20 +58,18 @@ public class PresentationLayer {
 
     public static void main(String[] args) {
 
+        //take username and password for db access
         Scanner in = new Scanner(System.in);
-
-        System.out.print("Enter your database username: ");
+        System.out.print("Enter your username: ");
         String user = in.nextLine();
 
+        //makes pw invisible
         Console console = System.console();
         String password;
-        if (console != null) {
-            char[] passwordArray = console.readPassword("Enter your password: ");
-            password = new String(passwordArray);
-        } else {
-            System.out.print("Enter your password: ");
-            password = in.nextLine();
-        }
+        char[] passwordArray = console.readPassword("Enter your password: ");
+        password = new String(passwordArray);
+        //password = in.nextLine();
+    
 
         QuizDal dal = new QuizDal("QuizzingDb", user, password);
         BusinessLogic logic = new BusinessLogic(dal);
@@ -109,6 +109,12 @@ public class PresentationLayer {
                         System.out.print("Enter major (students) or subject (instructors): ");
                         String major = in.nextLine();
                         String subject = isInstructor ? major : null;
+                        System.out.print(major);
+                        System.out.print(subject);
+                        System.out.print(firstName);
+                        System.out.print(lastName);
+                        System.out.print(email);
+                        System.out.println(username);
 
                         boolean registered = logic.registerUser(username, email, isInstructor, major, subject, firstName, lastName);
                         System.out.println(registered ? "User successfully registered!" : "Registration failed.");
@@ -166,10 +172,22 @@ public class PresentationLayer {
                         System.out.print("Enter quiz name: ");
                         String quizName = in.nextLine();
                         System.out.print("Enter instructor ID: ");
-                        int instrId = Integer.parseInt(in.nextLine());
+                        int instructorId = Integer.parseInt(in.nextLine());
                         System.out.print("Enter class ID: ");
                         int classForQuiz = Integer.parseInt(in.nextLine());
-                        boolean quizCreated = logic.createQuiz(quizName, instrId, classForQuiz);
+                        List<QuestionData> questions = new ArrayList<>();
+                        questions.add(new QuestionData(
+                            "What is 2 + 2?", "easy",
+                            "3", "4", "5", "6",
+                            'B', 1, 0
+                        ));
+                        questions.add(new QuestionData(
+                            "Which planet is closest to the Sun?", "easy",
+                            "Earth", "Venus", "Mercury", "Mars",
+                            'C', 1, 0
+                        ));
+                        List<Integer> readingIds = new ArrayList<>();
+                        boolean quizCreated = logic.createQuiz(quizName, instructorId, classForQuiz, readingIds, questions);
                         System.out.println(quizCreated ? "Quiz created successfully!" : "Quiz creation failed.");
                         break;
 
@@ -194,8 +212,8 @@ public class PresentationLayer {
                         char correct = in.nextLine().toUpperCase().charAt(0);
                         System.out.print("Enter objective ID: ");
                         int objId = Integer.parseInt(in.nextLine());
-                        boolean added = logic.addQuestionToQuiz(qText, diff, choiceA, choiceB, choiceC, choiceD, correct, objId, quizId);
-                        System.out.println(added ? "Question added successfully!" : "Failed to add question.");
+                        //boolean added = logic.addQuestionToQuiz(qText, diff, choiceA, choiceB, choiceC, choiceD, correct, objId, quizId);
+                        //System.out.println(added ? "Question added successfully!" : "Failed to add question.");
                         break;
 
                     case "9":
