@@ -2,10 +2,12 @@ package g2m.g2m_backend.controller;
 
 import g2m.g2m_backend.DAL.QuizDal;
 import g2m.g2m_backend.business.BusinessLogic;
+import g2m.g2m_backend.DAL.javaSQLobjects.QuestionData;
 import g2m.g2m_backend.DAL.javaSQLobjects.Student;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -20,7 +22,7 @@ public class QuizController {
         this.bl = new BusinessLogic(dal);
     }
 
-    // Example: Register a new user
+    // Register a new user
     @PostMapping("/register")
     public boolean registerUser(@RequestBody Map<String, Object> data) {
         String username = (String) data.get("username");
@@ -34,13 +36,22 @@ public class QuizController {
         return bl.registerUser(username, email, isInstructor, major, subject, firstName, lastName);
     }
 
-    // Example: Search students
-    @GetMapping("/students/search")
-    public ArrayList<Student> searchStudent(@RequestParam String type, @RequestParam String query) {
-        return bl.searchStudent(type, query);
+    //create class
+    @PostMapping("/class")
+    public boolean createClass(@RequestBody Map<String, Object>data) {
+        int classId = (int) data.get("classId");
+        String className = (String) data.get("className");
+        String instructorEmail = (String) data.get("instructorEmail");
+        return bl.createClass(classId, className, instructorEmail);
     }
 
-    // Example: Enroll student
+    //display a list of instructor classes
+    @GetMapping("/instructors/{instructorId}/classes")
+    public void viewInstructorClasses(@PathVariable int instructorId) {
+        bl.viewInstructorClasses(instructorId);
+    }
+
+    // Enroll student
     @PostMapping("/enroll")
     public boolean enrollStudent(@RequestBody Map<String, Object> data) {
         int classId = (int) data.get("classId");
@@ -48,5 +59,55 @@ public class QuizController {
         return bl.enrollStudentInClass(classId, email);
     }
 
-    //Not done yet
+    // Search students
+    @GetMapping("/students/search")
+    public ArrayList<Student> searchStudent(@RequestParam String type, @RequestParam String query) {
+        return bl.searchStudent(type, query);
+    }
+
+    //List enrollees in a class
+    @GetMapping("/classes/{classId}/enrollees")
+        public void viewClassEnrollees(@PathVariable int classId) {
+        bl.viewClassEnrollees(classId);
+    }
+
+    //display student classes
+    @GetMapping("/students/{studentId}/classes")
+    public void viewStudentClasses(@PathVariable int studentId) {
+        bl.viewStudentClasses(studentId);
+    }
+
+    //upload reading
+    @PostMapping("/classes/{classId}/readings")
+    public boolean uploadReading(@PathVariable int classId, @RequestBody Map<String, Object> data) {
+        int instructorId = (int) data.get("instructorId");
+        String readingName = (String) data.get("readingName");
+        String filePath = (String) data.get("filePath");
+        return bl.uploadReading(instructorId, classId, readingName, filePath);
+    }
+
+    //create quiz
+    @PostMapping("/classes/{classId}/quiz")
+    public boolean createQuiz(@PathVariable int classId, @RequestBody Map<String, Object> data) {
+        String quizName = (String) data.get("quizName");
+        int instructorId = (int) data.get("instructorId");
+        List<Integer> readingIds = (List<Integer>) data.get("readingIds");
+        List<QuestionData> questions = (List<QuestionData>) data.get("questions");
+        return bl.createQuiz(quizName, instructorId, classId, readingIds, questions);
+    }
+
+    //view quizzes for a class
+    @GetMapping("/classes/{classId}/quizzes")
+    public void viewQuizzesByClass(@PathVariable int classId) {
+        bl.viewQuizzesByClass(classId);
+    }
+
+    //display relavant learning objectives
+
+    //take quiz
+
+
+
+
+   
 }
