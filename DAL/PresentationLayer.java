@@ -22,6 +22,8 @@ public class PresentationLayer {
         System.out.println("3. View Student Classes");
         System.out.println("4. Take a Quiz");
         System.out.println("5. View Student Badges");
+
+        //Working
         System.out.println("6. Instructor: Create Class");
 
         //ERROR
@@ -102,7 +104,7 @@ public class PresentationLayer {
                         String subject = isInstructor ? major : null;
 
                         boolean registered = logic.registerUser(username, email, isInstructor, major, subject, firstName, lastName);
-                        System.out.println(registered ? "✅ User successfully registered!" : "❌ Registration failed.");
+                        System.out.println(registered ? "User successfully registered!" : "Registration failed.");
                         break;
 
                     case "2":
@@ -112,7 +114,7 @@ public class PresentationLayer {
                         System.out.print("Enter student email: ");
                         String studentEmail = in.nextLine();
                         boolean enrolled = logic.enrollStudentInClass(classId, studentEmail);
-                        System.out.println(enrolled ? "✅ Student enrolled successfully!" : "❌ Enrollment failed.");
+                        System.out.println(enrolled ? "Student enrolled successfully!" : "Enrollment failed.");
                         break;
 
                     case "3":
@@ -165,7 +167,7 @@ public class PresentationLayer {
                         List<Integer> readingIds = new ArrayList<>();
 
                         boolean quizCreated = logic.createQuiz(quizName, instructorId, classForQuiz, readingIds, questions);
-                        System.out.println(quizCreated ? "✅ Quiz created successfully!" : "❌ Quiz creation failed.");
+                        System.out.println(quizCreated ? "Quiz created successfully!" : "Quiz creation failed.");
                         break;
 
                     case "8":
@@ -241,7 +243,7 @@ public class PresentationLayer {
                 }
 
             } catch (Exception e) {
-                System.out.println("❌ Error: " + e.getMessage());
+                System.out.println("Error: " + e.getMessage());
                 e.printStackTrace();
             }
         }
