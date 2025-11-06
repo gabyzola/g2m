@@ -95,11 +95,39 @@ call getInstructorClasses(4); -- HG: 102, 103, 107, 108
 call InsertNewReading(4, 107, "Prussian History", "Documents/prussia.pdf");
 call InsertNewReading(5, 101, "Cells", "Documents/cells.pdf");
 call InsertNewReading(8, 104, "Inequality", "Documents/inequality.pdf");
+call InsertNewReading(4, 107, "Prussian History", "Documents/prussia.pdf");
+call InsertNewReading(5, 101, "Intro to Molecules", "Documents/introtomolecules.pdf");
+call InsertNewReading(5, 105, "Objects In Java", "Documents/Objectsinjava.pdf");
+call InsertNewReading(8, 106, "Derivatives", "Documents/derivatives.pdf");
 
+-- Method: getReadingByClass (All set!)
+call getReadingsByClass(107);
+call getReadingsByClass(101);
+call getReadingsByClass(104);
 
- -- Method: InsertNewQuiz
+ -- Method: InsertNewQuiz (All set!)
 call InsertNewQuiz("Fall Of Prussia", 4, 107, @newQuizId);
-call InsertNewQuiz("Quiz 1", 5, 105, @newQuizId);
+call InsertNewQuiz("Java Objects", 5, 105, @newQuizId);
+
+-- Method: InsertQuizReading
+call InsertQuizReading(1, 1); -- Quiz 1, Prussia reading
+call InsertQuizReading(2, 6); -- Quiz 2, Java Reading
+
+-- Method: InsertNewQuestion
+-- Prussia Quiz
+call InsertNewQuestion(1, "Question 1", "easy");
+call InsertNewQuestion(2, "Question 2", "medium");
+call InsertNewQuestion(3, "Question 3", "hard");
+call InsertNewQuestion(4, "Question 4", "easy");
+call InsertNewQuestion(5, "Question 5", "medium");
+
+-- Java Quiz
+call InsertNewQuestion(1, "Question 1", "hard", "Choice: A", "Choice B", "Choice C", "Choice D", "Correct Answer: );
+call InsertNewQuestion(2, "Question 2", "easy");
+call InsertNewQuestion(3, "Question 3", "medium");
+call InsertNewQuestion(4, "Question 4", "hard");
+call InsertNewQuestion(5, "Question 5", "easy");
+
 
 -- ADD READINGS (INSERTS FOR NOW)
 INSERT INTO Readings (instructorId, classId, readingName, filePath, uploadDate)
