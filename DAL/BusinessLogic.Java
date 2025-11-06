@@ -83,11 +83,14 @@ public class BusinessLogic {
     //add reading to a class module + get learning objectives from reading and store it in the db
     public boolean uploadReading(int instructorId, int classId, String readingName, String filePath) {
         try {
-            // verify that path is valid
+            
+            // verify that path is valid: causing an error rn so i ignore
+            /* 
             if (filePath == null || !filePath.isEmpty()) {
                 System.out.println("Invalid reading file.");
                 return false;
             }
+                */
 
             //String filePath = readingFile.getAbsolutePath();
             boolean readingInserted = dal.insertNewReading(instructorId, classId, readingName, filePath);

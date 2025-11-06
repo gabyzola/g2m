@@ -1,38 +1,8 @@
-USE QuizzingDB;
+#Cohesive set up
+USE QuizzingDb;
 
-/*Functions*/
-
-#make sure question isn't a repeat when inserting 
-DELIMITER $$
-DROP FUNCTION IF EXISTS doesQuestionExist;$$
-CREATE FUNCTION doesQuestionExist(myQuestionText TEXT)
-RETURNS BOOLEAN DETERMINISTIC
-BEGIN
-declare result int;
-SELECT COUNT(*) INTO result FROM Questions WHERE questionText = myQuestionText;
-    RETURN (result > 0);
-    END;$$
-DELIMITER ;
-
-#check if a user already exists by email
-DELIMITER $$
-DROP FUNCTION IF EXISTS doesUserExist $$
-CREATE FUNCTION doesUserExist(myEmail VARCHAR(150))
-RETURNS BOOLEAN DETERMINISTIC
-BEGIN
-declare result int;
-SELECT COUNT(*) INTO result FROM UserAccounts WHERE email = myEmail;
-    RETURN (result > 0);
-END $$
-DELIMITER ;
-
-#check if student answer is correct
-
-/*TABLE INSERTIONS*/
-
-#insert instructor to instructor table (called automatically in dal when account is created based on flag)
-#insert a student  to student table, automatically called when user is flagged as student
-#the above is gonna be done in one proc
+#register new user- instructor and student
+#TESTED: GOOD
 DELIMITER $$
 DROP PROCEDURE IF EXISTS InsertNewUser $$
 CREATE PROCEDURE InsertNewUser (
@@ -64,7 +34,8 @@ END $$
 
 DELIMITER ;
 
-#class creation procedure
+#create new class- instructor
+#TESTED: GOOD
 DELIMITER $$
 
 DROP PROCEDURE IF EXISTS InsertNewClass $$
@@ -98,8 +69,26 @@ END $$
 
 DELIMITER ;
 
+#display instructor's classes
+#TESTED: GOOD
+DELIMITER $$
+drop procedure if exists getInstructorClasses $$
+create procedure getInstructorClasses(
+myInstructorId int
+)
+BEGIN
+SELECT 
+        c.classId,
+        c.className,
+        c.firstName AS instructorFirstName,
+        c.lastName AS instructorLastName
+    FROM Classroom c
+    WHERE c.instructorId = myInstructorId;
+END$$
+DELIMITER ;
 
 #enroll student in class
+#TESTED: GOOD
 DELIMITER $$
 DROP PROCEDURE IF EXISTS EnrollStudent $$
 CREATE PROCEDURE EnrollStudent (
@@ -144,30 +133,116 @@ BEGIN
         VALUES (myClassId, vStudentId);
     END IF;
 END $$
-
 DELIMITER ;
 
-#quiz creation procedure
-#add in some functions for error checking
+#list class enrollees
+#TESTED: GOOD
+
+DELIMITER $$
+drop procedure if exists getEnrolleesByClass $$
+create procedure getEnrolleesByClass(
+myClassId int
+)
+BEGIN
+select s.studentId, s.firstName, s.lastName 
+from ClassEnrollees ce
+join Students s on ce.studentId = s.studentId
+where classId=myClassId;
+END$$
+DELIMITER ;
+
+#display student classes
+#TESTED: GOOD
+DELIMITER $$
+drop procedure if exists getStudentsClasses $$
+create procedure getStudentsClasses(
+myStudentId int
+)
+BEGIN
+SELECT 
+        c.classId,
+        c.className,
+        c.firstName AS instructorFirstName,
+        c.lastName AS instructorLastName
+    FROM ClassEnrollees ce
+    JOIN Classroom c ON ce.classId = c.classId
+    WHERE ce.studentId = myStudentId;
+END$$
+DELIMITER ;
+
+#insert reading inside class module
 delimiter $$
-drop procedure if exists InsertNewQuiz;
-create procedure InsertNewQuiz (
-myQuizName varchar(100),
+drop procedure if exists InsertNewReading;
+create procedure InsertNewReading (
 myInstructorId int,
-myClassId int) 
+myClassId int,
+myReadingName varchar(255),
+myFilePath varchar(500)
+) 
 begin
 
-DECLARE newQuizId INT;
+DECLARE newReadingId INT;
  
-insert into Quizzes (quizId, quizName, instructorId, classId)
-    values (newQuizId, myQuizName, myInstructorId, myClassId);
+insert into Readings (readingId, readingName, filePath, instructorId, classId)
+    values (newReadingId, myReadingName, myFilePath, myInstructorId, myClassId);
     
-SET newQuizId = LAST_INSERT_ID();
+SET newReadingId = LAST_INSERT_ID();
 end $$
 delimiter ;
 
-#insert a question to a quiz with choices and objective
-#MAKE SURE QUIZID EXISTS, MAKE SURE LEARNING OBJECTIVE IS RELEVANT 
+#insert reading objectives into db table
+delimiter $$
+drop procedure if exists InsertNewReadingObjective;
+create procedure InsertNewReadingObjective (
+myReadingId int,
+myClassId int,
+myObjectiveName varchar(255)
+) 
+begin
+
+DECLARE newObjectiveId INT;
+ 
+insert into ReadingObjectives (objectiveId, readingId, classId, objectiveName)
+    values (newObjectiveId, myReadingId, myClassId, myObjectiveName);
+    
+SET newObjectiveId = LAST_INSERT_ID();
+end $$
+delimiter ;
+
+#Get readings by class
+
+#create new quiz- just inserts basic quiz info
+DELIMITER $$
+DROP PROCEDURE IF EXISTS InsertNewQuiz;
+CREATE PROCEDURE InsertNewQuiz(
+    IN myQuizName VARCHAR(100),
+    IN myInstructorId INT,
+    IN myClassId INT,
+    OUT newQuizId INT
+)
+BEGIN
+    INSERT INTO Quizzes (quizName, instructorId, classId)
+    VALUES (myQuizName, myInstructorId, myClassId);
+    
+    SET newQuizId = LAST_INSERT_ID();
+END $$
+DELIMITER ;
+
+
+#assign readings to quiz
+DELIMITER $$
+DROP PROCEDURE IF EXISTS InsertQuizReading;
+CREATE PROCEDURE InsertQuizReading(
+    IN myQuizId INT,
+    IN myReadingId INT
+)
+BEGIN
+    INSERT INTO QuizReadings (quizId, readingId)
+    VALUES (myQuizId, myReadingId);
+END $$
+DELIMITER ;
+
+#create new question + their objectives - inserts questions into a quiz (can be called multiple times)
 delimiter $$
 DROP PROCEDURE IF EXISTS InsertNewQuestion $$
 CREATE PROCEDURE InsertNewQuestion (
@@ -217,93 +292,36 @@ if not doesQuestionExist(myQuestionText) then
 end $$
 delimiter ;
 
-#insert new reading
-
-#Insert new readingObjective
-
-#insert objective into a question
-
-/*DELETE FROM TABLES*/
-
-#delete question from question table
+#display quizzes inside of classes
 DELIMITER $$
-drop procedure if exists DeleteQuestion $$
-create procedure DeleteQuestion (myQuestionId int
+drop procedure if exists getQuizzesByClass $$
+create procedure getQuizzesByClass(
+myclassId int
 )
-begin
-delete from Questions where questionId = myQuestionId;
-end $$
+BEGIN
+SELECT 
+        q.quizName
+    FROM Quizzes q
+    WHERE q.classId = myClassId;
+END$$
 DELIMITER ;
 
-#delete class, classenrollees also delete
-#check that quizzes also delete
+#display relavant objectives based on quiz
 DELIMITER $$
-drop procedure if exists DeleteClass $$
-create procedure DeleteClass (myClassId int
+drop procedure if exists getQuizObjectives $$
+create procedure getQuizObjectives(
+myQuizId int
 )
-begin
-delete from Classroom where classId = myClassId;
-end $$
+BEGIN
+SELECT o.objectiveId, o.objectiveName
+FROM ReadingObjectives o
+JOIN Readings r ON o.readingId = r.readingId
+JOIN QuizReadings qr ON qr.readingId = r.readingId
+WHERE qr.quizId = myQuizId;
+END$$
 DELIMITER ;
 
-#delete from classenrollees (without deleting entire class)
-DELIMITER $$
-drop procedure if exists DeleteClassEnrollee $$
-create procedure DeleteClassEnrollee (myClassId int, myStudentId int 
-)
-begin
-delete from ClassEnrollees where classId = myClassId AND studentId = myStudentId;
-end $$
-DELIMITER ;
-
-#delete from question choice
-DELIMITER $$
-drop procedure if exists DeleteChoice $$
-create procedure DeleteChoice (myChoiceId int)
-begin
-delete from QuestionChoices where choiceId = myChoiceId;
-end $$
-DELIMITER ;
-
-#delete from UserAccounts (should also delete from instructors and students)
-DELIMITER $$
-drop procedure if exists DeleteUser $$
-create procedure DeleteUser (myUserId int)
-begin
-delete from UserAccounts where userId = myUserId;
-end $$
-DELIMITER ;
-
-#delete from quizzes table (should also delete questions and choices)
-DELIMITER $$
-drop procedure if exists DeleteQuiz $$
-create procedure DeleteQuiz (myQuizId int
-)
-begin
-delete from Quizzes where QuizId = myQuizId;
-end $$
-DELIMITER ;
-
-/*MODIFY DATA IN TABLES*/
-
-#edit question procedure
-
-#edit objective procedure
-
-#edit choices procedure
-
-#edit quiz info
-
-#edit student info-> there's some baggage here i fear
-
-#edit instructor info-> there's some baggage here i fear
-
-/*QUIZ FUNCTIONALITY*/
-
-#GetQuizObjectives
-
-#Student chooses learning objective
--- THESE CAN ONLY BE OBJECTIVES THAT ARE IN A QUIZ
+#student select objectives- inserts into temporary table
 DELIMITER $$
 drop procedure if exists SelectStudentObjective $$
 CREATE PROCEDURE SelectStudentObjective (
@@ -349,29 +367,42 @@ END$$
 
 DELIMITER ;
 
-#student to move to next question
+#student gets next question
 DELIMITER $$
-drop procedure if exists GetNextQuestion $$
+DROP PROCEDURE IF EXISTS GetNextQuestion $$
 CREATE PROCEDURE GetNextQuestion (
     IN myQuizId INT,
     IN myStudentId INT
 )
 BEGIN
-    SELECT q.questionId, q.questionText, qc.choiceId, qc.choiceLabel, qc.choiceText
+    DECLARE nextQuestionId INT;
+
+    -- Find the next unanswered question
+    SELECT q.questionId
+    INTO nextQuestionId
     FROM Questions q
-    JOIN QuestionChoices qc ON q.questionId = qc.questionId
     WHERE q.quizId = myQuizId
       AND q.questionId NOT IN (
-          SELECT questionId
-          FROM Attempts
+          SELECT questionId FROM Attempts
           WHERE quizId = myQuizId AND studentId = myStudentId
       )
     ORDER BY q.questionId
     LIMIT 1;
+
+    -- If no more questions
+    IF nextQuestionId IS NULL THEN
+        SELECT NULL AS questionId, NULL AS questionText, NULL AS choiceId, NULL AS choiceLabel, NULL AS choiceText;
+    ELSE
+        -- Return the question and all its choices
+        SELECT q.questionId, q.questionText, qc.choiceId, qc.choiceLabel, qc.choiceText
+        FROM Questions q
+        JOIN QuestionChoices qc ON q.questionId = qc.questionId
+        WHERE q.questionId = nextQuestionId;
+    END IF;
 END$$
 DELIMITER ;
 
-#submit answer one by one
+#student submits answer- gets immediate feedback
 DELIMITER $$
 drop procedure if exists SubmitAnswer $$
 CREATE PROCEDURE SubmitAnswer (
@@ -400,63 +431,87 @@ BEGIN
 END$$
 DELIMITER ;
 
-#submit quiz as a whole
-
-
--- =========================
--- GET VALUES BASED ON ATTRIBUTES
--- =========================
-
-#get quiz score
+#get full quiz score after finishing quiz- automatically adds points to their profile
 DELIMITER $$
-drop procedure if exists GetQuizScore $$
+
+DROP PROCEDURE IF EXISTS GetQuizScore $$
+
 CREATE PROCEDURE GetQuizScore (
     IN myStudentId INT,
     IN myQuizId INT
 )
 BEGIN
-    SELECT SUM(pointsEarned) AS totalScore,
-           COUNT(*) AS totalQuestions,
-           ROUND(SUM(pointsEarned) / COUNT(*) * 100, 2) AS percentage
+    DECLARE quizPoints INT DEFAULT 0;
+
+    -- Calculate total quiz points for this attempt
+    SELECT COALESCE(SUM(pointsEarned), 0)
+    INTO quizPoints
+    FROM Attempts
+    WHERE studentId = myStudentId
+      AND quizId = myQuizId;
+
+    -- Add the quiz points to the student's totalPoints
+    UPDATE Students
+    SET totalPoints = COALESCE(totalPoints, 0) + quizPoints
+    WHERE studentId = myStudentId;
+
+    -- Return the results 
+    SELECT 
+        quizPoints AS totalScore,
+        COUNT(*) AS totalQuestions,
+        ROUND((quizPoints / COUNT(*)) * 100, 2) AS percentage
     FROM Attempts
     WHERE studentId = myStudentId
       AND quizId = myQuizId;
 END$$
+
 DELIMITER ;
 
-#search class enrollees by classId
+
+#display profile points
+
+#assign badge- when points in profile reaches a threshold (100, 250, 500, 750, 100)
 DELIMITER $$
-drop procedure if exists getEnrolleesByClass $$
-create procedure getEnrolleesByClass(
-myClassId int
-)
+
+DROP PROCEDURE IF EXISTS assignBadge $$
+CREATE PROCEDURE assignBadge(IN myStudentId INT)
 BEGIN
-select s.studentId, s.firstName, s.lastName 
-from ClassEnrollees ce
-join Students s on ce.studentId = s.studentId
-where classId=myClassId;
+    DECLARE myTotalPoints INT;
+    DECLARE myBadgeId INT;
+    DECLARE myBadgeName VARCHAR(100);
+
+    -- Get the student's total points
+    SELECT totalPoints INTO myTotalPoints
+    FROM Students
+    WHERE studentId = myStudentId;
+
+    -- Find the highest badge they qualify for
+    SELECT badgeId, badgeName
+    INTO myBadgeId, myBadgeName
+    FROM Badges
+    WHERE pointThreshold <= myTotalPoints
+    ORDER BY pointThreshold DESC
+    LIMIT 1;
+
+    -- Only proceed if they qualify for at least one badge
+    IF myBadgeId IS NOT NULL THEN
+
+        -- Insert into StudentBadges if they don’t already have this badge
+        INSERT IGNORE INTO StudentBadges (studentId, badgeId)
+        VALUES (myStudentId, myBadgeId);
+
+        -- Update their current badge in Students table
+        UPDATE Students
+        SET badge = myBadgeName
+        WHERE studentId = myStudentId;
+
+    END IF;
 END$$
+
 DELIMITER ;
 
-#Get all classes that a student is in
-DELIMITER $$
-drop procedure if exists getStudentsClasses $$
-create procedure getStudentsClasses(
-myStudentId int
-)
-BEGIN
-SELECT 
-        c.classId,
-        c.className,
-        c.firstName AS instructorFirstName,
-        c.lastName AS instructorLastName
-    FROM ClassEnrollees ce
-    JOIN Classroom c ON ce.classId = c.classId
-    WHERE ce.studentId = myStudentId;
-END$$
-DELIMITER ;
 
-#getStudentBadges
+#display student badges
 DELIMITER $$
 drop procedure if exists getStudentBadges $$
 create procedure getStudentBadges(
@@ -471,34 +526,46 @@ SELECT
 END$$
 DELIMITER ;
 
-#getInstructorClasses
+#display all badges
+
+#instructor removes student from class
 DELIMITER $$
-drop procedure if exists getInstructorClasses $$
-create procedure getInstructorClasses(
-myInstructorId int
+drop procedure if exists DeleteClassEnrollee $$
+create procedure DeleteClassEnrollee (myClassId int, myStudentId int 
 )
-BEGIN
-SELECT 
-        c.classId,
-        c.className,
-        c.firstName AS instructorFirstName,
-        c.lastName AS instructorLastName
-    FROM Classroom c
-    WHERE c.instructorId = myInstructorId;
-END$$
+begin
+delete from ClassEnrollees where classId = myClassId AND studentId = myStudentId;
+end $$
 DELIMITER ;
 
-#getQuizzesByClass
-#getInstructorClasses
+#user deletes their account
 DELIMITER $$
-drop procedure if exists getQuizzesByClass $$
-create procedure getQuizzesByClass(
-myclassId int
-)
-BEGIN
-SELECT 
-        q.quizName
-    FROM Quizzes q
-    WHERE q.classId = myClassId;
-END$$
+drop procedure if exists DeleteUser $$
+create procedure DeleteUser (myUserId int)
+begin
+delete from UserAccounts where userId = myUserId;
+end $$
 DELIMITER ;
+
+#instructor deletes their class
+DELIMITER $$
+drop procedure if exists DeleteClass $$
+create procedure DeleteClass (myClassId int
+)
+begin
+delete from Classroom where classId = myClassId;
+end $$
+DELIMITER ;
+
+#instructor deletes their quiz
+DELIMITER $$
+drop procedure if exists DeleteQuiz $$
+create procedure DeleteQuiz (myQuizId int
+)
+begin
+delete from Quizzes where QuizId = myQuizId;
+end $$
+DELIMITER ;
+
+
+

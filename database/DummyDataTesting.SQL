@@ -26,7 +26,7 @@ select * from Readings;
 select * from readingObjectives;
 */
 
-/*TC 1: Insert a bunch of users*/
+/*TC 1: Insert a bunch of users: All set!*/
 -- Method: InsertNewUser
 CALL InsertNewUser("ashley_burnett", "burnetta@merrimack.edu", FALSE, "Computer Science", NULL, "Ashley", "Burnett"); -- student, 1
 CALL InsertNewUser("lorelai_gilmore", "gilmorel@merrimack.edu", FALSE, "Computer Science", NULL, "Lorelai", "Gilmore"); -- student 2
@@ -42,7 +42,7 @@ CALL InsertNewUser("alyssa_olona", "olonaa@merrimack.edu", FALSE, "Computer Scie
 CALL InsertNewUser("lucas_danes", "danesl@merrimack.edu", FALSE, "Computer Science", NULL, "Lucas", "Danes"); -- student 12
 CALL InsertNewUser("ron_weasley", "weasleyw@merrimack.edu", FALSE, "Computer Science", NULL, "Ron", "Weasley"); -- student 13
 
-/*TC 1.1: Insert a bunch of classes*/
+/*TC 1.1: Insert a bunch of classes: All set!*/
 -- Method: InsertNewClass
 CALL InsertNewClass(101, "Chemistry", "phillipsa@merrimack.edu"); -- Abigail Phillips
 CALL InsertNewClass(102, "Biology", "grangerh@merrimack.edu"); -- Hermione Granger
@@ -77,17 +77,29 @@ CALL EnrollStudent(104, "weasleyw@merrimack.edu");   -- Ron Weasley → Sociolog
 CALL EnrollStudent(104, "potterh@merrimack.edu");    -- Harry Potter -> Sociology
  
  /*TC 4.1: Professor gets all class enrollee*/
- -- Method: getEnrolleesByClass
- call getEnrolleesByClass(105); -- should be lorelai and sam
- 
- -- Method: getStudentsByClass
+ -- Method: getEnrolleesByClass (All set!)
+call getEnrolleesByClass(105); -- should be lorelai and sam
+call getEnrolleesByClass(103); -- alyssa and luke
+call getEnrolleesByClass(101); -- sam and david
+
+ -- Method: getStudentsByClass (All set!)
  call getStudentsClasses(3); -- soc and geometry
+ call getStudentsClasses(6); -- 101,105
  
- -- Method: getInstructorClasses
-call getInstructorClasses(8);
- 
+ -- Method: getInstructorClasses (All set!)
+call getInstructorClasses(8); -- GW: 104, 106, 109
+call getInstructorClasses(5); -- AP: 101, 105
+call getInstructorClasses(4); -- HG: 102, 103, 107, 108
+
+-- Method: InsertNewReading (All set!)
+call InsertNewReading(4, 107, "Prussian History", "Documents/prussia.pdf");
+call InsertNewReading(5, 101, "Cells", "Documents/cells.pdf");
+call InsertNewReading(8, 104, "Inequality", "Documents/inequality.pdf");
+
+
  -- Method: InsertNewQuiz
-call InsertNewQuiz("Fall Of Prussia", 4, 107);
+call InsertNewQuiz("Fall Of Prussia", 4, 107, @newQuizId);
+call InsertNewQuiz("Quiz 1", 5, 105, @newQuizId);
 
 -- ADD READINGS (INSERTS FOR NOW)
 INSERT INTO Readings (instructorId, classId, readingName, filePath, uploadDate)
@@ -126,9 +138,9 @@ call InsertNewQuestion(1, "Why did Prussia fall?", "Medium", "Military", "Govern
 call InsertNewQuestion(2, "Why was military bad?", "Easy", "No training", "Outdated tactics", "They were surrounded", "Revolution", "C", 4, 1);
 call InsertNewQuestion(3, "Question 3", "hard", "A1", "A2", "A3", "A4", "A", 4, 1);
 
-call InsertNewQuestion(4, "Question 4", "Medium", "A1", "A2", "A3", "A4", "A", 2, 1);
-call InsertNewQuestion(5, "Question 5", "Easy", "A1", "A2", "A3", "A4", "A", 2, 1);
-call InsertNewQuestion(6, "Question 6", "Medium", "A1", "A2", "A3", "A4", "A", 2, 1);
+call InsertNewQuestion(4, "Question 4", "medium", "A1", "A2", "A3", "A4", "A", 2, 1);
+call InsertNewQuestion(5, "Question 5", "easy", "A1", "A2", "A3", "A4", "A", 2, 1);
+call InsertNewQuestion(6, "Question 6", "medium", "A1", "A2", "A3", "A4", "A", 2, 1);
 
 call InsertNewQuestion(7, "Question 7", "hard", "A1", "A2", "A3", "A4", "A", 3, 1);
 
@@ -137,19 +149,24 @@ select * from Questions, QuestionObjectives, QuestionChoices; -- everything look
  -- GOOD UP UNTIL HERE
  
  -- Method: DeleteQuestion
-call DeleteQuestion(3); -- deletes question number 4!
+-- call DeleteQuestion(3); -- deletes question number 4! make sure ids update
  
 -- Method: DeleteClass
+-- call DeleteClass(110);
   
 -- Method: DeleteClassEnrollee
-   
+-- call DeleteClassEnrollee(102, 10);   
+
 -- Method: DeleteChoice
+call GetNextQuestion(1, 10);
     
 -- Method: DeleteUser
 
 -- Method: DeleteQuiz
 
 -- Method: SelectStudentObjective
+call SelectStudentObjective(11, 1, "Military");
+call SelectStudentObjective(11, 1, "Geography");
 
 -- Method: GetNextQuestion
 
@@ -165,7 +182,7 @@ join QuestionChoices qc on qu.questionId = qc.questionId
 where q.quizId = 1;
 
 #display quiz questions
-select q.quizName, qu.questionText, qc.choiceLabel, qc.choiceText
+select qu.questionText, qc.choiceLabel, qc.choiceText
 from Quizzes q
 join Questions qu on q.quizId = qu.quizId
 join QuestionChoices qc on qu.questionId = qc.questionId
@@ -181,4 +198,8 @@ where qu.questionId = 1;
         q.quizName
     FROM Quizzes q
     WHERE q.classId = 107;
+    
+    SHOW DATABASES;
+
+    
  
