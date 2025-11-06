@@ -210,6 +210,18 @@ end $$
 delimiter ;
 
 #Get readings by class
+DELIMITER $$
+drop procedure if exists getReadingsByClass $$
+create procedure getReadingsByClass(
+myclassId int
+)
+BEGIN
+SELECT 
+        r.readingName, r.filePath
+    FROM Readings r
+    WHERE r.classId = myClassId;
+END$$
+DELIMITER ;
 
 #create new quiz- just inserts basic quiz info
 DELIMITER $$
