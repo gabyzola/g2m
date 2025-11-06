@@ -22,7 +22,7 @@ public class QuizController {
         this.bl = new BusinessLogic(dal);
     }
 
-    // Register a new user
+    // Register a new user: Ready to connect
     @PostMapping("/register")
     public boolean registerUser(@RequestBody Map<String, Object> data) {
         String username = (String) data.get("username");
@@ -36,7 +36,7 @@ public class QuizController {
         return bl.registerUser(username, email, isInstructor, major, subject, firstName, lastName);
     }
 
-    //create class
+    //create class: Ready to connect
     @PostMapping("/class")
     public boolean createClass(@RequestBody Map<String, Object>data) {
         int classId = (int) data.get("classId");
@@ -45,13 +45,13 @@ public class QuizController {
         return bl.createClass(classId, className, instructorEmail);
     }
 
-    //display a list of instructor classes
+    //display a list of instructor classes: Ready to connect
     @GetMapping("/instructors/{instructorId}/classes")
     public void viewInstructorClasses(@PathVariable int instructorId) {
         bl.viewInstructorClasses(instructorId);
     }
 
-    // Enroll student
+    // Enroll student: NOT ready
     @PostMapping("/enroll")
     public boolean enrollStudent(@RequestBody Map<String, Object> data) {
         int classId = (int) data.get("classId");
@@ -59,25 +59,25 @@ public class QuizController {
         return bl.enrollStudentInClass(classId, email);
     }
 
-    // Search students
+    // Search students: Ready to connect
     @GetMapping("/students/search")
     public ArrayList<Student> searchStudent(@RequestParam String type, @RequestParam String query) {
         return bl.searchStudent(type, query);
     }
 
-    //List enrollees in a class
+    //List enrollees in a class: NOT ready 
     @GetMapping("/classes/{classId}/enrollees")
         public void viewClassEnrollees(@PathVariable int classId) {
         bl.viewClassEnrollees(classId);
     }
 
-    //display student classes
+    //display student classes: Ready to connect
     @GetMapping("/students/{studentId}/classes")
     public void viewStudentClasses(@PathVariable int studentId) {
         bl.viewStudentClasses(studentId);
     }
 
-    //upload reading
+    //upload reading: NOT ready
     @PostMapping("/classes/{classId}/readings")
     public boolean uploadReading(@PathVariable int classId, @RequestBody Map<String, Object> data) {
         int instructorId = (int) data.get("instructorId");
@@ -86,7 +86,7 @@ public class QuizController {
         return bl.uploadReading(instructorId, classId, readingName, filePath);
     }
 
-    //create quiz
+    //create quiz: NOT ready
     @PostMapping("/classes/{classId}/quiz")
     public boolean createQuiz(@PathVariable int classId, @RequestBody Map<String, Object> data) {
         String quizName = (String) data.get("quizName");
@@ -96,7 +96,7 @@ public class QuizController {
         return bl.createQuiz(quizName, instructorId, classId, readingIds, questions);
     }
 
-    //view quizzes for a class
+    //view quizzes for a class: Ready to connect
     @GetMapping("/classes/{classId}/quizzes")
     public void viewQuizzesByClass(@PathVariable int classId) {
         bl.viewQuizzesByClass(classId);
@@ -105,9 +105,6 @@ public class QuizController {
     //display relavant learning objectives
 
     //take quiz
-
-
-
 
    
 }
