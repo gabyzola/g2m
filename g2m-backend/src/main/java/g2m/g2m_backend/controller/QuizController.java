@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 @RestController
 @RequestMapping("/api")
@@ -16,6 +17,7 @@ import java.util.Map;
 public class QuizController {
 
     private final BusinessLogic bl;
+    Scanner in = new Scanner(System.in); //not sure if i need this but it gets rid of errors
 
     public QuizController() {
         QuizDal dal = new QuizDal();
@@ -59,12 +61,6 @@ public class QuizController {
         return bl.enrollStudentInClass(classId, email);
     }
 
-    // Search students: Ready to connect
-    @GetMapping("/students/search")
-    public ArrayList<Student> searchStudent(@RequestParam String type, @RequestParam String query) {
-        return bl.searchStudent(type, query);
-    }
-
     //List enrollees in a class: NOT ready 
     @GetMapping("/classes/{classId}/enrollees")
         public void viewClassEnrollees(@PathVariable int classId) {
@@ -102,9 +98,35 @@ public class QuizController {
         bl.viewQuizzesByClass(classId);
     }
 
-    //display relavant learning objectives
+    // Search students: Ready to connect
+    @GetMapping("/students/search")
+    public ArrayList<Student> searchStudent(@RequestParam String type, @RequestParam String query) {
+        return bl.searchStudent(type, query);
+    }
 
-    //take quiz
+    //display relavant learning objectives: NOT ready
+    @GetMapping("/quizzes/{quizId}/objectives")
+    public void viewObjectivesByQuiz(@PathVariable int quizId) {
+        bl.viewObjectivesByQuiz(quizId);
+    }
+
+    //take quiz: NOT ready
+    @PostMapping("/quizzes/{quizId}/take/{studentId}")
+    public void takeQuiz(@PathVariable int studentId, @PathVariable int quizId) {
+        Scanner in = new Scanner(System.in);
+        bl.takeQuiz(studentId, quizId, in);
+    }
+
+    //display student badges: NOT ready
+    @GetMapping("/students/{studentId}/badges")
+    public void viewStudentBadges(@PathVariable int studentId) {
+        bl.displayStudentBadges(studentId);
+    }
+
+    //display all badges: Ready to connect
+    public void viewAllBadges() {
+        bl.displayAllBadges();
+    }
 
    
 }
