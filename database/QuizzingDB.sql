@@ -4,10 +4,18 @@ USE QuizzingDB;
 
 DROP TABLE IF EXISTS Attempts; #tracks student attemps
 DROP TABLE IF EXISTS Questions; #stores questions (input from professor)
-DROP TABLE IF EXISTS LearningObjectives; #stores learning objectives (input from student or professor)
+DROP TABLE IF EXISTS ReadingObjectives; #stores learning objectives (input from student or professor)
+DROP TABLE IF EXISTS Reading;
+DROP TABLE IF EXISTS QuestionChoices;
+DROP TABLE IF EXISTS Badges;
+DROP TABLE IF EXISTS StudentBadges;
+DROP TABLE IF EXISTS QuestionObjectives;
 DROP TABLE IF EXISTS Students; #keeps track of students and accounts
-DROP TABLE IF EXISTS Archives; #past information
-
+DROP TABLE IF EXISTS UserAccounts;
+DROP TABLE IF EXISTS Instructors;
+DROP TABLE IF EXISTS Classroom;
+DROP TABLE IF EXISTS ClassEnrollees;
+DROP TABLE IF EXISTS Quizzes;
 
 CREATE TABLE UserAccounts (
     userId int auto_increment PRIMARY KEY,              
@@ -86,7 +94,7 @@ CREATE TABLE QuestionChoices (
 -- add the foreign key after both tables exist (to get rid of circular dependency)
 ALTER TABLE Questions
 ADD CONSTRAINT fk_correct_choice
-FOREIGN KEY (correct_choice_id) REFERENCES QuestionChoices(choiceId);
+FOREIGN KEY (correct_choice_id) REFERENCES QuestionChoices(choiceId) ON DELETE CASCADE;
 
 
 CREATE TABLE Attempts (
@@ -121,7 +129,7 @@ CREATE TABLE Readings (
     classId INT,
     readingName VARCHAR(255) NOT NULL,
     filePath VARCHAR(500), 
-    uploadDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    -- uploadDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (instructorId) REFERENCES Instructors(instructorId) ON DELETE CASCADE,
     FOREIGN KEY (classId) REFERENCES Classroom(classId) ON DELETE SET NULL
 );
@@ -132,7 +140,7 @@ CREATE TABLE ReadingObjectives (
     classId int not null,
     objectiveName VARCHAR(255) NOT NULL,
     -- confidenceScore DECIMAL(5,2),-- commented out for now...this is likely necessary as I implement machine learning s 
-    isApproved BOOLEAN DEFAULT FALSE, 
+    -- isApproved BOOLEAN DEFAULT FALSE, 
     FOREIGN KEY (readingId) REFERENCES Readings(readingId) ON DELETE CASCADE,
     FOREIGN KEY (classId) REFERENCES Classroom(classId) ON DELETE CASCADE
 );
@@ -143,6 +151,14 @@ CREATE TABLE QuestionObjectives (
     PRIMARY KEY (questionId, objectiveId),
     FOREIGN KEY (questionId) REFERENCES Questions(questionId) ON DELETE CASCADE,
     FOREIGN KEY (objectiveId) REFERENCES readingObjectives(objectiveId) ON DELETE CASCADE
+);
+
+CREATE TABLE QuizReadings (
+    quizId INT NOT NULL,
+    readingId INT NOT NULL,
+    PRIMARY KEY (quizId, readingId),
+    FOREIGN KEY (quizId) REFERENCES Quizzes(quizId) ON DELETE CASCADE,
+    FOREIGN KEY (readingId) REFERENCES Readings(readingId) ON DELETE CASCADE
 );
 
 /*Makes sure that unneccessary learning objectives aren't displayed for a student!!!*/
