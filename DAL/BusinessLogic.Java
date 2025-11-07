@@ -61,8 +61,7 @@ public class BusinessLogic {
         }
         System.out.println("\nClass Enrollees:");
         for (Map<String, Object> e : enrollees) {
-            System.out.println("- " + e.get("firstName") + " " + e.get("lastName") + " (Email: " +
-                    e.get("email") + ")");
+            System.out.println("- " + e.get("firstName") + " " + e.get("lastName"));
         }
     }
 
@@ -83,7 +82,7 @@ public class BusinessLogic {
     //add reading to a class module + get learning objectives from reading and store it in the db
     public boolean uploadReading(int instructorId, int classId, String readingName, String filePath) {
         try {
-            
+
             // verify that path is valid: causing an error rn so i ignore
             /* 
             if (filePath == null || !filePath.isEmpty()) {
@@ -100,6 +99,7 @@ public class BusinessLogic {
                 return false;
             }
 
+            /* 
             // machine learning not ready yet, this is a placeholder
             List<String> extractedObjectives = new ArrayList<>();
             extractedObjectives.add("Understand key concepts from the text");
@@ -113,6 +113,7 @@ public class BusinessLogic {
                     System.out.println("Failed to insert objective: " + objective);
                 }
             }
+                */
 
             System.out.println("Reading and objectives uploaded successfully!");
             return true;

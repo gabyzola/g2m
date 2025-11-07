@@ -15,7 +15,10 @@ public class PresentationLayer {
 
     public static void printCommands() {
         System.out.println("\n===== Available Commands =====");
+        //Working
         System.out.println("1. Register New User");
+
+        //Working
         System.out.println("2. Enroll Student in Class");
 
         //Working
@@ -42,10 +45,10 @@ public class PresentationLayer {
         //Working
         System.out.println("12. Instructor: View Instructor Classes");
 
-        //ERROR
+        //Working
         System.out.println("13. View Class Enrollees");
 
-        //ERROR: invalid reading file
+        //Working (No added objectives for now)
         System.out.println("14. Upload Reading");
         System.out.println("15. View Objectives By Quiz");
         System.out.println("Type 'exit' to quit.");
@@ -162,8 +165,8 @@ public class PresentationLayer {
                         int classForQuiz = Integer.parseInt(in.nextLine());
 
                         List<QuestionData> questions = new ArrayList<>();
-                        questions.add(new QuestionData("What is 2 + 2?", "easy", "3", "4", "5", "6", 'B', 1, 0));
-                        questions.add(new QuestionData("Which planet is closest to the Sun?", "easy", "Earth", "Venus", "Mercury", "Mars", 'C', 1, 0));
+                        questions.add(new QuestionData(1, "What is 2 + 2?", "easy", "choice a", "choice b", "choice c", "choice d", 'B', 1, 1));
+                        questions.add(new QuestionData(2, "Which planet is closest to the Sun?", "easy", "choice a", "choice b", "choice c", "choice d", 'C', 1, 1));
                         List<Integer> readingIds = new ArrayList<>();
 
                         boolean quizCreated = logic.createQuiz(quizName, instructorId, classForQuiz, readingIds, questions);

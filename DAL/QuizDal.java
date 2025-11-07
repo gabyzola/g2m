@@ -149,7 +149,7 @@ public class QuizDal {
     //lists class enrollees
     public List<Map<String, Object>> searchForEnrolleesByClass(int classId) {
         List<Map<String, Object>> results = new ArrayList<>();
-        try (CallableStatement cs = myConnection.prepareCall("{Call getEnrolleeByClass(?)}")) {
+        try (CallableStatement cs = myConnection.prepareCall("{Call getEnrolleesByClass(?)}")) {
             
             cs.setInt(1, classId);
             ResultSet rs = cs.executeQuery();

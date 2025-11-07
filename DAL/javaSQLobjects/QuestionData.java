@@ -1,6 +1,7 @@
 package g2m.DAL.javaSQLobjects;
 
 public class QuestionData {
+    private int questionNumber;
     private String questionText;
     private String difficulty;
     private String choiceA, choiceB, choiceC, choiceD;
@@ -8,9 +9,10 @@ public class QuestionData {
     private int objectiveId;
     private int quizId; // optional placeholder for now
 
-    public QuestionData(String questionText, String difficulty,
+    public QuestionData(int questionNumber, String questionText, String difficulty,
                         String choiceA, String choiceB, String choiceC, String choiceD,
                         char correctAnswer, int objectiveId, int quizId) {
+        this.questionNumber= questionNumber;
         this.questionText = questionText;
         this.difficulty = difficulty;
         this.choiceA = choiceA;
@@ -23,6 +25,7 @@ public class QuestionData {
     }
 
     // Getters
+    public int getQuestionNumber() {return questionNumber; }
     public String getQuestionText() { return questionText; }
     public String getDifficulty() { return difficulty; }
     public String getChoiceA() { return choiceA; }
