@@ -195,6 +195,28 @@ public class BusinessLogic {
         }
     }
 
+    //placeholder binary method for adjusting difficulty
+    //might end up sticking this somewhere else
+    //this will be roped into the quiz taking process like the machine learning will be, but really doesnt need to be in the machine learning integration
+    private String adjustDifficulty(String currentDifficulty, double performance) {
+        if (performance > 0.8) {
+            switch (currentDifficulty) {
+                case "easy":
+                    return "medium";
+                case "medium":
+                    return "hard";
+            }
+        } else if (performance < 0.4) {
+            switch (currentDifficulty) {
+                case "hard":
+                    return "medium";
+                case "medium":
+                    return "easy";
+            }
+        }
+        return currentDifficulty;
+    }
+
     public void closeConnection() {
         dal.close();
     }
