@@ -19,6 +19,7 @@ import g2m.g2m_backend.DAL.javaSQLobjects.Student;
 import jakarta.annotation.PostConstruct;
 import g2m.g2m_backend.DAL.javaSQLobjects.Badge;
 
+@Repository
 public class QuizDal {
 
     //creates connection object
@@ -43,20 +44,20 @@ public class QuizDal {
 
     //getMySQLConnection
     //establishes connection to the database-- this is a local instance!
-    private Connection getMySQLConnection(String databaseName, String user, String password) {
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/" + databaseName, user, password);
-            System.out.println("Connection to " + databaseName + " database successful! Ready for use.");
-            return con;
-        }
-         catch (ClassNotFoundException e) {
-        System.out.println("JDBC Driver not found: " + e.getMessage());
+    private Connection getMySQLConnection(String url, String user, String password) {
+    try {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection con = DriverManager.getConnection(url, user, password);
+        System.out.println("Connection successful! Connected to: " + url);
+        return con;
+        } catch (ClassNotFoundException e) {
+            System.out.println("JDBC Driver not found: " + e.getMessage());
         } catch (SQLException exception) {
-            System.out.println("Failed to connect to the database" + exception.getMessage());
+            System.out.println("Failed to connect to the database: " + exception.getMessage());
         }
         return null;
     }
+
 
     //register new user
     public boolean insertNewUser(String username, String email, boolean isInstructor, String major, String schoolSubject, String firstName, String lastName) {

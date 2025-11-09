@@ -145,7 +145,7 @@ public class PresentationLayer {
                         int sId = Integer.parseInt(in.nextLine());
                         System.out.print("Enter quiz ID: ");
                         int qId = Integer.parseInt(in.nextLine());
-                        logic.takeQuiz(sId, qId, in);
+                        //logic.takeQuiz(sId, qId, in);
                         break;
 
                     case "5": //display student badges in UI (passes in studentid to get specific badges)

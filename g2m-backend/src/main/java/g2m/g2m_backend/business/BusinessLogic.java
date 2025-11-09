@@ -1,27 +1,24 @@
 package g2m.g2m_backend.business;
-
 //import g2m.DAL.QuizDal;
 import g2m.g2m_backend.DAL.javaSQLobjects.Student;
 import g2m.g2m_backend.DAL.javaSQLobjects.Badge;
 import g2m.g2m_backend.DAL.javaSQLobjects.QuestionData;
 import g2m.g2m_backend.DAL.QuizDal;
-
-
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+@Service
 public class BusinessLogic {
 
     private QuizDal dal;
 
     // store cached data
-    public ArrayList<Student> students = new ArrayList<>();
-    public ArrayList<Badge> badges = new ArrayList<>();
+    // public ArrayList<Student> students = new ArrayList<>();
+    // public ArrayList<Badge> badges = new ArrayList<>();
 
     public BusinessLogic(QuizDal dal) {
         this.dal = dal;
-        this.students = dal.getAllStudents();
-        this.badges = dal.getAllBadges();
     }
 
     //register a new user 
@@ -36,17 +33,8 @@ public class BusinessLogic {
     }
 
     //display instructor classes
-    public void viewInstructorClasses(int instructorId) {
-        List<Map<String, Object>> classes = dal.getInstructorClasses(instructorId);
-        if (classes.isEmpty()) {
-            System.out.println("No classes found for instructor ID: " + instructorId);
-            return;
-        }
-        System.out.println("\nClasses Taught:");
-        for (Map<String, Object> c : classes) {
-            System.out.println("- " + c.get("className") + " (Class ID: " +
-                    c.get("classId") + ")");
-        }
+    public List<Map<String, Object>> viewInstructorClasses(int instructorId) {
+        return dal.getInstructorClasses(instructorId);
     }
 
     //enroll a student in a class by email
@@ -56,31 +44,13 @@ public class BusinessLogic {
 
     //list class enrollees
     //view all class enrollees for a class
-    public void viewClassEnrollees(int classId) {
-        List<Map<String, Object>> enrollees = dal.searchForEnrolleesByClass(classId);
-        if (enrollees.isEmpty()) {
-            System.out.println("No enrollees found for class ID: " + classId);
-            return;
-        }
-        System.out.println("\nClass Enrollees:");
-        for (Map<String, Object> e : enrollees) {
-            System.out.println("- " + e.get("firstName") + " " + e.get("lastName") + " (Email: " +
-                    e.get("email") + ")");
-        }
+    public List<Map<String, Object>> viewClassEnrollees(int classId) {
+        return dal.searchForEnrolleesByClass(classId);
     }
 
     //display student classes
-    public void viewStudentClasses(int studentId) {
-        List<Map<String, Object>> classes = dal.getStudentsClasses(studentId);
-        if (classes.isEmpty()) {
-            System.out.println("No classes found for student ID: " + studentId);
-            return;
-        }
-        System.out.println("\nClasses Enrolled:");
-        for (Map<String, Object> c : classes) {
-            System.out.println("- " + c.get("className") + " (Instructor: " +
-                    c.get("instructorFirstName") + " " + c.get("instructorLastName") + ")");
-        }
+    public List<Map<String, Object>> viewStudentClasses(int studentId) {
+        return dal.getStudentsClasses(studentId);
     }
 
     //add reading to a class module + get learning objectives from reading and store it in the db
@@ -176,166 +146,30 @@ public class BusinessLogic {
     }
 
     //display quizzes
-    public void viewQuizzesByClass(int classId) {
-        List<Map<String, Object>> quizzes = dal.getQuizzesByClass(classId);
-        if (quizzes.isEmpty()) {
-            System.out.println("No quizzes found for class ID: " + classId);
-            return;
-        }
-        System.out.println("\nQuizzes for Class ID " + classId + ":");
-        for (Map<String, Object> q : quizzes) {
-            System.out.println("- " + q.get("quizName") + " (Quiz ID: " +
-                    q.get("quizId") + ")");
-        }
+    public List<Map<String, Object>> viewQuizzesByClass(int classId) {
+        return dal.getQuizzesByClass(classId);
     }
 
     //display relavant learning objectives based on the quiz
-    public void viewObjectivesByQuiz(int quizId) {
-        List<Map<String, Object>> objectives = dal.getObjectivesByQuiz(quizId);
-        if (objectives.isEmpty()) {
-            System.out.println("No quizzes found for class ID: " + quizId);
-            return;
-        }
-        System.out.println("\nObjectives for Quiz ID " + quizId + ":");
-        for (Map<String, Object> o : objectives) {
-            System.out.println("- " + o.get("objectiveName") + " (Objective ID: " +
-                    o.get("objectiveId") + ")");
-        }
+    public List<Map<String, Object>> viewObjectivesByQuiz(int quizId) {
+        return dal.getObjectivesByQuiz(quizId);
     }
 
     //take quiz + select learning objective + get questions + get score (+ maybe get badge!)
-    public void takeQuiz(int studentId, int quizId, Scanner in) {
-        System.out.println("Starting quiz...");
-
-        List<Map<String, Object>> objectives = dal.getObjectivesByQuiz(quizId);
-        if (objectives.isEmpty()) {
-            System.out.println("No learning objectives available for this quiz.");
-        } else {
-            System.out.println("Available Learning Objectives:");
-            for (int i = 0; i < objectives.size(); i++) {
-                String objName = (String) objectives.get(i).get("objectiveName"); 
-                System.out.println((i + 1) + ". " + objName);
-            }
-
-            //max amount of objectives is 3, i can chamge this later
-            System.out.print("How many objectives would you like to select (max 3)? ");
-            int numToSelect = Integer.parseInt(in.nextLine());
-            if (numToSelect > 3) numToSelect = 3;
-
-            for (int i = 0; i < numToSelect; i++) {
-                System.out.print("Enter the number of objective #" + (i + 1) + ": ");
-                int choice = Integer.parseInt(in.nextLine());
-                if (choice >= 1 && choice <= objectives.size()) {
-                    String chosenObjectiveName = (String) objectives.get(choice - 1).get("objectiveName");
-                    boolean selected = dal.chooseLearningObjective(studentId, quizId, chosenObjectiveName);
-                    if (selected) {
-                        System.out.println("Selected: " + chosenObjectiveName);
-                    } else {
-                        System.out.println("Failed to select objective: " + chosenObjectiveName);
-                    }
-                } else {
-                    System.out.println("Invalid selection. Skipping...");
-                }
-            }
-        }
-
-        boolean moreQuestions = true;
-
-        while (moreQuestions) {
-            //get the next question (will soon be machine learning)
-            Map<String, Object> questionData = dal.getNextQuestion(quizId, studentId);
-
-            if (questionData == null || questionData.isEmpty()) {
-                System.out.println("No more questions available. Submitting quiz...");
-                moreQuestions = false;
-                break;
-            }
-
-            //get question text and id (maybe not id we'll see)
-            String questionText = (String) questionData.get("questionText");
-            int questionId = (int) questionData.get("questionId");
-
-            System.out.println("\nQuestion: " + questionText);
-
-            //create a map to link labels (A/B/C/D) to choiceIds
-            Map<String, Integer> choiceMap = new HashMap<>();
-
-            //loop through possible choices (A–D)
-            for (char label = 'A'; label <= 'D'; label++) {
-                String textKey = "choice" + label + "_Text";
-                String idKey = "choice" + label + "_Id";
-
-                if (questionData.containsKey(textKey) && questionData.get(textKey) != null) {
-                    System.out.println(label + ". " + questionData.get(textKey));
-                    choiceMap.put(String.valueOf(label), (int) questionData.get(idKey));
-                }
-            }
-
-            System.out.print("Enter your answer (A/B/C/D): ");
-            String answer = in.nextLine().trim().toUpperCase();
-
-            //check student's input
-            if (!choiceMap.containsKey(answer)) {
-                System.out.println("Invalid choice. Try again.");
-                continue;
-            }
-
-            int chosenChoiceId = choiceMap.get(answer);
-
-            //submit the answer
-            Map<String, Object> response = dal.submitAnswer(
-                    studentId,
-                    quizId,
-                    questionId,
-                    chosenChoiceId
-            );
-
-            //handle the response
-            if (response != null && response.containsKey("isCorrect")) {
-                boolean isCorrect;
-
-                // MySQL returns tinyint(1) as Integer sometimes, so convert safely
-                Object rawValue = response.get("isCorrect");
-                if (rawValue instanceof Boolean) {
-                    isCorrect = (Boolean) rawValue;
-                } else if (rawValue instanceof Number) {
-                    isCorrect = ((Number) rawValue).intValue() == 1;
-                } else {
-                    isCorrect = Boolean.parseBoolean(rawValue.toString());
-                }
-
-                System.out.println(isCorrect ? "Correct!" : "Incorrect.");
-            }
-        }
-
-        //after quiz ends, show score
-        Map<String, Object> score = dal.getQuizScore(studentId, quizId);
-        if (!score.isEmpty()) {
-            System.out.println("\n=== Quiz Completed ===");
-            System.out.println("Score: " + score.get("totalScore") + "/" + score.get("totalQuestions"));
-            System.out.println("Percentage: " + score.get("percentage") + "%");
-        }
+    public Map<String, Object> takeQuiz(int studentId, int quizId, List<Integer> answers) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("message", "Quiz-taking logic not yet implemented for web API.");
+        return result;
     }
 
     //display student's badges
-    public void displayStudentBadges(int studentId) {
-        List<Map<String, Object>> badges = dal.getStudentBadges(studentId);
-        if (badges.isEmpty()) {
-            System.out.println("No badges earned yet!");
-        } else {
-            System.out.println("Badges earned:");
-            for (Map<String, Object> b : badges) {
-                System.out.println("- " + b.get("badgeName"));
-            }
-        }
+    public List<Map<String, Object>> displayStudentBadges(int studentId) {
+        return dal.getStudentBadges(studentId);
     }
 
     //display all badges available to earn
-    public void displayAllBadges() {
-        System.out.println("All Available Badges:");
-        for (Badge badge : badges) {
-            System.out.println("- " + badge.getBadgeName() + " (Requires " + badge.getPointThreshold() + " pts)");
-        }
+    public ArrayList<Badge> displayAllBadges() {
+        return dal.getAllBadges();
     }
 
     /*misc*/
