@@ -2,8 +2,11 @@ package g2m.g2m_backend.business;
 //import g2m.DAL.QuizDal;
 import g2m.g2m_backend.DAL.javaSQLobjects.Student;
 import g2m.g2m_backend.DAL.javaSQLobjects.Badge;
+import g2m.g2m_backend.DAL.javaSQLobjects.Question;
 import g2m.g2m_backend.DAL.javaSQLobjects.QuestionData;
+import g2m.g2m_backend.DAL.javaSQLobjects.QuizQuestion;
 import g2m.g2m_backend.DAL.QuizDal;
+import g2m.g2m_backend.business.*;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -12,10 +15,6 @@ import java.util.*;
 public class BusinessLogic {
 
     private QuizDal dal;
-
-    // store cached data
-    // public ArrayList<Student> students = new ArrayList<>();
-    // public ArrayList<Badge> badges = new ArrayList<>();
 
     public BusinessLogic(QuizDal dal) {
         this.dal = dal;
@@ -153,6 +152,18 @@ public class BusinessLogic {
     //display relavant learning objectives based on the quiz
     public List<Map<String, Object>> viewObjectivesByQuiz(int quizId) {
         return dal.getObjectivesByQuiz(quizId);
+    }
+
+    //display quiz questions
+    public List<QuizQuestion> getQuizQuestions(int quizId) {
+        List<QuizQuestion> questions = dal.getQuizQuestions(quizId);
+
+        if (questions == null || questions.isEmpty()) {
+            return null;
+        } else {
+            System.out.println("Loaded " + questions.size() + " questions for quiz ID: " + quizId);
+        }
+        return questions;
     }
 
     //take quiz + select learning objective + get questions + get score (+ maybe get badge!)

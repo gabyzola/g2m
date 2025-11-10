@@ -81,7 +81,7 @@ CREATE TABLE Questions (
     quizId INT NOT NULL,
     difficulty ENUM('easy','medium','hard') NOT NULL,
     correct_choice_id INT,
-    FOREIGN KEY (quizId) REFERENCES Quizzes(quizId) ON DELETE CASCADE
+    FOREIGN KEY (quizId) REFERENCES Quizzes(quizId) ON DELETE SET NULL
 );
 
 CREATE TABLE QuestionChoices (
@@ -151,7 +151,7 @@ CREATE TABLE QuestionObjectives (
     objectiveId INT,
     PRIMARY KEY (questionId, objectiveId),
     FOREIGN KEY (questionId) REFERENCES Questions(questionId) ON DELETE CASCADE,
-    FOREIGN KEY (objectiveId) REFERENCES readingObjectives(objectiveId) ON DELETE CASCADE
+    FOREIGN KEY (objectiveId) REFERENCES ReadingObjectives(objectiveId) ON DELETE CASCADE
 );
 
 CREATE TABLE QuizReadings (
@@ -175,5 +175,5 @@ CREATE TABLE StudentObjectives (
 
 /*Makes sure that unneccessary learning objectives aren't displayed for a student!!!*/
 SELECT DISTINCT lo.*
-FROM readingObjectives lo
+FROM ReadingObjectives lo
 JOIN QuestionObjectives qo ON lo.objectiveId = qo.objectiveId;

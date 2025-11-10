@@ -5,6 +5,7 @@ import g2m.g2m_backend.business.BusinessLogic;
 import g2m.g2m_backend.DAL.javaSQLobjects.Badge;
 import g2m.g2m_backend.DAL.javaSQLobjects.QuestionData;
 import g2m.g2m_backend.DAL.javaSQLobjects.Student;
+import g2m.g2m_backend.DAL.javaSQLobjects.QuizQuestion;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -117,6 +118,12 @@ public class QuizController {
         return bl.viewObjectivesByQuiz(quizId);
     }
 
+    //get quiz questions
+    @GetMapping("/quizzes/{quizId}/questions")
+    public List<QuizQuestion>viewQuizQuestions(@PathVariable int quizId) {
+        return bl.getQuizQuestions(quizId);
+    }
+
     //take quiz: NOT ready
     @PostMapping("/quizzes/{quizId}/take/{studentId}")
     public Map<String, Object> takeQuiz(
@@ -124,7 +131,7 @@ public class QuizController {
             @PathVariable int studentId,
             @RequestBody Map<String, Object> requestBody) {
 
-        // Expecting something like: { "answers": [1, 3, 2, 4] }
+        // Expecting something like: { "answers": [1, 3, 2, 4] } ????
         List<Integer> answers = (List<Integer>) requestBody.get("answers");
 
         // Call business logic

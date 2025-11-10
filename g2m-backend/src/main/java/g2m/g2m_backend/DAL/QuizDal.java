@@ -16,8 +16,10 @@ import org.springframework.stereotype.Repository;
 
 
 import g2m.g2m_backend.DAL.javaSQLobjects.Student;
+import g2m.g2m_backend.business.DifficultyLevel;
 import jakarta.annotation.PostConstruct;
 import g2m.g2m_backend.DAL.javaSQLobjects.Badge;
+import g2m.g2m_backend.DAL.javaSQLobjects.QuizQuestion;
 
 @Repository
 public class QuizDal {
@@ -34,7 +36,7 @@ public class QuizDal {
     @Value("${spring.datasource.password}")
     private String password;
 
-    // No-arg constructor (Spring will inject the values)
+    //do not put any args here!
     public QuizDal() {}
 
     @PostConstruct
@@ -43,7 +45,7 @@ public class QuizDal {
     }
 
     //getMySQLConnection
-    //establishes connection to the database-- this is a local instance!
+    //establishes connection to the database-- this is a local instance right now!
     private Connection getMySQLConnection(String url, String user, String password) {
     try {
         Class.forName("com.mysql.cj.jdbc.Driver");
@@ -360,6 +362,52 @@ public class QuizDal {
             e.printStackTrace();
         }
         return results;
+    }
+
+    //display quiz questions
+    public List<QuizQuestion> getQuizQuestions(int quizId) {
+        List<QuizQuestion> questions = new ArrayList<>();
+        Map<Integer, QuizQuestion> questionMap = new HashMap<>();
+
+        try (CallableStatement cs = myConnection.prepareCall("{CALL getQuizQuestions(?)}")) {
+            cs.setInt(1, quizId);
+
+            try (ResultSet rs = cs.executeQuery()) {
+                while (rs.next()) {
+                    int questionId = rs.getInt("questionId");
+                    int questionNumber = rs.getInt("questionNumber"); //this is NOT questionId
+                    String questionText = rs.getString("questionText");
+                    String diff = rs.getString("difficulty").toUpperCase();
+                    String learningObjective = rs.getString("learningObjective");
+                    int choiceId = rs.getInt("choiceId");
+                    String choiceLabel = rs.getString("choiceLabel");
+                    String choiceText = rs.getString("choiceText");
+
+                    // If we haven't added this question yet, create it
+                    QuizQuestion question = questionMap.get(questionNumber);
+                    if (question == null) {
+                        question = new QuizQuestion();
+                        question.setQuestionId(questionId);
+                        question.setQuestionNumber(questionNumber);
+                        question.setQuestionText(questionText);
+                        question.setLearningObjective(learningObjective);
+                        DifficultyLevel difficulty = DifficultyLevel.valueOf(diff);
+                        question.setDifficulty(difficulty);
+                        question.setChoices(new ArrayList<>());
+                        questionMap.put(questionNumber, question);
+                    }
+
+                    //adds the current choice to the question
+                    QuizQuestion.Choice choice = new QuizQuestion.Choice(choiceId, choiceLabel, choiceText);
+                    question.getChoices().add(choice);
+                }
+            }
+            questions.addAll(questionMap.values());
+        } 
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return questions;
     }
 
     //student selects objective before taking the quiz
