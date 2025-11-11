@@ -1,0 +1,7 @@
+# Node/npm artifacts
+node_modules/
+dist/
+.vite/
+
+# macOS metadata
+.DS_Store
