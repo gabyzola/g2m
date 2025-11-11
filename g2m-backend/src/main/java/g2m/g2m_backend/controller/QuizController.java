@@ -1,7 +1,8 @@
 package g2m.g2m_backend.controller;
 
-import g2m.g2m_backend.DAL.QuizDal;
+//import g2m.g2m_backend.DAL.QuizDal;
 import g2m.g2m_backend.business.BusinessLogic;
+import g2m.g2m_backend.business.QuizManager;
 import g2m.g2m_backend.DAL.javaSQLobjects.Badge;
 import g2m.g2m_backend.DAL.javaSQLobjects.QuestionData;
 import g2m.g2m_backend.DAL.javaSQLobjects.Student;
@@ -18,11 +19,13 @@ import java.util.Map;
 public class QuizController {
 
     private final BusinessLogic bl;
+    private final QuizManager ql;
     //Scanner in = new Scanner(System.in); //not sure if i need this but it gets rid of errors
 
-    public QuizController(BusinessLogic bl) {
+    public QuizController(BusinessLogic bl, QuizManager ql) {
         //QuizDal dal = new QuizDal();
         this.bl = bl;
+        this.ql = ql;
     }
 
     // Register a new user: Ready to connect
@@ -87,6 +90,7 @@ public class QuizController {
         return bl.uploadReading(instructorId, classId, readingName, filePath);
     }
 
+    /* 
     //create quiz: NOT ready
     @PostMapping("/classes/{classId}/quiz")
     public boolean createQuiz(@PathVariable int classId, @RequestBody Map<String, Object> data) {
@@ -96,6 +100,7 @@ public class QuizController {
         List<QuestionData> questions = (List<QuestionData>) data.get("questions");
         return bl.createQuiz(quizName, instructorId, classId, readingIds, questions);
     }
+        */
 
     //view quizzes for a class
     //TESTED: Good!
@@ -118,11 +123,32 @@ public class QuizController {
         return bl.viewObjectivesByQuiz(quizId);
     }
 
+    //display chosen objectives
+    @GetMapping("/quizzes/{studentId}/objectives")
+    public List<Map<String, Object>>viewStudentObjectives(@PathVariable int studentId) {
+        return bl.getStudentObjectives(studentId);
+    }
+
     //get quiz questions
+    //TESTED: Good!
     @GetMapping("/quizzes/{quizId}/questions")
     public List<QuizQuestion>viewQuizQuestions(@PathVariable int quizId) {
         return bl.getQuizQuestions(quizId);
     }
+
+    //start quiz, this will very likely be expanded upon
+    @PostMapping("/quizzes/{quizId}/start")
+    public QuizManager startQuiz(@PathVariable int quizId) {
+        return bl.startQuiz(quizId);
+    }
+
+    /* 
+    //get next question in quiz
+    @GetMapping("/quizzes/{quizId}/next")
+    public QuizQuestion getNextQuestion(@PathVariable int quizId, @RequestParam boolean previousCorrect) {
+        return ql.get(quizId).getNextQuestion(previousCorrect);
+    }
+
 
     //take quiz: NOT ready
     @PostMapping("/quizzes/{quizId}/take/{studentId}")
@@ -137,6 +163,7 @@ public class QuizController {
         // Call business logic
         return bl.takeQuiz(studentId, quizId, answers);
     }
+        */
 
 
     //display student badges

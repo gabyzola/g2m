@@ -2,11 +2,11 @@ package g2m.g2m_backend.business;
 //import g2m.DAL.QuizDal;
 import g2m.g2m_backend.DAL.javaSQLobjects.Student;
 import g2m.g2m_backend.DAL.javaSQLobjects.Badge;
-import g2m.g2m_backend.DAL.javaSQLobjects.Question;
+//import g2m.g2m_backend.DAL.javaSQLobjects.Question;
 import g2m.g2m_backend.DAL.javaSQLobjects.QuestionData;
 import g2m.g2m_backend.DAL.javaSQLobjects.QuizQuestion;
 import g2m.g2m_backend.DAL.QuizDal;
-import g2m.g2m_backend.business.*;
+//import g2m.g2m_backend.business.*;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -76,6 +76,7 @@ public class BusinessLogic {
             extractedObjectives.add("Summarize main ideas and supporting details");
 
         
+            //calls insertnewreadingobjectives to make sure theyre stored in db
             for (String objective : extractedObjectives) {
                 boolean objectiveInserted = dal.insertNewReadingObjective(0, classId, objective);
                 if (!objectiveInserted) {
@@ -94,55 +95,20 @@ public class BusinessLogic {
     }
 
 
+    /* 
     //create quiz + add questions
     public boolean createQuiz(String quizName, int instructorId, int classId, List<Integer> readingIds,
                               List<QuestionData> questions) {
-        try {
-            //add in basic info
-            int quizId = dal.insertNewQuiz(quizName, instructorId, classId);
-            if (quizId == -1) {
-                System.out.println("Failed to create quiz.");
-                return false;
-            }
-            System.out.println("Quiz created successfully with ID: " + quizId);
+        //Call insertNewQuiz
 
-            for (int readingId : readingIds) {
-            boolean linked = dal.insertQuizReading(quizId, readingId);
-                if (!linked) {
-                    System.out.println("Failed to link reading " + readingId + " to quiz.");
-                }
-            }
+        //Call insertQuizReading
 
-            // add each question to seperate class for storage
-            for (QuestionData q : questions) {
-                boolean questionAdded = dal.insertNewQuestion(
-                        q.getQuestionText(),
-                        q.getDifficulty(),
-                        q.getChoiceA(),
-                        q.getChoiceB(),
-                        q.getChoiceC(),
-                        q.getChoiceD(),
-                        q.getCorrectAnswer(),
-                        q.getObjectiveId(),
-                        q.getQuizId() 
-                );
+        //call get Objectives by quiz to populate those fields
 
-                if (questionAdded) {
-                    System.out.println("Question added: " + q.getQuestionText());
-                } else {
-                    System.out.println("Failed to add question: " + q.getQuestionText());
-                }
-            }
-
-            //placeholder for testing
-            System.out.println("Quiz published successfully!");
-            return true;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
+        //prof clicks "add question"
+        //call insert new question every time when they click "add question"
     }
+        */
 
     //display quizzes
     public List<Map<String, Object>> viewQuizzesByClass(int classId) {
@@ -166,12 +132,72 @@ public class BusinessLogic {
         return questions;
     }
 
-    //take quiz + select learning objective + get questions + get score (+ maybe get badge!)
-    public Map<String, Object> takeQuiz(int studentId, int quizId, List<Integer> answers) {
+    //student chooses learning objectives
+    public boolean chooseLearningObjectives(int studentId, int objectiveId, String objectiveName) {
+        return dal.chooseLearningObjective(studentId, objectiveId, objectiveName);
+    }
+
+    //return student objectives (needs to get sent to quiz taking process so it can choose questions)
+    //display relavant learning objectives based on the quiz
+    public List<Map<String, Object>> getStudentObjectives(int quizId) {
+        return dal.getObjectivesByQuiz(quizId);
+    }
+
+    //starts quiz by getting all of the questions that match getStudentObjectives
+    public QuizManager startQuiz(int quizId) {
+        List<QuizQuestion> questions = dal.getQuizQuestions(quizId);
+        if (questions == null || questions.isEmpty()) {
+            throw new IllegalStateException("No questions found for quiz " + quizId);
+        }
+        return new QuizManager(questions);
+    }
+
+
+    public Map<String, Object> takeQuiz(int studentId, int quizId, List<String> submittedAnswers) {
         Map<String, Object> result = new HashMap<>();
-        result.put("message", "Quiz-taking logic not yet implemented for web API.");
+
+        //start the quiz
+        QuizManager manager = startQuiz(quizId);
+        List<Map<String, Object>> questionResults = new ArrayList<>();
+        int correctCount = 0;
+
+        //iterate over submitted answers
+        for (String answer : submittedAnswers) {
+            if (manager.isQuizOver()) break;
+
+            // get next question using quizManger
+            QuizQuestion question = manager.getNextQuestion(correctCount > 0); 
+            if (question == null) break;
+
+            //check correctness
+            boolean isCorrect = question.getChoices().stream()
+                    .filter(c -> c.getChoiceLabel().equalsIgnoreCase(answer))
+                    .anyMatch(c -> c.getChoiceLabel().equalsIgnoreCase(answer) && isCorrectChoice(c, question));
+
+            if (isCorrect) correctCount++;
+
+            //stores each individual result
+            Map<String, Object> qResult = new HashMap<>();
+            qResult.put("question", question.getQuestionText());
+            qResult.put("selectedAnswer", answer);
+            qResult.put("correct", isCorrect);
+            questionResults.add(qResult);
+        }
+
+        //calcs the score
+        double score = (submittedAnswers.isEmpty() ? 0 : (double) correctCount / submittedAnswers.size());
+        result.put("score", score);
+        result.put("details", questionResults);
+        result.put("message", "Quiz completed!");
+
         return result;
     }
+
+    // helper to check if choice is correct (assuming you store correct choiceLabel somewhere)
+    private boolean isCorrectChoice(QuizQuestion.Choice choice, QuizQuestion question) {
+        return choice.getChoiceId() == question.getCorrectChoiceId();
+    }
+
 
     //display student's badges
     public List<Map<String, Object>> displayStudentBadges(int studentId) {

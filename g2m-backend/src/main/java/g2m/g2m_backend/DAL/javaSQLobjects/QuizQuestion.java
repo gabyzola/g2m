@@ -8,8 +8,10 @@ public class QuizQuestion {
     private int questionNumber;
     private String questionText;
     private String learningObjective;
+    private int objectiveId;
     private DifficultyLevel difficulty;
     private List<Choice> choices;
+    private int correctChoiceId;
 
     public QuizQuestion() {}
 
@@ -54,6 +56,14 @@ public class QuizQuestion {
         this.learningObjective = learningObjective;
     }
 
+    public String getObjectiveId() {
+        return learningObjective;
+    }
+
+    public void setObjectiveId(int objectiveId) {
+        this.objectiveId = objectiveId;
+    }
+
     public DifficultyLevel getDifficulty() {
         return difficulty;
     }
@@ -69,6 +79,9 @@ public class QuizQuestion {
     public void setChoices(List<Choice> choices) {
         this.choices = choices;
     }
+
+    public int getCorrectChoiceId() { return correctChoiceId; }
+    public void setCorrectChoiceId(int correctChoiceId) { this.correctChoiceId = correctChoiceId; }
 
     //created a new class for choices
     public static class Choice {

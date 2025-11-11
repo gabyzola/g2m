@@ -12,7 +12,7 @@ import g2m.g2m_backend.business.BusinessLogic;
 //all student ids will be automatically taken from their login info
 //students must not have to enter their ids
 public class PresentationLayer {
-
+/* 
     /*
     Commands I still need to do:
     - Assign badge to student (after quiz completion, check if badge earned, if so assign badge)
@@ -20,7 +20,7 @@ public class PresentationLayer {
     - View Instructor Classes
     - Get all badges
     - Complete quiz process (machine learning is creating a slight block but im on it)
-    */
+    
 
     // display main commands
     //these are commands available now
@@ -255,4 +255,5 @@ public class PresentationLayer {
 
         in.close();
     }
+        */
 }

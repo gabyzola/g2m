@@ -60,8 +60,8 @@ public class QuizDal {
         return null;
     }
 
-
     //register new user
+    //bl: done
     public boolean insertNewUser(String username, String email, boolean isInstructor, String major, String schoolSubject, String firstName, String lastName) {
         CallableStatement stmt = null;
         try {
@@ -88,6 +88,7 @@ public class QuizDal {
     }
 
     //create class- instructor does this!
+    //bl: done
     public boolean insertNewClass(int classId, String className, String instructorEmail) {
         CallableStatement stmt = null;
         try {
@@ -110,6 +111,7 @@ public class QuizDal {
     }
 
     //display instructor's classes
+    //bl:done
     public List<Map<String, Object>> getInstructorClasses(int instructorId) {
         List<Map<String, Object>> results = new ArrayList<>();
         try (CallableStatement cs = myConnection.prepareCall("{CALL getInstructorClasses(?)}")) {
@@ -130,6 +132,7 @@ public class QuizDal {
     }
 
     //enroll student in a class- owner of the class will only have this privilege
+    //bl: done
     public boolean enrollStudent(int classId, String email) {
         CallableStatement stmt = null;
         ResultSet rs = null;
@@ -167,6 +170,7 @@ public class QuizDal {
     }
 
     //lists class enrollees
+    //bl:done
     public List<Map<String, Object>> searchForEnrolleesByClass(int classId) {
         List<Map<String, Object>> results = new ArrayList<>();
         try (CallableStatement cs = myConnection.prepareCall("{Call getEnrolleeByClass(?)}")) {
@@ -191,6 +195,7 @@ public class QuizDal {
     }
 
     //lists student's classes
+    //bl: done
     public List<Map<String, Object>> getStudentsClasses(int studentId) {
         List<Map<String, Object>> results = new ArrayList<>();
         try (CallableStatement cs = myConnection.prepareCall("{CALL getStudentsClasses(?)}")) {
@@ -211,6 +216,7 @@ public class QuizDal {
     }
 
     //insert reading into class module- another instructor only priv
+    //bl: done
     public boolean insertNewReading(int instructorId, int classId, String readingName, String filePath) {
         CallableStatement stmt = null;
         try {
@@ -256,6 +262,7 @@ public class QuizDal {
     }
 
     //create quiz- instructor priv
+    //creates a quiz module- sets quiz name and automatically passes classId and instructorId
     public int insertNewQuiz(String quizName, int instructorId, int classId) {
         CallableStatement stmt = null;
         try {
@@ -282,6 +289,8 @@ public class QuizDal {
 
 
     //assign reading to quiz
+    //during quiz creation there will be a button where the prof can link a reading
+    //when they link a reading, the relevant objectives will populate
     public boolean insertQuizReading(int quizId, int readingId) {
         CallableStatement stmt = null;
         try {
@@ -301,6 +310,7 @@ public class QuizDal {
 
 
     //insert new question + their objectives
+    //actually inserts the question, its choices, its assigned objective, and marks the correct choice
     public boolean insertNewQuestion(String questionText, String difficulty,
                                     String choiceA, String choiceB, String choiceC, String choiceD,
                                     char correctAnswer, int objectiveId, int quizId) {
@@ -381,6 +391,7 @@ public class QuizDal {
                     String learningObjective = rs.getString("learningObjective");
                     int choiceId = rs.getInt("choiceId");
                     String choiceLabel = rs.getString("choiceLabel");
+                    int correctChoiceId = rs.getInt("correct_choice_id");
                     String choiceText = rs.getString("choiceText");
 
                     // If we haven't added this question yet, create it
@@ -395,6 +406,7 @@ public class QuizDal {
                         question.setDifficulty(difficulty);
                         question.setChoices(new ArrayList<>());
                         questionMap.put(questionNumber, question);
+                        question.setCorrectChoiceId(correctChoiceId);
                     }
 
                     //adds the current choice to the question
@@ -430,6 +442,24 @@ public class QuizDal {
                 if (stmt != null) stmt.close();
             } catch (SQLException e) { e.printStackTrace(); }
         }
+    }
+
+    //get student objectives
+    //display relevant quiz objectives to choose from
+    public List<Map<String, Object>> getStudentObjective(int studentId) {
+        List<Map<String, Object>> results = new ArrayList<>();
+        try (CallableStatement cs = myConnection.prepareCall("{CALL getStudentObjectives(?)}")) {
+            cs.setInt(1, studentId);
+            ResultSet rs = cs.executeQuery();
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("objectiveId", rs.getInt("objectiveId"));
+                results.add(row);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return results;
     }
 
     //get next question (or first question)
