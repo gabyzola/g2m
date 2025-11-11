@@ -10,7 +10,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet" />
   <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
-  <script src="https://alcdn.msauth.net/browser/2.33.0/js/msal-browser.min.js"></script>
 </head>
 
 <body>
@@ -106,54 +105,6 @@
     <p>&copy; 2025 MackAdapt – Built for Merrimack College</p>
   </footer>
 
-  <!-- Initialize AOS -->
-  <script>
-    AOS.init();
-  </script>
-
-  <!-- MSAL Integration -->
-  <script>
-    const msalConfig = {
-      auth: {
-        clientId: "f1eb948d-5297-47ce-a4c4-419d1f699607",
-        authority: "https://login.microsoftonline.com/57e1236c-0fa3-4739-9edf-fd0721c8744d/",
-        redirectUri: window.location.origin + window.location.pathname
-      },
-      cache: { cacheLocation: "localStorage", storeAuthStateInCookie: false }
-    };
-
-    const msalInstance = new msal.PublicClientApplication(msalConfig);
-    const loginRequest = { scopes: ["openid","profile","email","User.Read"] };
-
-    const loginBtn = document.getElementById("ms-login-header");
-
-    // Login on header button click
-    loginBtn.addEventListener("click", async () => {
-      try {
-        const response = await msalInstance.loginPopup(loginRequest);
-        msalInstance.setActiveAccount(response.account);
-        loginBtn.textContent = `Hello, ${response.account.name}`;
-        document.getElementById("welcome-text").textContent = `Welcome, ${response.account.name} 👋`;
-      } catch (err) {
-        console.error("Login failed:", err);
-        alert("Login failed. Check console for details.");
-      }
-    });
-
-    // Handle existing session / redirect responses
-    window.addEventListener("DOMContentLoaded", () => {
-      msalInstance.handleRedirectPromise()
-        .then(response => {
-          const account = response?.account || msalInstance.getActiveAccount();
-          if (account) {
-            msalInstance.setActiveAccount(account);
-            loginBtn.textContent = `Hello, ${account.name}`;
-            document.getElementById("welcome-text").textContent = `Welcome, ${account.name} 👋`;
-          }
-        })
-        .catch(console.error);
-    });
-  </script>
-
+  <script type="module" src="/src/pages/home.js"></script>
 </body>
 </html>
