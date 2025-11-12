@@ -93,6 +93,27 @@ public class QuizController {
         return bl.uploadReading(instructorId, classId, readingName, filePath);
     }
 
+    //add objectives to reading
+    //this needs to be manual for now nc time crucnch
+    @PostMapping("/readings/{readingId}/objectives")
+    public ResponseEntity<Map<String, Object>> addReadingObjective(
+            @PathVariable int readingId,
+            @RequestBody Map<String, Object> requestBody) {
+
+        int classId = (int) requestBody.get("classId");
+        String objectiveName = (String) requestBody.get("objectiveName");
+
+        boolean success = bl.insertNewReadingObjective(readingId, classId, objectiveName);
+
+        if (success) {
+            return ResponseEntity.ok(Map.of("status", "success"));
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                .body(Map.of("status", "error"));
+        }
+    }
+
+
     //Instructor links readig to quiz during quiz creation
     //this basically gets the reading id from the reading they're linking
     @PostMapping("/quizzes/{quizId}/readings")
@@ -162,19 +183,41 @@ public class QuizController {
         return bl.viewObjectivesByQuiz(quizId);
     }
 
+    //student selects objectives that were displayed in viewObjectivesByQuiz and they are then sent here
+    @PostMapping("/quizzes/{quizId}/objectives")
+    public ResponseEntity<Map<String, Object>> selectObjective(
+            @PathVariable int quizId,
+            @RequestBody Map<String, Object> requestBody) {
+
+        int studentId = (int) requestBody.get("studentId");
+        int objectiveId = (int) requestBody.get("objectiveId");
+
+        boolean success = bl.selectObjectiveForStudent(studentId, quizId, objectiveId);
+
+        if (success) {
+            return ResponseEntity.ok(Map.of("status", "success"));
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                .body(Map.of("status", "error"));
+        }
+    }
+
     //display chosen objectives
+    //if gio wants to add a section where the student can see what they chose, not urgent
     @GetMapping("/quizzes/{studentId}/objectives")
-    public List<Map<String, Object>>viewStudentObjectives(@PathVariable int studentId) {
+    public List<Integer> viewStudentObjectives(@PathVariable int studentId) {
         return bl.getStudentObjectives(studentId);
     }
 
-    //get quiz questions
+    //get ALL quiz questions
+    //probably wont need since students arent answering all of these but just in case
     //TESTED: Good!
     @GetMapping("/quizzes/{quizId}/questions")
-    public List<QuizQuestion>viewQuizQuestions(@PathVariable int quizId) {
+    public List<Map<String, Object>> viewQuizQuestions(@PathVariable int quizId) {
         return bl.getQuizQuestions(quizId);
     }
 
+    /* 
     //start quiz, this will very likely be expanded upon
     @PostMapping("/quizzes/{quizId}/start")
     public QuizManager startQuiz(@PathVariable int quizId) {

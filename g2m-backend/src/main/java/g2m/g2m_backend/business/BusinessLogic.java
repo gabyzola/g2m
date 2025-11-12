@@ -17,6 +17,7 @@ import java.net.URL;
 
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class BusinessLogic {
@@ -60,6 +61,7 @@ public class BusinessLogic {
     }
 
     //add reading to a class module + get learning objectives from reading and store it in the db
+    //kind of primitive rn, not really the best implementation
     public boolean uploadReading(int instructorId, int classId, String readingName, String filePath) {
         try {
             // verify that path is valid
@@ -68,30 +70,14 @@ public class BusinessLogic {
                 return false;
             }
 
-            //String filePath = readingFile.getAbsolutePath();
             boolean readingInserted = dal.insertNewReading(instructorId, classId, readingName, filePath);
 
             if (!readingInserted) {
-                System.out.println("Failed to insert new reading.");
+                System.out.println("Failed.");
                 return false;
             }
-
-            // machine learning not ready yet, this is a placeholder
-            List<String> extractedObjectives = new ArrayList<>();
-            extractedObjectives.add("Understand key concepts from the text");
-            extractedObjectives.add("Analyze author’s argument and tone");
-            extractedObjectives.add("Summarize main ideas and supporting details");
-
-        
-            //calls insertnewreadingobjectives to make sure theyre stored in db
-            for (String objective : extractedObjectives) {
-                boolean objectiveInserted = dal.insertNewReadingObjective(0, classId, objective);
-                if (!objectiveInserted) {
-                    System.out.println("Failed to insert objective: " + objective);
-                }
-            }
-
-            System.out.println("Reading and objectives uploaded successfully!");
+    
+            System.out.println("success");
             return true;
 
         } catch (Exception e) {
@@ -99,6 +85,15 @@ public class BusinessLogic {
             e.printStackTrace();
             return false;
         }
+    }
+
+    //add reading objective + profs will enter it manually for now
+    //stretch goal: ml gets them from the reading
+    public boolean insertNewReadingObjective(int readingId, int classId, String objectiveName) {
+        if (objectiveName == null || objectiveName.isEmpty()) {
+        return false;
+        }
+        return dal.insertNewReadingObjective(readingId, classId, objectiveName);
     }
 
     //just link reading to quiz without returning their objectives
@@ -144,9 +139,9 @@ public class BusinessLogic {
         return dal.getObjectivesByQuiz(quizId);
     }
 
-    //display quiz questions
-    public List<QuizQuestion> getQuizQuestions(int quizId) {
-        List<QuizQuestion> questions = dal.getQuizQuestions(quizId);
+    //display ALLLL quiz questions
+    public List<Map<String, Object>> getQuizQuestions(int quizId) {
+        List<Map<String, Object>> questions = dal.getQuizQuestions(quizId);
 
         if (questions == null || questions.isEmpty()) {
             return null;
@@ -157,26 +152,70 @@ public class BusinessLogic {
     }
 
     //student chooses learning objectives
-    public boolean chooseLearningObjectives(int studentId, int objectiveId, String objectiveName) {
-        return dal.chooseLearningObjective(studentId, objectiveId, objectiveName);
+    public boolean selectObjectiveForStudent(int studentId, int quizId, int objectiveId) {
+        try {
+            return dal.chooseLearningObjective(studentId, quizId, objectiveId);
+        } catch (Exception e) {
+            System.out.println("Failed to select learning objective.");
+            e.printStackTrace();
+            return false;
+        }
     }
 
     //return student objectives (needs to get sent to quiz taking process so it can choose questions)
     //display relavant learning objectives based on the quiz
-    public List<Map<String, Object>> getStudentObjectives(int quizId) {
-        return dal.getObjectivesByQuiz(quizId);
+    public List<Integer> getStudentObjectives(int studentId) {
+        return dal.getStudentObjective(studentId);
     }
 
-    //starts quiz by getting all of the questions that match getStudentObjectives
-    public QuizManager startQuiz(int quizId) {
-        List<QuizQuestion> questions = dal.getQuizQuestions(quizId);
-        if (questions == null || questions.isEmpty()) {
-            throw new IllegalStateException("No questions found for quiz " + quizId);
+    public List<QuizQuestion> getStudentQuizQuestions(int studentId, int quizId, int numQuestions) {
+        List<Map<String, Object>> allQuestions = dal.getQuizQuestions(quizId);
+        List<Integer> studentObjectives = dal.getStudentObjective(studentId);
+
+        // compare objective ids (i want to limit this)
+        List<Map<String, Object>> filtered = allQuestions.stream()
+                .filter(q -> studentObjectives.contains((Integer) q.get("objectiveId")))
+                .collect(Collectors.toList());
+
+        //take subset
+        Collections.shuffle(filtered);
+        int count = Math.min(numQuestions, filtered.size());
+        List<Map<String, Object>> subset = filtered.subList(0, count);
+
+        //stick them in quiz questions object
+        Map<Integer, QuizQuestion> questionMap = new HashMap<>();
+        List<QuizQuestion> studentQuizQuestions = new ArrayList<>();
+
+        for (Map<String, Object> row : subset) {
+            int questionNumber = (int) row.get("questionNumber");
+            QuizQuestion question = questionMap.get(questionNumber);
+
+            if (question == null) {
+                question = new QuizQuestion();
+                question.setQuestionId((int) row.get("questionId"));
+                question.setQuestionNumber(questionNumber);
+                question.setQuestionText((String) row.get("questionText"));
+                question.setLearningObjective((String) row.get("learningObjective"));
+                question.setDifficulty(DifficultyLevel.valueOf((String) row.get("difficulty")));
+                question.setChoices(new ArrayList<>());
+                question.setCorrectChoiceId((int) row.get("correctChoiceId"));
+                questionMap.put(questionNumber, question);
+                studentQuizQuestions.add(question);
+            }
+
+            QuizQuestion.Choice choice = new QuizQuestion.Choice(
+                    (int) row.get("choiceId"),
+                    (String) row.get("choiceLabel"),
+                    (String) row.get("choiceText")
+            );
+            question.getChoices().add(choice);
         }
-        return new QuizManager(questions);
+
+        return studentQuizQuestions;
     }
 
 
+    /* 
     public Map<String, Object> takeQuiz(int studentId, int quizId, List<String> submittedAnswers) {
         Map<String, Object> result = new HashMap<>();
 
@@ -216,6 +255,7 @@ public class BusinessLogic {
 
         return result;
     }
+        */
 
     // helper to check if choice is correct (assuming you store correct choiceLabel somewhere)
     private boolean isCorrectChoice(QuizQuestion.Choice choice, QuizQuestion question) {

@@ -20,25 +20,47 @@ public class QuizManager {
         this.currentDifficulty = DifficultyLevel.MEDIUM; // Start medium by default
     }
 
+    //get question 9one by one)
+    public QuizQuestion getNextQuestion() {
+        if (remainingQuestions.isEmpty()) {
+            currentQuestion = null;
+            return null; 
+        }
+        currentQuestion = remainingQuestions.remove(0);
+        return currentQuestion;
+    }
+
+    //student submits answer one by one
+    public boolean submitAnswer(int choiceId) {
+        if (currentQuestion == null) {
+            throw new IllegalStateException("No question is currently active.");
+        }
+
+        boolean wasCorrect = (choiceId == currentQuestion.getCorrectChoiceId());
+        //adjustDifficulty(wasCorrect); //for later
+        return wasCorrect;
+    }
+
+    /* 
     public QuizManager startQuiz(int quizId, int studentId) {
 
         QuizDal dal = new QuizDal();
         BusinessLogic bl = new BusinessLogic(dal);
         
         //gets entire list of quiz questions
-        List<QuizQuestion> allQuestions = bl.getQuizQuestions(quizId);
-        if (allQuestions == null || allQuestions.isEmpty()) {
+        //List<QuizQuestion> allQuestions = bl.getQuizQuestions(quizId);
+        //if (allQuestions == null || allQuestions.isEmpty()) {
             throw new IllegalStateException("No questions found for quiz " + quizId);
         }
 
         // gets students chosen objs
         List<Map<String, Object>> studentObjectives = bl.getStudentObjectives(quizId);
-        if (studentObjectives == null || studentObjectives.isEmpty()) {
-            throw new IllegalStateException("Student has not selected any objectives.");
+        //if (studentObjectives == null || studentObjectives.isEmpty()) {
+            //throw new IllegalStateException("Student has not selected any objectives.");
         }
 
         //gets ids of objs to compare
-        Set<Integer> selectedObjectiveIds = studentObjectives.stream()
+        //Set<Integer> selectedObjectiveIds = studentObjectives.stream()
             .map(obj -> (Integer) obj.get("objectiveId")) // assuming your map keys match DB column names
             .collect(Collectors.toSet());
 
@@ -98,5 +120,6 @@ public class QuizManager {
     public boolean isQuizOver() {
         return remainingQuestions.isEmpty();
     }
+        */
 }
 

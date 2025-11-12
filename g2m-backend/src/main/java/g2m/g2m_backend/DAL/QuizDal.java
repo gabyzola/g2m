@@ -391,62 +391,47 @@ public class QuizDal {
         return results;
     }
 
-    //display quiz questions
-    public List<QuizQuestion> getQuizQuestions(int quizId) {
-        List<QuizQuestion> questions = new ArrayList<>();
-        Map<Integer, QuizQuestion> questionMap = new HashMap<>();
+    //display ALL quiz questions
+    // Fetches all quiz questions as raw data without wrapping into QuizQuestion
+    public List<Map<String, Object>> getQuizQuestions(int quizId) {
+        List<Map<String, Object>> results = new ArrayList<>();
 
         try (CallableStatement cs = myConnection.prepareCall("{CALL getQuizQuestions(?)}")) {
             cs.setInt(1, quizId);
 
             try (ResultSet rs = cs.executeQuery()) {
                 while (rs.next()) {
-                    int questionId = rs.getInt("questionId");
-                    int questionNumber = rs.getInt("questionNumber"); //this is NOT questionId
-                    String questionText = rs.getString("questionText");
-                    String diff = rs.getString("difficulty").toUpperCase();
-                    String learningObjective = rs.getString("learningObjective");
-                    int choiceId = rs.getInt("choiceId");
-                    String choiceLabel = rs.getString("choiceLabel");
-                    int correctChoiceId = rs.getInt("correct_choice_id");
-                    String choiceText = rs.getString("choiceText");
+                    Map<String, Object> row = new HashMap<>();
+                    row.put("questionId", rs.getInt("questionId"));
+                    row.put("questionNumber", rs.getInt("questionNumber")); // NOT questionId
+                    row.put("questionText", rs.getString("questionText"));
+                    row.put("difficulty", rs.getString("difficulty").toUpperCase());
+                    row.put("learningObjective", rs.getString("learningObjective"));
+                    row.put("choiceId", rs.getInt("choiceId"));
+                    row.put("choiceLabel", rs.getString("choiceLabel"));
+                    row.put("choiceText", rs.getString("choiceText"));
+                    row.put("correctChoiceId", rs.getInt("correct_choice_id"));
 
-                    // If we haven't added this question yet, create it
-                    QuizQuestion question = questionMap.get(questionNumber);
-                    if (question == null) {
-                        question = new QuizQuestion();
-                        question.setQuestionId(questionId);
-                        question.setQuestionNumber(questionNumber);
-                        question.setQuestionText(questionText);
-                        question.setLearningObjective(learningObjective);
-                        DifficultyLevel difficulty = DifficultyLevel.valueOf(diff);
-                        question.setDifficulty(difficulty);
-                        question.setChoices(new ArrayList<>());
-                        questionMap.put(questionNumber, question);
-                        question.setCorrectChoiceId(correctChoiceId);
-                    }
-
-                    //adds the current choice to the question
-                    QuizQuestion.Choice choice = new QuizQuestion.Choice(choiceId, choiceLabel, choiceText);
-                    question.getChoices().add(choice);
+                    results.add(row);
                 }
             }
-            questions.addAll(questionMap.values());
-        } 
-        catch (SQLException e) {
+
+        } catch (SQLException e) {
             e.printStackTrace();
         }
-        return questions;
+
+        return results;
     }
 
+
     //student selects objective before taking the quiz
-    public boolean chooseLearningObjective(int studentId, int objectiveId, String objectiveName) {
+    public boolean chooseLearningObjective(int studentId, int quizId, int objectiveId) {
         CallableStatement stmt = null;
         try {
             stmt = myConnection.prepareCall("{CALL SelectStudentObjective(?, ?, ?)}");
             stmt.setInt(1, studentId);
             stmt.setInt(2, objectiveId);
-            stmt.setString(3, objectiveName);
+            stmt.setInt(3, objectiveId);
 
             stmt.execute();
             return true;
@@ -462,18 +447,20 @@ public class QuizDal {
     }
 
     //get student objectives
-    //display relevant quiz objectives to choose from
-    public List<Map<String, Object>> getStudentObjective(int studentId) {
-        List<Map<String, Object>> results = new ArrayList<>();
+    public List<Integer> getStudentObjective(int studentId) {
+        List<Integer> results = new ArrayList<>();
+
         try (CallableStatement cs = myConnection.prepareCall("{CALL getStudentObjectives(?)}")) {
             cs.setInt(1, studentId);
-            ResultSet rs = cs.executeQuery();
-            while (rs.next()) {
-                Map<String, Object> row = new HashMap<>();
-                row.put("objectiveId", rs.getInt("objectiveId"));
-                results.add(row);
+
+            try (ResultSet rs = cs.executeQuery()) {
+                while (rs.next()) {
+                    results.add(rs.getInt("objectiveId")); 
+                }
             }
+
         } catch (SQLException e) {
+            System.out.println("Error fetching student objectives.");
             e.printStackTrace();
         }
         return results;
