@@ -57,6 +57,7 @@ public class QuizController {
 
     //display a list of instructor classes
     //TESTED: Good!
+    //retest: good!
     @GetMapping("/instructors/{instructorId}/classes")
     public List<Map<String, Object>> viewInstructorClasses(@PathVariable int instructorId) {
         return bl.viewInstructorClasses(instructorId);
@@ -72,6 +73,7 @@ public class QuizController {
 
     //List enrollees in a class
     //TESTED: Good!
+    //retest: good!
     @GetMapping("/classes/{classId}/enrollees")
     public List<Map<String, Object>> viewClassEnrollees(@PathVariable int classId) {
         return bl.viewClassEnrollees(classId);
@@ -79,6 +81,7 @@ public class QuizController {
 
     //display student classes
     //TESTED: Good!
+    //retest: good!
     @GetMapping("/students/{studentId}/classes")
     public List<Map<String, Object>> viewStudentClasses(@PathVariable int studentId) {
         return bl.viewStudentClasses(studentId);
@@ -164,20 +167,21 @@ public class QuizController {
 
     //view quizzes for a class
     //TESTED: Good!
+    //retest: good!
     @GetMapping("/classes/{classId}/quizzes")
     public List<Map<String, Object>> viewQuizzesByClass(@PathVariable int classId) {
         return bl.viewQuizzesByClass(classId);
     }
 
     // Search students: Ready to connect
-    //TESTED: Error
+    //TESTED: Error, but not a big deal i never use this
     @GetMapping("/students/search")
     public ArrayList<Student> searchStudent(@RequestParam String type, @RequestParam String query) {
         return bl.searchStudent(type, query);
     }
 
     //display relavant learning objectives
-    //TESTED: Good!
+    //TESTED: Error!
     @GetMapping("/quizzes/{quizId}/objectives")
     public List<Map<String, Object>>viewObjectivesByQuiz(@PathVariable int quizId) {
         return bl.viewObjectivesByQuiz(quizId);
@@ -204,6 +208,7 @@ public class QuizController {
 
     //display chosen objectives
     //if gio wants to add a section where the student can see what they chose, not urgent
+    //TESTED: ERROR!
     @GetMapping("/quizzes/{studentId}/objectives")
     public List<Integer> viewStudentObjectives(@PathVariable int studentId) {
         return bl.getStudentObjectives(studentId);
@@ -212,44 +217,15 @@ public class QuizController {
     //get ALL quiz questions
     //probably wont need since students arent answering all of these but just in case
     //TESTED: Good!
+    //retest: good!
     @GetMapping("/quizzes/{quizId}/questions")
     public List<Map<String, Object>> viewQuizQuestions(@PathVariable int quizId) {
         return bl.getQuizQuestions(quizId);
     }
 
-    /* 
-    //start quiz, this will very likely be expanded upon
-    @PostMapping("/quizzes/{quizId}/start")
-    public QuizManager startQuiz(@PathVariable int quizId) {
-        return bl.startQuiz(quizId);
-    }
-
-    /* 
-    //get next question in quiz
-    @GetMapping("/quizzes/{quizId}/next")
-    public QuizQuestion getNextQuestion(@PathVariable int quizId, @RequestParam boolean previousCorrect) {
-        return ql.get(quizId).getNextQuestion(previousCorrect);
-    }
-
-
-    //take quiz: NOT ready
-    @PostMapping("/quizzes/{quizId}/take/{studentId}")
-    public Map<String, Object> takeQuiz(
-            @PathVariable int quizId,
-            @PathVariable int studentId,
-            @RequestBody Map<String, Object> requestBody) {
-
-        // Expecting something like: { "answers": [1, 3, 2, 4] } ????
-        List<Integer> answers = (List<Integer>) requestBody.get("answers");
-
-        // Call business logic
-        return bl.takeQuiz(studentId, quizId, answers);
-    }
-        */
-
-
     //display student badges
     //TESTED: Good!
+    //retest: good!
     @GetMapping("/students/{studentId}/badges")
     public List<Map<String, Object>> viewStudentBadges(@PathVariable int studentId) {
         return bl.displayStudentBadges(studentId);
@@ -257,6 +233,7 @@ public class QuizController {
 
     //view all badges
     //TESTED: Good!
+    //retest: good!
     @GetMapping("/badges")
     public ArrayList<Badge> viewAllBadges() {
         return bl.displayAllBadges();
