@@ -7,6 +7,9 @@ import g2m.g2m_backend.DAL.javaSQLobjects.Badge;
 import g2m.g2m_backend.DAL.javaSQLobjects.QuestionData;
 import g2m.g2m_backend.DAL.javaSQLobjects.Student;
 import g2m.g2m_backend.DAL.javaSQLobjects.QuizQuestion;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -90,17 +93,53 @@ public class QuizController {
         return bl.uploadReading(instructorId, classId, readingName, filePath);
     }
 
-    /* 
-    //create quiz: NOT ready
-    @PostMapping("/classes/{classId}/quiz")
-    public boolean createQuiz(@PathVariable int classId, @RequestBody Map<String, Object> data) {
-        String quizName = (String) data.get("quizName");
-        int instructorId = Integer.parseInt(data.get("instructorId").toString());
-        List<Integer> readingIds = (List<Integer>) data.get("readingIds");
-        List<QuestionData> questions = (List<QuestionData>) data.get("questions");
-        return bl.createQuiz(quizName, instructorId, classId, readingIds, questions);
+    //Instructor links readig to quiz during quiz creation
+    //this basically gets the reading id from the reading they're linking
+    @PostMapping("/quizzes/{quizId}/readings")
+    public ResponseEntity<Map<String, Object>> addQuizReading(@PathVariable int quizId, @RequestBody Map<String, Object> requestBody) {
+
+        // Get the readingId from the request JSON
+        int readingId = (int) requestBody.get("readingId");
+
+        boolean success = bl.addReadingToQuiz(quizId, readingId);
+
+        if (success) {
+            return ResponseEntity.ok(Map.of("status", "success"));
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                .body(Map.of("status", "error"));
+        }
     }
-        */
+
+    //when an instructor clicks on "Add Question" inside their quiz module, the information they put in for that question gets sent here
+    //that info is made into a QuesitonData obj
+    //i send that to bl
+    @PostMapping("/quizzes/{quizId}/questions")
+    public ResponseEntity<Map<String, Object>> addQuestion(
+            @PathVariable int quizId,
+            @RequestBody Map<String, Object> requestBody) {
+
+        QuestionData question = new QuestionData(
+            (String) requestBody.get("questionText"),
+            (String) requestBody.get("difficulty"),
+            (String) requestBody.get("choiceA"),
+            (String) requestBody.get("choiceB"),
+            (String) requestBody.get("choiceC"),
+            (String) requestBody.get("choiceD"),
+            ((String) requestBody.get("correctAnswer")).charAt(0),
+            (int) requestBody.get("objectiveId"),
+            quizId 
+        );
+
+        boolean success = bl.addQuestionToQuiz(question);
+
+        if (success) {
+            return ResponseEntity.ok(Map.of("status", "success"));
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                .body(Map.of("status", "error"));
+        }
+    }
 
     //view quizzes for a class
     //TESTED: Good!

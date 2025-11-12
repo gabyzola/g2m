@@ -2,6 +2,7 @@ package g2m.g2m_backend.business;
 //import g2m.DAL.QuizDal;
 import g2m.g2m_backend.DAL.javaSQLobjects.Student;
 import g2m.g2m_backend.DAL.javaSQLobjects.Badge;
+import g2m.g2m_backend.DAL.javaSQLobjects.QuestionData;
 //import g2m.g2m_backend.DAL.javaSQLobjects.Question;
 //import g2m.g2m_backend.DAL.javaSQLobjects.QuestionData;
 import g2m.g2m_backend.DAL.javaSQLobjects.QuizQuestion;
@@ -100,21 +101,38 @@ public class BusinessLogic {
         }
     }
 
-
-    /* 
-    //create quiz + add questions
-    public boolean createQuiz(String quizName, int instructorId, int classId, List<Integer> readingIds,
-                              List<QuestionData> questions) {
-        //Call insertNewQuiz
-
-        //Call insertQuizReading
-
-        //call get Objectives by quiz to populate those fields
-
-        //prof clicks "add question"
-        //call insert new question every time when they click "add question"
+    //just link reading to quiz without returning their objectives
+    public boolean addReadingToQuiz(int quizId, int readingId) {
+        return dal.insertQuizReading(quizId, readingId);
     }
-        */
+
+    //link a reading to a quiz return the corresponding objectives
+    public List<Map<String, Object>> addReadingToQuizReturn(int quizId, int readingId) {
+        boolean success = dal.insertQuizReading(quizId, readingId);
+
+        if (success) {
+            return null;
+        }
+        else {
+            return dal.getObjectivesByQuiz(quizId);
+        }
+    }
+
+    //adds a question to a quiz
+    public boolean addQuestionToQuiz(QuestionData questionData) {
+        try {
+            // Example: get current max question number for the quiz
+            int nextQuestionNumber = dal.getNextQuestionNumberForQuiz(questionData.getQuizId());
+
+            // Insert question
+            return dal.insertNewQuestion(questionData, nextQuestionNumber);
+
+        } catch (Exception e) {
+            System.out.println("Failed to add question to quiz.");
+            e.printStackTrace();
+            return false;
+        }
+    }
 
     //display quizzes
     public List<Map<String, Object>> viewQuizzesByClass(int classId) {

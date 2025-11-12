@@ -19,6 +19,7 @@ import g2m.g2m_backend.DAL.javaSQLobjects.Student;
 import g2m.g2m_backend.business.DifficultyLevel;
 import jakarta.annotation.PostConstruct;
 import g2m.g2m_backend.DAL.javaSQLobjects.Badge;
+import g2m.g2m_backend.DAL.javaSQLobjects.QuestionData;
 import g2m.g2m_backend.DAL.javaSQLobjects.QuizQuestion;
 
 @Repository
@@ -310,32 +311,49 @@ public class QuizDal {
 
     //insert new question + their objectives
     //actually inserts the question, its choices, its assigned objective, and marks the correct choice
-    public boolean insertNewQuestion(String questionText, String difficulty,
-                                    String choiceA, String choiceB, String choiceC, String choiceD,
-                                    char correctAnswer, int objectiveId, int quizId) {
+    public boolean insertNewQuestion(QuestionData qData, int questionNumber) {
         CallableStatement stmt = null;
         try {
-            stmt = myConnection.prepareCall("{CALL InsertNewQuestion(?, ?, ?, ?, ?, ?, ?, ?, ?)}");
-            stmt.setString(1, questionText);
-            stmt.setString(2, difficulty);
-            stmt.setString(3, choiceA);
-            stmt.setString(4, choiceB);
-            stmt.setString(5, choiceC);
-            stmt.setString(6, choiceD);
-            stmt.setString(7, String.valueOf(correctAnswer));
-            stmt.setInt(8, objectiveId);
-            stmt.setInt(9, quizId);
+            stmt = myConnection.prepareCall("{CALL InsertNewQuestion(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
+
+            stmt.setInt(1, questionNumber);                  // myQuestionNumber
+            stmt.setString(2, qData.getQuestionText());      // myQuestionText
+            stmt.setString(3, qData.getDifficulty());        // myDifficulty
+            stmt.setString(4, qData.getChoiceA());           // myChoiceA
+            stmt.setString(5, qData.getChoiceB());           // myChoiceB
+            stmt.setString(6, qData.getChoiceC());           // myChoiceC
+            stmt.setString(7, qData.getChoiceD());           // myChoiceD
+            stmt.setString(8, String.valueOf(qData.getCorrectAnswer())); // myCorrectAnswer
+            stmt.setInt(9, qData.getObjectiveId());          // myObjectiveId
+            stmt.setInt(10, qData.getQuizId());              // myQuizId
 
             stmt.execute();
             return true;
+
         } catch (SQLException e) {
             System.out.println("Error inserting new question.");
             e.printStackTrace();
             return false;
+
         } finally {
             try {
                 if (stmt != null) stmt.close();
-            } catch (SQLException e) { e.printStackTrace(); }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public int getNextQuestionNumberForQuiz(int quizId) throws SQLException {
+        String sql = "SELECT IFNULL(MAX(questionNumber), 0) + 1 AS nextNum FROM Questions WHERE quizId = ?";
+        try (PreparedStatement ps = myConnection.prepareStatement(sql)) {
+            ps.setInt(1, quizId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("nextNum");
+            } else {
+                return 1;
+            }
         }
     }
 
