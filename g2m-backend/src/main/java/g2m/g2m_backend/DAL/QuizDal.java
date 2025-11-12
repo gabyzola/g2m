@@ -173,7 +173,7 @@ public class QuizDal {
     //bl:done
     public List<Map<String, Object>> searchForEnrolleesByClass(int classId) {
         List<Map<String, Object>> results = new ArrayList<>();
-        try (CallableStatement cs = myConnection.prepareCall("{Call getEnrolleeByClass(?)}")) {
+        try (CallableStatement cs = myConnection.prepareCall("{Call getEnrolleesByClass(?)}")) {
             
             cs.setInt(1, classId);
             ResultSet rs = cs.executeQuery();
@@ -190,7 +190,6 @@ public class QuizDal {
             e.printStackTrace();
             return null;
         }
-
         return results;
     }
 
@@ -514,6 +513,24 @@ public class QuizDal {
     }
 
     //assign badge
+    public boolean assignBadge(int studentId) {
+        CallableStatement stmt = null;
+        try {
+            stmt = myConnection.prepareCall("{CALL assignBadge(?)}");
+            stmt.setInt(1, studentId);
+
+            stmt.execute();
+            return true;
+        } catch (SQLException e) {
+            System.out.println("Error assigning badge.");
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                if (stmt != null) stmt.close();
+            } catch (SQLException e) { e.printStackTrace(); }
+        }
+    }
 
     //display all the students badges
     public List<Map<String, Object>> getStudentBadges(int studentId) {

@@ -3,11 +3,17 @@ package g2m.g2m_backend.business;
 import g2m.g2m_backend.DAL.javaSQLobjects.Student;
 import g2m.g2m_backend.DAL.javaSQLobjects.Badge;
 //import g2m.g2m_backend.DAL.javaSQLobjects.Question;
-import g2m.g2m_backend.DAL.javaSQLobjects.QuestionData;
+//import g2m.g2m_backend.DAL.javaSQLobjects.QuestionData;
 import g2m.g2m_backend.DAL.javaSQLobjects.QuizQuestion;
 import g2m.g2m_backend.DAL.QuizDal;
 //import g2m.g2m_backend.business.*;
 import org.springframework.stereotype.Service;
+
+//machine learning imports
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 
 import java.util.*;
 
@@ -230,28 +236,6 @@ public class BusinessLogic {
         for (Student s : students) {
             System.out.println(s);
         }
-    }
-
-    //placeholder binary method for adjusting difficulty
-    //might end up sticking this somewhere else
-    //this will be roped into the quiz taking process like the machine learning will be, but really doesnt need to be in the machine learning integration
-    private String adjustDifficulty(String currentDifficulty, double performance) {
-        if (performance > 0.8) {
-            switch (currentDifficulty) {
-                case "easy":
-                    return "medium";
-                case "medium":
-                    return "hard";
-            }
-        } else if (performance < 0.4) {
-            switch (currentDifficulty) {
-                case "hard":
-                    return "medium";
-                case "medium":
-                    return "easy";
-            }
-        }
-        return currentDifficulty;
     }
 
     public void closeConnection() {

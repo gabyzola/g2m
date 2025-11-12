@@ -29,7 +29,7 @@ public class QuizController {
     }
 
     // Register a new user: Ready to connect
-    @PostMapping("/register")
+    @PostMapping("/users/register")
     public boolean registerUser(@RequestBody Map<String, Object> data) {
         String username = (String) data.get("username");
         String email = (String) data.get("email");
@@ -43,10 +43,10 @@ public class QuizController {
     }
 
     //create class: Ready to connect
-    @PostMapping("/class")
+    @PostMapping("/classes/create")
     public boolean createClass(@RequestBody Map<String, Object>data) {
         int classId = Integer.parseInt(data.get("classId").toString());
-        boolean isInstructor = Boolean.parseBoolean(data.get("isInstructor").toString());
+        //boolean isInstructor = Boolean.parseBoolean(data.get("isInstructor").toString());
         String className = data.get("className").toString();
         String instructorEmail = data.get("instructorEmail").toString();
         return bl.createClass(classId, className, instructorEmail);
@@ -60,7 +60,7 @@ public class QuizController {
     }
 
     // Enroll student: NOT ready
-    @PostMapping("/enroll")
+    @PostMapping("/instructors/classes/enroll")
     public boolean enrollStudent(@RequestBody Map<String, Object> data) {
         int classId = Integer.parseInt(data.get("classId").toString());
         String email = (String) data.get("email");
@@ -68,7 +68,7 @@ public class QuizController {
     }
 
     //List enrollees in a class
-    //TESTED: Error
+    //TESTED: Good!
     @GetMapping("/classes/{classId}/enrollees")
     public List<Map<String, Object>> viewClassEnrollees(@PathVariable int classId) {
         return bl.viewClassEnrollees(classId);
@@ -167,7 +167,7 @@ public class QuizController {
 
 
     //display student badges
-    //TESTED: Good
+    //TESTED: Good!
     @GetMapping("/students/{studentId}/badges")
     public List<Map<String, Object>> viewStudentBadges(@PathVariable int studentId) {
         return bl.displayStudentBadges(studentId);

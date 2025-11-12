@@ -4,8 +4,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import g2m.g2m_backend.DAL.javaSQLobjects.QuizQuestion; 
-import g2m.g2m_backend.DAL.QuizDal; 
+import g2m.g2m_backend.DAL.QuizDal;
+import org.springframework.stereotype.Service;
 
+@Service
 public class QuizManager {
     private List<QuizQuestion> allQuizQuestions;  //all of the quiz questions
     private List<QuizQuestion> remainingQuestions; //unanswered questions
