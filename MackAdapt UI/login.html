@@ -259,12 +259,6 @@
     <script>
       window.addEventListener("DOMContentLoaded", async () => {
       
-        //Ensure Web Crypto is available before initializing MSAL
-        if (!window.crypto?.subtle?.digest) {
-          alert("Browser crypto not ready - cannot start Microsoft login.");
-          return;
-        }
-      
         // MSAL Configuration
         const msalConfig = {
           auth: {
