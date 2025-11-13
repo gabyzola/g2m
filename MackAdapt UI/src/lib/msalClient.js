@@ -72,7 +72,7 @@ export async function hydrateAccount(msalInstance, onAuthenticated, onMissingAcc
 
     if (account) {
       msalInstance.setActiveAccount(account);
-      onAuthenticated?.(account);
+      await onAuthenticated?.(account);
       return account;
     }
 

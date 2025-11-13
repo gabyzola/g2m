@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login – MackAdapt</title>
 
-  <!-- Vite-compatible CSS path -->
-  <link rel="stylesheet" href="/style.css" />
+    <!-- Vite-compatible CSS path -->
+    <link rel="stylesheet" href="/style.css" />
 
     <style>
       :root {
@@ -212,7 +212,34 @@
           <p>Use your Merrimack Microsoft account or demo login.</p>
         </div>
 
-        <button id="ms-login" class="btn btn-primary">
+        <div class="field">
+          <label for="firstName">First Name</label>
+          <input id="firstName" type="text" placeholder="Jamie" required />
+        </div>
+        <div class="field">
+          <label for="lastName">Last Name</label>
+          <input id="lastName" type="text" placeholder="Student" required />
+        </div>
+        <div class="field" style="display:flex;gap:1rem">
+          <label style="display:flex;align-items:center;gap:.35rem">
+            <input type="radio" name="role" value="student" checked />
+            Student
+          </label>
+          <label style="display:flex;align-items:center;gap:.35rem">
+            <input type="radio" name="role" value="instructor" />
+            Instructor
+          </label>
+        </div>
+        <div class="field" id="majorField">
+          <label for="major">Major</label>
+          <input id="major" type="text" placeholder="Psychology" />
+        </div>
+        <div class="field" id="subjectField" style="display:none">
+          <label for="subject">Subject</label>
+          <input id="subject" type="text" placeholder="Computer Science" />
+        </div>
+
+        <button id="ms-login" class="btn btn-primary" type="button">
           <span>Sign in with Microsoft</span>
         </button>
 
@@ -221,21 +248,11 @@
         <form id="demo-login" novalidate>
           <div class="field">
             <label for="email">Email</label>
-            <input
-              id="email"
-              type="email"
-              placeholder="you@merrimack.edu"
-              required
-            />
+            <input id="email" type="email" placeholder="you@merrimack.edu" required />
           </div>
           <div class="field">
             <label for="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              required
-            />
+            <input id="password" type="password" placeholder="••••••••" required />
           </div>
           <div class="aux">
             <a href="#" aria-disabled="true">Forgot password?</a>
@@ -254,5 +271,3 @@
     </footer>
 
     <script type="module" src="/src/pages/login.js"></script>
-  </body>
-</html>
