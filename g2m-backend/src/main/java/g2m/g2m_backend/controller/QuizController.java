@@ -1,12 +1,11 @@
 package g2m.g2m_backend.controller;
 
-//import g2m.g2m_backend.DAL.QuizDal;
 import g2m.g2m_backend.business.BusinessLogic;
 import g2m.g2m_backend.business.QuizManager;
 import g2m.g2m_backend.DAL.javaSQLobjects.Badge;
 import g2m.g2m_backend.DAL.javaSQLobjects.QuestionData;
 import g2m.g2m_backend.DAL.javaSQLobjects.Student;
-import g2m.g2m_backend.DAL.javaSQLobjects.QuizQuestion;
+//import g2m.g2m_backend.DAL.javaSQLobjects.QuizQuestion;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,15 +22,13 @@ public class QuizController {
 
     private final BusinessLogic bl;
     private final QuizManager ql;
-    //Scanner in = new Scanner(System.in); //not sure if i need this but it gets rid of errors
 
     public QuizController(BusinessLogic bl, QuizManager ql) {
-        //QuizDal dal = new QuizDal();
         this.bl = bl;
         this.ql = ql;
     }
 
-    // Register a new user: Ready to connect
+    // Register a new user: UNTESTED
     @PostMapping("/users/register")
     public boolean registerUser(@RequestBody Map<String, Object> data) {
         String username = (String) data.get("username");
@@ -45,7 +42,7 @@ public class QuizController {
         return bl.registerUser(username, email, isInstructor, major, subject, firstName, lastName);
     }
 
-    //create class: Ready to connect
+    //create class: UNTESTED
     @PostMapping("/classes/create")
     public boolean createClass(@RequestBody Map<String, Object>data) {
         int classId = Integer.parseInt(data.get("classId").toString());
@@ -63,7 +60,7 @@ public class QuizController {
         return bl.viewInstructorClasses(instructorId);
     }
 
-    // Enroll student: NOT ready
+    // Enroll student: UNTESTED
     @PostMapping("/instructors/classes/enroll")
     public boolean enrollStudent(@RequestBody Map<String, Object> data) {
         int classId = Integer.parseInt(data.get("classId").toString());
@@ -87,7 +84,7 @@ public class QuizController {
         return bl.viewStudentClasses(studentId);
     }
 
-    //upload reading: NOT ready
+    //upload reading: UNTESTED
     @PostMapping("/classes/{classId}/readings")
     public boolean uploadReading(@PathVariable int classId, @RequestBody Map<String, Object> data) {
         int instructorId = Integer.parseInt(data.get("instructorId").toString());
@@ -96,8 +93,8 @@ public class QuizController {
         return bl.uploadReading(instructorId, classId, readingName, filePath);
     }
 
-    //add objectives to reading
-    //this needs to be manual for now nc time crucnch
+    //add objectives to reading: UNTESTED
+    //this needs to be manual for now bc time crucnch
     @PostMapping("/readings/{readingId}/objectives")
     public ResponseEntity<Map<String, Object>> addReadingObjective(
             @PathVariable int readingId,
@@ -117,14 +114,11 @@ public class QuizController {
     }
 
 
-    //Instructor links readig to quiz during quiz creation
+    //instructor links readig to quiz during quiz creation: UNTESTED
     //this basically gets the reading id from the reading they're linking
     @PostMapping("/quizzes/{quizId}/readings")
     public ResponseEntity<Map<String, Object>> addQuizReading(@PathVariable int quizId, @RequestBody Map<String, Object> requestBody) {
-
-        // Get the readingId from the request JSON
         int readingId = (int) requestBody.get("readingId");
-
         boolean success = bl.addReadingToQuiz(quizId, readingId);
 
         if (success) {
@@ -138,6 +132,7 @@ public class QuizController {
     //when an instructor clicks on "Add Question" inside their quiz module, the information they put in for that question gets sent here
     //that info is made into a QuesitonData obj
     //i send that to bl
+    //UNTESTED
     @PostMapping("/quizzes/{quizId}/questions")
     public ResponseEntity<Map<String, Object>> addQuestion(
             @PathVariable int quizId,
@@ -173,13 +168,6 @@ public class QuizController {
         return bl.viewQuizzesByClass(classId);
     }
 
-    // Search students: Ready to connect
-    //TESTED: Error, but not a big deal i never use this
-    @GetMapping("/students/search")
-    public ArrayList<Student> searchStudent(@RequestParam String type, @RequestParam String query) {
-        return bl.searchStudent(type, query);
-    }
-
     //display relavant learning objectives
     //TESTED: Error!
     @GetMapping("/quizzes/{quizId}/objectives")
@@ -188,6 +176,7 @@ public class QuizController {
     }
 
     //student selects objectives that were displayed in viewObjectivesByQuiz and they are then sent here
+    //UNTESTED
     @PostMapping("/quizzes/{quizId}/objectives")
     public ResponseEntity<Map<String, Object>> selectObjective(
             @PathVariable int quizId,
@@ -237,5 +226,13 @@ public class QuizController {
     @GetMapping("/badges")
     public ArrayList<Badge> viewAllBadges() {
         return bl.displayAllBadges();
+    }
+
+
+    // Search students: Ready to connect
+    //TESTED: Error, but not a big deal i never use this
+    @GetMapping("/students/search")
+    public ArrayList<Student> searchStudent(@RequestParam String type, @RequestParam String query) {
+        return bl.searchStudent(type, query);
     }
 }
