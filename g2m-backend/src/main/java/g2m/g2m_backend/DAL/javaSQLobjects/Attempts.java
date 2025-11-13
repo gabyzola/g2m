@@ -1,4 +1,4 @@
-package g2m.DAL.javaSQLobjects;
+package g2m.g2m_backend.DAL.javaSQLobjects;
 
 public class Attempts {
     private int attemptId;
@@ -9,7 +9,6 @@ public class Attempts {
     private boolean isCorrect;
     private int pointsEarned;
 
-    //Constructor
     public Attempts(int attemptId, int studentId, int quizId, int questionId, int chosenChoiceId, boolean isCorrect, int pointsEarned)
     {
         this.attemptId = attemptId;
@@ -20,8 +19,6 @@ public class Attempts {
         this.isCorrect=isCorrect;
         this.pointsEarned=pointsEarned;
     }
-
-    //Setters & Getters
     
     public int getattemptId() {
         return attemptId;
@@ -92,3 +89,4 @@ public class Attempts {
         return toReturn;
     }
 }
+

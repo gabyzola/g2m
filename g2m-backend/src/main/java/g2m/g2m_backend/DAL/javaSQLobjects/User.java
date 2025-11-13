@@ -1,4 +1,4 @@
-package g2m.DAL.javaSQLobjects;
+package g2m.g2m_backend.DAL.javaSQLobjects;
 
 import java.time.LocalDateTime;
 
@@ -11,7 +11,6 @@ public class User {
     private LocalDateTime created_at;
     private LocalDateTime lastLogin;
 
-    //Constructor
     public User(int userId, String googleId, String username, String email, boolean isInstructor, LocalDateTime created_at, LocalDateTime lastLogin)
     {
         this.userId = userId;
@@ -22,8 +21,6 @@ public class User {
         this.created_at = created_at;
         this.lastLogin = lastLogin;
     }
-
-    //Setters & Getters
     
     public int getuserId() {
         return userId;
@@ -94,3 +91,4 @@ public class User {
         return toReturn;
     }
 }
+

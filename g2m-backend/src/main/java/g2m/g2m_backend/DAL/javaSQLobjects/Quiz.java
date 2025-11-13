@@ -1,4 +1,4 @@
-package g2m.DAL.javaSQLobjects;
+package g2m.g2m_backend.DAL.javaSQLobjects;
 
 import java.time.LocalDateTime;
 
@@ -9,7 +9,6 @@ public class Quiz {
     private LocalDateTime created_at;
     private int classId;
 
-    //Constructor
     public Quiz(int quizId, String quizName, int instructorId, LocalDateTime created_at, int classId)
     {
         this.quizId = quizId;
@@ -18,8 +17,6 @@ public class Quiz {
         this.created_at = created_at;
         this.classId = classId;
     }
-
-    //Setters & Getters
     
     public int getquizId() {
         return quizId;

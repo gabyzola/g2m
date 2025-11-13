@@ -1,19 +1,16 @@
-package g2m.DAL.javaSQLobjects;
+package g2m.g2m_backend.DAL.javaSQLobjects;
 
 public class LearningObjective {
     private int objectiveId;
     private String objectiveName;
     private String objDescript;
 
-    //Constructor
     public LearningObjective(int objectiveId, String objectiveName, String objDescript)
     {
         this.objectiveId = objectiveId;
         this.objectiveName = objectiveName;
         this.objDescript = objDescript;
     }
-
-    //Setters & Getters
     
     public int getobjectiveId() {
         return objectiveId;
@@ -48,3 +45,4 @@ public class LearningObjective {
         return toReturn;
     }
 }
+

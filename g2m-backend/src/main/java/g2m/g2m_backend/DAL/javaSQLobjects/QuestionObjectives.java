@@ -1,17 +1,14 @@
-package g2m.DAL.javaSQLobjects;
+package g2m.g2m_backend.DAL.javaSQLobjects;
 
 public class QuestionObjectives {
     private int questionId;
     private int objectiveId;
 
-    //Constructor
     public QuestionObjectives(int questionId, int objectiveId)
     {
         this.questionId = questionId;
         this.objectiveId = objectiveId;
     }
-
-    //Setters & Getters
     
     public int getquestionId() {
         return questionId;
@@ -38,3 +35,4 @@ public class QuestionObjectives {
     }
     
 }
+

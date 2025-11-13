@@ -1,4 +1,4 @@
-package g2m.DAL.javaSQLobjects;
+package g2m.g2m_backend.DAL.javaSQLobjects;
 
 public class Question {
     private int questionId;
@@ -7,7 +7,6 @@ public class Question {
     private String difficulty;
     private int correctChoiceId;
 
-    //Constructor
     public Question(int questionId, String questionText, int quizId, String difficulty, int correctChoiceId)
     {
         this.questionId = questionId;
@@ -16,8 +15,6 @@ public class Question {
         this.difficulty = difficulty;
         this.correctChoiceId = correctChoiceId;
     }
-
-    //Setters & Getters
     
     public int getquestionId() {
         return questionId;
@@ -70,3 +67,4 @@ public class Question {
         return toReturn;
     }
 }
+

@@ -1,4 +1,4 @@
-package g2m.DAL.javaSQLobjects;
+package g2m.g2m_backend.DAL.javaSQLobjects;
 
 public class Student {
     private int studentId;
@@ -6,7 +6,6 @@ public class Student {
     private int totalPoints;
     private String major;
 
-    //Constructor
     public Student(int studentId, String badge, int totalPoints, String major)
     {
         this.studentId = studentId;
@@ -14,38 +13,36 @@ public class Student {
         this.totalPoints = totalPoints;
         this.major = major;
     }
-
-    //Setters & Getters
     
-    public int getstudentId() {
+    public int getStudentId() {
         return studentId;
     }
 
-    public void setstudentId(int studentId) {
+    public void setStudentId(int studentId) {
         this.studentId = studentId;
     }
 
-    public String getbadge() {
+    public String getBadge() {
         return badge;
     }
 
-    public void setbadge(String badge) {
+    public void setBadge(String badge) {
         this.badge = badge;
     }
 
-    public int gettotalPoints() {
+    public int getTotalPoints() {
         return totalPoints;
     }
 
-    public void settotalPoints(int totalPoints) {
+    public void setTotalPoints(int totalPoints) {
         this.totalPoints = totalPoints;
     }
 
-    public String getmajor() {
+    public String getMajor() {
         return major;
     }
 
-    public void setmajor(String major) {
+    public void setMajor(String major) {
         this.major = major;
     }
 

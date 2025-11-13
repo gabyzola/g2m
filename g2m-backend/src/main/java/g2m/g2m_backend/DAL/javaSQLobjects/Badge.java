@@ -1,51 +1,38 @@
-package g2m.DAL.javaSQLobjects;
+package g2m.g2m_backend.DAL.javaSQLobjects;
 
 public class Badge {
     private int badgeId;
     private String badgeName;
-    private String description;
     private int pointThreshold;
 
-    //Constructor
-    public Badge(int badgeId, String badgeName, String description, int pointThreshold)
+    public Badge(int badgeId, String badgeName, int pointThreshold)
     {
         this.badgeId = badgeId;
         this.badgeName = badgeName;
-        this.description = description;
         this.pointThreshold = pointThreshold;
     }
-
-    //Setters & Getters
     
     public int getBadgeId() {
         return badgeId;
     }
 
-    public void setbadgeId(int badgeId) {
+    public void setBadgeId(int badgeId) {
         this.badgeId = badgeId;
     }
 
-    public String getbadgeName() {
+    public String getBadgeName() {
         return badgeName;
     }
 
-    public void setbadgeName(String badgeName) {
+    public void setBadgeName(String badgeName) {
         this.badgeName = badgeName;
     }
 
-    public String getdescription() {
-        return description;
-    }
-
-    public void setdescription(String description) {
-        this.description = description;
-    }
-
-    public int getpointThreshold() {
+    public int getPointThreshold() {
         return pointThreshold;
     }
 
-    public void setpointThreshold(int pointThreshold) {
+    public void setPointThreshold(int pointThreshold) {
         this.pointThreshold = pointThreshold;
     }
 
@@ -54,9 +41,9 @@ public class Badge {
         String toReturn = "";
         toReturn += "Badge badgeName: " + badgeName;
         toReturn += "\nBadge ID: " + badgeId;
-        toReturn += "\ndescription: " + description;
         toReturn += "\npointThreshold: " + pointThreshold;
 
         return toReturn;
     }
 }
+

@@ -1,17 +1,14 @@
-package g2m.DAL.javaSQLobjects;
+package g2m.g2m_backend.DAL.javaSQLobjects;
 
 public class Instructor {
     private int instructorId;
     private String schoolSubject;
 
-    //Constructor
     public Instructor(int instructorId, String schoolSubject)
     {
         this.instructorId = instructorId;
         this.schoolSubject = schoolSubject;
     }
-
-    //Setters & Getters
     
     public int getinstructorId() {
         return instructorId;
@@ -38,3 +35,4 @@ public class Instructor {
         return toReturn;
     }
 }
+

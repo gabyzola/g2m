@@ -1,4 +1,4 @@
-package g2m.DAL.javaSQLobjects;
+package g2m.g2m_backend.DAL.javaSQLobjects;
 
 public class QuestionChoice {
     private int choiceId;
@@ -6,7 +6,6 @@ public class QuestionChoice {
     private char choiceLabel;
     private String choiceText;
 
-    //Constructor
     public QuestionChoice(int choiceId, int questionId, char choiceLabel, String choiceText)
     {
         this.choiceId = choiceId;
@@ -14,8 +13,6 @@ public class QuestionChoice {
         this.choiceLabel=choiceLabel;
         this.choiceText=choiceText;
     }
-
-    //Setters & Getters
     
     public int getchoiceId() {
         return choiceId;
@@ -59,3 +56,4 @@ public class QuestionChoice {
         return toReturn;
     }
 }
+

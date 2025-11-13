@@ -1,18 +1,15 @@
-package g2m.DAL.javaSQLobjects;
+package g2m.g2m_backend.DAL.javaSQLobjects;
 
 public class StudentBadges {
     private int studentId;
     private int badgeId;
 
-    //Constructor
     public StudentBadges(int studentId, int badgeId)
     {
         this.studentId = studentId;
         this.badgeId = badgeId;
     }
 
-    //Setters & Getters
-    
     public int getstudentId() {
         return studentId;
     }
@@ -37,3 +34,4 @@ public class StudentBadges {
         return toReturn;
     }
 }
+
