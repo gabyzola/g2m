@@ -4,14 +4,11 @@ public class classEnrollee {
     private int classId;
     private int studentId;
 
-    //Constructor
     public classEnrollee(int classId, int studentId)
     {
         this.classId = classId;
         this.studentId = studentId;
     }
-
-    //Setters & Getters
     
     public int getclassId() {
         return classId;

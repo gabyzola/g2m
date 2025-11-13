@@ -6,7 +6,6 @@ public class QuestionChoice {
     private char choiceLabel;
     private String choiceText;
 
-    //Constructor
     public QuestionChoice(int choiceId, int questionId, char choiceLabel, String choiceText)
     {
         this.choiceId = choiceId;
@@ -14,8 +13,6 @@ public class QuestionChoice {
         this.choiceLabel=choiceLabel;
         this.choiceText=choiceText;
     }
-
-    //Setters & Getters
     
     public int getchoiceId() {
         return choiceId;

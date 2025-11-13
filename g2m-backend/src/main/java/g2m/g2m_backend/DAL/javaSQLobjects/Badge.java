@@ -5,15 +5,12 @@ public class Badge {
     private String badgeName;
     private int pointThreshold;
 
-    //Constructor
     public Badge(int badgeId, String badgeName, int pointThreshold)
     {
         this.badgeId = badgeId;
         this.badgeName = badgeName;
         this.pointThreshold = pointThreshold;
     }
-
-    //Setters & Getters
     
     public int getBadgeId() {
         return badgeId;

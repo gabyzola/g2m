@@ -13,14 +13,10 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
-
-
 import g2m.g2m_backend.DAL.javaSQLobjects.Student;
-import g2m.g2m_backend.business.DifficultyLevel;
 import jakarta.annotation.PostConstruct;
 import g2m.g2m_backend.DAL.javaSQLobjects.Badge;
 import g2m.g2m_backend.DAL.javaSQLobjects.QuestionData;
-import g2m.g2m_backend.DAL.javaSQLobjects.QuizQuestion;
 
 @Repository
 public class QuizDal {
@@ -316,16 +312,16 @@ public class QuizDal {
         try {
             stmt = myConnection.prepareCall("{CALL InsertNewQuestion(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
 
-            stmt.setInt(1, questionNumber);                  // myQuestionNumber
-            stmt.setString(2, qData.getQuestionText());      // myQuestionText
-            stmt.setString(3, qData.getDifficulty());        // myDifficulty
-            stmt.setString(4, qData.getChoiceA());           // myChoiceA
-            stmt.setString(5, qData.getChoiceB());           // myChoiceB
-            stmt.setString(6, qData.getChoiceC());           // myChoiceC
-            stmt.setString(7, qData.getChoiceD());           // myChoiceD
-            stmt.setString(8, String.valueOf(qData.getCorrectAnswer())); // myCorrectAnswer
-            stmt.setInt(9, qData.getObjectiveId());          // myObjectiveId
-            stmt.setInt(10, qData.getQuizId());              // myQuizId
+            stmt.setInt(1, questionNumber);                 
+            stmt.setString(2, qData.getQuestionText());     
+            stmt.setString(3, qData.getDifficulty());       
+            stmt.setString(4, qData.getChoiceA());          
+            stmt.setString(5, qData.getChoiceB());           
+            stmt.setString(6, qData.getChoiceC());         
+            stmt.setString(7, qData.getChoiceD());        
+            stmt.setString(8, String.valueOf(qData.getCorrectAnswer())); 
+            stmt.setInt(9, qData.getObjectiveId());         
+            stmt.setInt(10, qData.getQuizId());             
 
             stmt.execute();
             return true;
@@ -560,18 +556,16 @@ public class QuizDal {
         Statement myStatement;
         try {
             myStatement = myConnection.createStatement();
-            //get relations via a sql query
             ResultSet myRelation = myStatement.executeQuery("SELECT * FROM Badges");
             ArrayList<Badge> Badges = new ArrayList<>();
 
-            //add each relation into arraylist-- studentid, badge, totalPoints, major
             while (myRelation.next()) {
                 Badge newBadge = new Badge(myRelation.getInt("badgeId"), myRelation.getString("badgeName"), myRelation.getInt("pointThreshold"));
                 Badges.add(newBadge);
 
             }
 
-            return Badges; // return the array list of Students
+            return Badges;
 
         } catch (SQLException e) { 
             e.printStackTrace();
@@ -622,13 +616,10 @@ public class QuizDal {
         Statement myStatement;
         try {
             myStatement = myConnection.createStatement();
-            //get relations via a sql query
             ResultSet myRelation = myStatement.executeQuery("SELECT * FROM Students");
 
-            //create students arraylist
             ArrayList<Student> Students = new ArrayList<>();
 
-            //add each relation into arraylist-- studentid, badge, totalPoints, major
             while (myRelation.next()) {
                 Student newStudent = new Student(myRelation.getInt("StudentId"), myRelation.getString("badge"),
                         myRelation.getInt("totalPoints"), myRelation.getString("major"));
@@ -636,9 +627,9 @@ public class QuizDal {
 
             }
 
-            return Students; // return the array list of Students
+            return Students; 
 
-        } catch (SQLException e) { //error handling
+        } catch (SQLException e) { 
             e.printStackTrace();
             return null;
         }
@@ -765,13 +756,6 @@ public class QuizDal {
     }
 
 }
-
-/* Methods im unsure about keeping-- may be useful later*/
-/*
-SELECT DISTINCT lo.*
-FROM readingObjectives lo
-JOIN QuestionObjectives qo ON lo.objectiveId = qo.objectiveId;
-*/
 
     
            

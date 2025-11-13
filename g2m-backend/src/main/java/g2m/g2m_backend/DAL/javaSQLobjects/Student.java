@@ -6,7 +6,6 @@ public class Student {
     private int totalPoints;
     private String major;
 
-    //Constructor
     public Student(int studentId, String badge, int totalPoints, String major)
     {
         this.studentId = studentId;
@@ -14,8 +13,6 @@ public class Student {
         this.totalPoints = totalPoints;
         this.major = major;
     }
-
-    //Setters & Getters
     
     public int getStudentId() {
         return studentId;

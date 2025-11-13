@@ -81,7 +81,7 @@ CREATE TABLE Questions (
     quizId INT NOT NULL,
     difficulty ENUM('easy','medium','hard') NOT NULL,
     correct_choice_id INT,
-    FOREIGN KEY (quizId) REFERENCES Quizzes(quizId) ON DELETE SET NULL
+    FOREIGN KEY (quizId) REFERENCES Quizzes(quizId) 
 );
 
 CREATE TABLE QuestionChoices (

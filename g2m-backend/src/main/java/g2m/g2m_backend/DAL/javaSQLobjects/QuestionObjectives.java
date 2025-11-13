@@ -4,14 +4,11 @@ public class QuestionObjectives {
     private int questionId;
     private int objectiveId;
 
-    //Constructor
     public QuestionObjectives(int questionId, int objectiveId)
     {
         this.questionId = questionId;
         this.objectiveId = objectiveId;
     }
-
-    //Setters & Getters
     
     public int getquestionId() {
         return questionId;

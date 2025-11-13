@@ -6,7 +6,7 @@ public class QuestionData {
     private String choiceA, choiceB, choiceC, choiceD;
     private char correctAnswer;
     private int objectiveId;
-    private int quizId; //
+    private int quizId; 
 
     public QuestionData(String questionText, String difficulty,
                         String choiceA, String choiceB, String choiceC, String choiceD,
@@ -22,7 +22,6 @@ public class QuestionData {
         this.quizId = quizId;
     }
 
-    //getters
     public String getQuestionText() { return questionText; }
     public String getDifficulty() { return difficulty; }
     public String getChoiceA() { return choiceA; }

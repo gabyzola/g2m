@@ -5,15 +5,12 @@ public class LearningObjective {
     private String objectiveName;
     private String objDescript;
 
-    //Constructor
     public LearningObjective(int objectiveId, String objectiveName, String objDescript)
     {
         this.objectiveId = objectiveId;
         this.objectiveName = objectiveName;
         this.objDescript = objDescript;
     }
-
-    //Setters & Getters
     
     public int getobjectiveId() {
         return objectiveId;

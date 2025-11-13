@@ -4,15 +4,12 @@ public class StudentBadges {
     private int studentId;
     private int badgeId;
 
-    //Constructor
     public StudentBadges(int studentId, int badgeId)
     {
         this.studentId = studentId;
         this.badgeId = badgeId;
     }
 
-    //Setters & Getters
-    
     public int getstudentId() {
         return studentId;
     }
