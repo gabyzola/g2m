@@ -1,9 +1,9 @@
 import { defineConfig } from 'vite';
-import fs from 'fs';
 
 export default defineConfig({
   server: {
-    host: '0.0.0.0',
+    host: true,
+    allowedHosts: true,
     port: 49160,
     https: {
       key: fs.readFileSync('./certs/privkey.pem'),
@@ -11,4 +11,3 @@ export default defineConfig({
     }
   }
 });
-  
