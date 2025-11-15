@@ -8,7 +8,7 @@ export default defineConfig({
     cors: false,
     proxy: {
       "/api": {
-        target: "http://localhost:8080",  //gaby if you read this i am seriously crossing my fingers that this doesnt mess stuff up
+        target: "http://localhost:8080",  
         changeOrigin: true,
         secure: false
       }
