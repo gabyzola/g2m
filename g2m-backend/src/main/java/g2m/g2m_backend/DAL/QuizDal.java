@@ -236,6 +236,7 @@ public class QuizDal {
     }
 
     //insert reading objectives into proper table (see business layer)
+    //bl: done
     public boolean insertNewReadingObjective(int readingId, int classId, String objectiveName) {
         CallableStatement stmt = null;
         try {
@@ -259,6 +260,7 @@ public class QuizDal {
 
     //create quiz- instructor priv
     //creates a quiz module- sets quiz name and automatically passes classId and instructorId
+    //bl: done
     public int insertNewQuiz(String quizName, int instructorId, int classId) {
         CallableStatement stmt = null;
         try {
@@ -287,6 +289,7 @@ public class QuizDal {
     //assign reading to quiz
     //during quiz creation there will be a button where the prof can link a reading
     //when they link a reading, the relevant objectives will populate
+    //bl: done
     public boolean insertQuizReading(int quizId, int readingId) {
         CallableStatement stmt = null;
         try {
@@ -307,6 +310,7 @@ public class QuizDal {
 
     //insert new question + their objectives
     //actually inserts the question, its choices, its assigned objective, and marks the correct choice
+    //bl: done
     public boolean insertNewQuestion(QuestionData qData, int questionNumber) {
         CallableStatement stmt = null;
         try {
@@ -340,6 +344,8 @@ public class QuizDal {
         }
     }
 
+    //keeps track of question numbers
+    //bl: done
     public int getNextQuestionNumberForQuiz(int quizId) throws SQLException {
         String sql = "SELECT IFNULL(MAX(questionNumber), 0) + 1 AS nextNum FROM Questions WHERE quizId = ?";
         try (PreparedStatement ps = myConnection.prepareStatement(sql)) {
@@ -354,6 +360,7 @@ public class QuizDal {
     }
 
     //display quizzes within a class
+    //bl: done
     public List<Map<String, Object>> getQuizzesByClass(int classId) {
         List<Map<String, Object>> results = new ArrayList<>();
         try (CallableStatement cs = myConnection.prepareCall("{CALL getQuizzesByClass(?)}")) {
@@ -371,6 +378,7 @@ public class QuizDal {
     }
 
     //display relevant quiz objectives to choose from
+    //bl: done
     public List<Map<String, Object>> getObjectivesByQuiz(int quizId) {
         List<Map<String, Object>> results = new ArrayList<>();
         try (CallableStatement cs = myConnection.prepareCall("{CALL getQuizObjectives(?)}")) {
@@ -389,6 +397,7 @@ public class QuizDal {
 
     //display ALL quiz questions
     // Fetches all quiz questions as raw data without wrapping into QuizQuestion
+    //bl: done
     public List<Map<String, Object>> getQuizQuestions(int quizId) {
         List<Map<String, Object>> results = new ArrayList<>();
 
@@ -421,6 +430,7 @@ public class QuizDal {
 
 
     //student selects objective before taking the quiz
+    //bl: done
     public boolean chooseLearningObjective(int studentId, int quizId, int objectiveId) {
         CallableStatement stmt = null;
         try {
@@ -443,6 +453,7 @@ public class QuizDal {
     }
 
     //get student objectives
+    //bl: done
     public List<Integer> getStudentObjective(int studentId) {
         List<Integer> results = new ArrayList<>();
 

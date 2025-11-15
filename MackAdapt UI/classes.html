@@ -1,92 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Classes – MackAdapt</title>
-  <link rel="stylesheet" href="style.css" />
-  <script src="https://alcdn.msauth.net/browser/2.33.0/js/msal-browser.min.js"></script>
-</head>
-<body>
-  <header>
-    <h1>MackAdapt</h1>
-    <nav>
-      <ul>
-        <li><a href="index.html">Home</a></li>
-        <li><a href="classes.html" class="active">Classes</a></li>
-        <li><a href="student-dashboard.html">Student Dashboard</a></li>
-        <li>
-          <button id="ms-login-header" style="background:none; border:none; color:var(--gold); font-weight:bold; cursor:pointer;">
-            Sign in
-          </button>
-        </li>
-      </ul>
-    </nav>
-  </header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Classes – MackAdapt</title>
+    <link rel="stylesheet" href="style.css" />
+    <!-- <script src="https://alcdn.msauth.net/browser/2.33.0/js/msal-browser.min.js"></script> -->
+  </head>
+  <body>
+    <header>
+      <h1>MackAdapt</h1>
+      <nav>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="classes.html" class="active">Classes</a></li>
+          <li><a href="student-dashboard.html">Student Dashboard</a></li>
+          <li>
+            <button id="ms-login-header" style="background:none; border:none; color:var(--gold); font-weight:bold; cursor:pointer;">
+              Sign in
+            </button>
+          </li>
+        </ul>
+      </nav>
+    </header>
 
-  <main>
-    <h2 id="welcome-text">Welcome to your Classes!</h2>
-    <p id="user-email"></p>
+    <main>
+      <h2>Testing Instructor Classes</h2>
 
-    <!-- Example: List of classes -->
-    <section class="class-list">
-      <ul>
-        <li>Math 101</li>
-        <li>Biology 201</li>
-        <li>Chemistry 301</li>
-      </ul>
-    </section>
-  </main>
+      <!-- testing prof id=4 -->
+      <label>Instructor ID:</label>
+      <input id="instructorId" type="number" value="4" />
 
-  <footer>
-    <p>&copy; 2025 MackAdapt – Built for Merrimack College</p>
-  </footer>
+      <button id="loadClasses" style="margin-top: 10px;">
+        Load Classes
+      </button>
 
-  <script>
-    const msalConfig = {
-      auth: {
-        clientId: "f1eb948d-5297-47ce-a4c4-419d1f699607",
-        authority: "https://login.microsoftonline.com/57e1236c-0fa3-4739-9edf-fd0721c8744d/",
-        redirectUri: window.location.origin + window.location.pathname
-      },
-      cache: { cacheLocation: "localStorage", storeAuthStateInCookie: false }
-    };
+      <section class="class-list">
+        <ul id="classList"></ul>
+      </section>
+    </main>
 
-    const msalInstance = new msal.PublicClientApplication(msalConfig);
-    const loginRequest = { scopes: ["openid","profile","email","User.Read"] };
-    const loginBtn = document.getElementById("ms-login-header");
+    <footer>
+      <p>&copy; 2025 MackAdapt – Built for Merrimack College</p>
+    </footer>
 
-    // Handle header login button click
-    loginBtn.addEventListener("click", async () => {
-      try {
-        const response = await msalInstance.loginPopup(loginRequest);
-        msalInstance.setActiveAccount(response.account);
-        loginBtn.textContent = `Hello, ${response.account.name}`;
-        document.getElementById("welcome-text").textContent = `Welcome, ${response.account.name} 👋`;
-        document.getElementById("user-email").textContent = response.account.username;
-      } catch (err) {
-        console.error("Login failed:", err);
-        alert("Login failed. See console for details.");
-      }
-    });
+    <script type="module" src="/src/main.js"></script>
 
-    // Handle redirect response or existing session
-    window.addEventListener("DOMContentLoaded", () => {
-      msalInstance.handleRedirectPromise()
-        .then(resp => {
-          const account = resp?.account || msalInstance.getActiveAccount();
-          if (account) {
-            msalInstance.setActiveAccount(account);
-            loginBtn.textContent = `Hello, ${account.name}`;
-            document.getElementById("welcome-text").textContent = `Welcome, ${account.name} 👋`;
-            document.getElementById("user-email").textContent = account.username;
-          } else {
-            // Not signed in → redirect to login
-            window.location.href = "login.html";
-          }
-        })
-        .catch(console.error);
-    });
-  </script>
-</body>
+  </body>
 </html>

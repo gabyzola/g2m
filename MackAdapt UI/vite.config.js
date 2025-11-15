@@ -5,6 +5,13 @@ export default defineConfig({
     host: true,
     allowedHosts: true,
     port: 49160,
-    cors: false
+    cors: false,
+    proxy: {
+      "/api": {
+        target: "http://localhost:8080",  //gaby if you read this i am seriously crossing my fingers that this doesnt mess stuff up
+        changeOrigin: true,
+        secure: false
+      }
+    }
   }
 });

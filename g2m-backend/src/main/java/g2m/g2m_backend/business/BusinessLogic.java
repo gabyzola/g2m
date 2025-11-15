@@ -18,38 +18,45 @@ public class BusinessLogic {
     }
 
     //register a new user
+    //api: done
     public boolean registerUser(String username, String email, boolean isInstructor,
                                 String major, String schoolSubject, String firstName, String lastName) {
         return dal.insertNewUser(username, email, isInstructor, major, schoolSubject, firstName, lastName);
     }
 
     //create new class
+    //api: done
     public boolean createClass(int classId, String className, String instructorEmail) {
         return dal.insertNewClass(classId, className, instructorEmail);
     }
 
     //display instructor classes
+    //api: done
     public List<Map<String, Object>> viewInstructorClasses(int instructorId) {
         return dal.getInstructorClasses(instructorId);
     }
 
     //enroll a student in a class by email
+    //api: done
     public boolean enrollStudentInClass(int classId, String email) {
         return dal.enrollStudent(classId, email);
     }
 
     //list class enrollees
+    //api: done
     public List<Map<String, Object>> viewClassEnrollees(int classId) {
         return dal.searchForEnrolleesByClass(classId);
     }
 
     //display student classes
+    //api: done
     public List<Map<String, Object>> viewStudentClasses(int studentId) {
         return dal.getStudentsClasses(studentId);
     }
 
     //add reading to a class module
     //partly a placeholder rn, not really the best implementation
+    //api: done
     public boolean uploadReading(int instructorId, int classId, String readingName, String filePath) {
         try {
             if (filePath == null || !filePath.isEmpty()) {
@@ -76,6 +83,7 @@ public class BusinessLogic {
 
     //add reading objective + profs will enter it manually for now
     //stretch goal: ml gets them from the reading
+    //api: done
     public boolean insertNewReadingObjective(int readingId, int classId, String objectiveName) {
         if (objectiveName == null || objectiveName.isEmpty()) {
         return false;
@@ -84,6 +92,7 @@ public class BusinessLogic {
     }
 
     //just link reading to quiz without returning their objectives
+    //api: done
     public boolean addReadingToQuiz(int quizId, int readingId) {
         return dal.insertQuizReading(quizId, readingId);
     }
@@ -99,7 +108,13 @@ public class BusinessLogic {
         }
     }
 
+    //creates quiz- really just the name
+    public int createQuiz(String quizName, int instructorId, int classId) {
+        return dal.insertNewQuiz(quizName, instructorId, classId);
+    }
+
     //adds a question to a quiz
+    //api: done
     public boolean addQuestionToQuiz(QuestionData questionData) {
         try {
             //keeps track of quiz number- need to verify that this works under multiple cases
@@ -114,16 +129,19 @@ public class BusinessLogic {
     }
 
     //display quizzes
+    //api: done
     public List<Map<String, Object>> viewQuizzesByClass(int classId) {
         return dal.getQuizzesByClass(classId);
     }
 
     //display relavant learning objectives based on the quiz
+    //api: done
     public List<Map<String, Object>> viewObjectivesByQuiz(int quizId) {
         return dal.getObjectivesByQuiz(quizId);
     }
 
     //display ALLLL quiz questions- probably only used on instructor side
+    //api: done
     public List<Map<String, Object>> getQuizQuestions(int quizId) {
         List<Map<String, Object>> questions = dal.getQuizQuestions(quizId);
 
@@ -136,6 +154,7 @@ public class BusinessLogic {
     }
 
     //student chooses learning objectives
+    //api: done
     public boolean selectObjectiveForStudent(int studentId, int quizId, int objectiveId) {
         try {
             return dal.chooseLearningObjective(studentId, quizId, objectiveId);
@@ -147,6 +166,7 @@ public class BusinessLogic {
     }
 
     //return student objectives (needs to get sent to quiz taking process so it can choose questions)
+    //api: done
     public List<Integer> getStudentObjectives(int studentId) {
         return dal.getStudentObjective(studentId);
     }
@@ -198,6 +218,12 @@ public class BusinessLogic {
         return studentQuizQuestions;
     }
 
+     //submit answer
+
+    //get quiz score
+
+    //assign badge check
+
     // helper to check if choice is correct- will use this soon, its nowehre yet
     private boolean isCorrectChoice(QuizQuestion.Choice choice, QuizQuestion question) {
         return choice.getChoiceId() == question.getCorrectChoiceId();
@@ -205,11 +231,13 @@ public class BusinessLogic {
 
 
     //display student's badges
+    //api: done
     public List<Map<String, Object>> displayStudentBadges(int studentId) {
         return dal.getStudentBadges(studentId);
     }
 
     //display all badges available to earn
+    //api: done
     public ArrayList<Badge> displayAllBadges() {
         return dal.getAllBadges();
     }

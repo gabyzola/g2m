@@ -129,6 +129,8 @@ public class QuizController {
         }
     }
 
+    //create quiz, when an instructor clicks "Add new quiz" or "create new quiz"
+
     //when an instructor clicks on "Add Question" inside their quiz module, the information they put in for that question gets sent here
     //that info is made into a QuesitonData obj
     //i send that to bl
@@ -202,6 +204,8 @@ public class QuizController {
     public List<Integer> viewStudentObjectives(@PathVariable int studentId) {
         return bl.getStudentObjectives(studentId);
     }
+
+    //backend gcalculates a subset of questions for student, make sure these can be displayed
 
     //get ALL quiz questions
     //probably wont need since students arent answering all of these but just in case
