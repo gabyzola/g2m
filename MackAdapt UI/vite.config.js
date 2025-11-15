@@ -4,13 +4,6 @@ export default defineConfig({
   server: {
     host: true,
     allowedHosts: true,
-    port: 49160,
-    proxy: {
-      "/api": {
-        target: "http://localhost:8080",  
-        changeOrigin: true,
-        secure: false
-      }
-    }    
+    port: 49160,  
   }
 });
