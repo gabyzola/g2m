@@ -280,3 +280,100 @@ footer {
 .hero-text button:hover {
   background-color: #e0b91f;
 }
+
+.sidebar {
+  flex: 0 0 260px;
+  background-color: #f8f5fb;
+  color: #381467;
+  padding: 20px;
+  border-left: 3px solid #381467;
+  border-radius: 10px;
+  height: fit-content;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 40px;
+  margin-top: 0px;
+}
+
+.page-wrapper {
+  display: flex;
+  gap: 30px;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+
+.service-card {
+  color: #381467;
+  padding: 25px;
+  transition: all 0.3s ease;
+}
+
+.service-card img {
+  border-radius: 10px;
+  margin: 15px 0;
+  box-shadow: 0 3px 10px rgba(56, 20, 103, 0.2);
+}
+
+.service-card hr {
+  border: none;
+  height: 3px;
+  background: linear-gradient(to right, #381467, #7953c6, #9370db);
+  border-radius: 2px;
+  margin: 25px auto;
+  width: 80%;
+}
+
+.service-card p {
+  line-height: 1.7;
+  color: #381467;
+  font-size: 16px;
+}
+
+.service-card a.book-btn {
+  display: inline-block;
+  margin-top: 10px;
+}
+
+.w3-content {
+  max-width: 750px;
+}
+
+.w3-section {
+  max-width: 750px;
+}
+
+.service-card.w3-card-4 {
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.main-content {
+  margin-left: 100px;
+  padding: 20px 40px 20px 0;
+  flex: 1;
+  text-align: left;
+}
+
+.main-content > section {
+  text-align: left;
+}
+
+
+
+
+
+
+
+
+
+

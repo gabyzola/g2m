@@ -2,75 +2,60 @@
 
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Class Module</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            margin: 0;
-            height: 100vh;
-        }
-
-        #sidebar {
-            width: 250px;
-            background-color: #f5f5f5;
-            border-right: 1px solid #ddd;
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        #sidebar h2 {
-            font-size: 1.2em;
-            margin-bottom: 10px;
-        }
-
-        #sidebar ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        #sidebar li {
-            padding: 5px 0;
-            border-bottom: 1px solid #eee;
-        }
-
-        #main {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        #main h1 {
-            margin-top: 0;
-        }
-
-        .quiz-card {
-            border: 1px solid #ddd;
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            background-color: #fff;
-        }
-
-        .quiz-card h3 {
-            margin: 0 0 10px 0;
-        }
-    </style>
-</head>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Class Module</title>
+        <link rel="stylesheet" href="style.css" />
+        <link
+        rel="stylesheet"
+        href="https://www.w3schools.com/w3css/4/w3.css"
+        />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    </head>
     <body>
-        <div id="sidebar">
-            <h2>Enrolled Students</h2>
-            <ul id="enrollees"></ul>
-        </div>
 
-        <div id="main">
-            <h1 id="class-title">Class Title</h1>
-            <div id="quizzes"></div>
-        </div>
 
-        <script type="module" src="/src/api/classmodule.js"></script>
+    <header>
+        <h1>MackAdapt</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="classes.html" class="active">Classes</a></li>
+                <li><a href="student-dashboard.html">Student Dashboard</a></li>
+                <li>
+                    <button id="ms-login-header" style="background:none; border:none; color:var(--gold); font-weight:bold; cursor:pointer;">
+                    Sign in
+                    </button>
+                </li>
+            </ul>
+        </nav>
+    </header>
+    <div class="page-wrapper">
+        <main class="main-content">
+            <section class="services-grid w3-container">
+                <div class="quiz-card">
+                    <h5><b>Quiz Module 1</b></h5>
+                    <p>
+                        <button>Start Quiz</button>
+                    </p>
+                </div>
+            </section>
+        </main>
+
+        <aside class="sidebar w3-card">
+            <h3 class="sidebar-title">Class Enrollees</h3>
+
+            <div class="w3-container">
+                <p>Student Name</p>
+                <p>Student Email</p>
+            </div>
+        </aside>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 MackAdapt – Built for Merrimack College</p>
+    </footer>
+        <script type="module" src="/src/api/classmodule.js"></script>       
     </body>
 </html>
