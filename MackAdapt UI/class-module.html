@@ -1,0 +1,76 @@
+<!-- got started on this, we're missing it from the ui! -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class Module</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            margin: 0;
+            height: 100vh;
+        }
+
+        #sidebar {
+            width: 250px;
+            background-color: #f5f5f5;
+            border-right: 1px solid #ddd;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        #sidebar h2 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        #sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        #sidebar li {
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        #main {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        #main h1 {
+            margin-top: 0;
+        }
+
+        .quiz-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+
+        .quiz-card h3 {
+            margin: 0 0 10px 0;
+        }
+    </style>
+</head>
+    <body>
+        <div id="sidebar">
+            <h2>Enrolled Students</h2>
+            <ul id="enrollees"></ul>
+        </div>
+
+        <div id="main">
+            <h1 id="class-title">Class Title</h1>
+            <div id="quizzes"></div>
+        </div>
+
+        <script type="module" src="/src/api/classmodule.js"></script>
+    </body>
+</html>

@@ -1,28 +1,40 @@
+//import backend.js to get the jsons 
 import { getInstructorClasses } from "./api/backend.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const loadClassesBtn = document.getElementById("loadClasses");
 
   loadClassesBtn.addEventListener("click", async () => {
+    //added a button for testing, this reads in the inputted instructor id
     const instructorId = document.getElementById("instructorId").value;
 
+    //fetches the classes from backend.js, stores them in classes
     const classes = await getInstructorClasses(instructorId);
 
     const list = document.getElementById("classList");
-    list.innerHTML = "";
+    list.innerHTML = ""; //clears prev resultsa
 
+    //error chekcS
     if (!classes) {
       list.innerHTML = "<li>Error loading classes</li>";
       return;
     }
 
+    //iterates through each class that was returned
     classes.forEach(c => {
-      const li = document.createElement("li");
-      li.textContent = `${c.className} (ID: ${c.classId})`;
+      const li = document.createElement("li"); //this cerates list element
+      const link = document.createElement("a"); //this makes it a link
+
+      //this sets the link to the actual class page where classId specifies which information needs to go on the page
+      link.href = `/src/classModule.html?classId=${c.classId}`;
+      link.textContent = `${c.className} (ID: ${c.classId})`;
+
+      li.appendChild(link); //add links ands list
       list.appendChild(li);
     });
   });
 });
+
 
 /*<script>
     const msalConfig = {
