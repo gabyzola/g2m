@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -39,13 +37,22 @@
 </div>
 
     <div class="panel">
-      <h3>Upload Questions (doc/pdf/csv)</h3>
-      <input type="file" accept=".doc,.docx,.pdf,.csv" />
-      <p class="small-text">Or add questions manually below.</p>
+      <h3>Link a Reading</h3>
+
+      <label>Select Reading</label>
+      <select id="readingSelect">
+        <!-- neeed to update my mapping -->
+      </select>
+
+      <div class="actions">
+        <button id="addReadingBtn">Attach Reading</button>
+      </div>
+
+      <p class="notice">Reading will be linked to this quiz using your backend mapping.</p>
     </div>
 
     <div class="panel">
-      <h3>Add Question Manually</h3>
+      <h3>Add Question</h3>
       <label>Question Text</label>
       <textarea placeholder="Enter the question stem..."></textarea>
       <div class="row">
@@ -77,5 +84,88 @@
   </main>
 
   <footer><p>&copy; 2025 MackAdapt – Built for Merrimack College</p></footer>
-</body>
+  <script>
+      const query = new URLSearchParams(window.location.search);
+      const quizId = query.get("quizId");
+      const classId = query.get("classId"); 
+
+      //get reading from dropdown
+      async function loadReadings() {
+        try {
+          const res = await fetch(`/classes/${classId}/readings`);
+          const data = await res.json();
+
+          const select = document.getElementById("readingSelect");
+          select.innerHTML = "";
+
+          if (data.length === 0) {
+            const op = document.createElement("option");
+            op.textContent = "No readings available";
+            op.disabled = true;
+            op.selected = true;
+            select.appendChild(op);
+            return;
+          }
+
+          data.forEach(reading => {
+            const op = document.createElement("option");
+            op.value = reading.readingId;
+            op.textContent = reading.readingName; 
+            select.appendChild(op);
+          });
+
+        } catch (err) {
+          console.error("Failed to load readings:", err);
+        }
+      }
+
+      loadReadings();
+
+      //add question
+      document.querySelector("#addQuestionBtn")?.addEventListener("click", async () => {
+
+        const payload = {
+          questionText: document.querySelector("#questionText").value,
+          difficulty: document.querySelector("#difficulty").value,
+          choiceA: document.querySelector("#choiceA").value,
+          choiceB: document.querySelector("#choiceB").value,
+          choiceC: document.querySelector("#choiceC").value,
+          choiceD: document.querySelector("#choiceD").value,
+          correctAnswer: document.querySelector("#correctAnswer").value,
+          objectiveId: parseInt(document.querySelector("#objective").value)
+        };
+
+        const res = await fetch(`/quizzes/${quizId}/questions`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          alert("Question added!");
+        } else {
+          alert("Error adding question.");
+        }
+      });
+
+
+      document.getElementById("addReadingBtn").addEventListener("click", async () => {
+
+        const readingId = parseInt(document.getElementById("readingSelect").value);
+
+        const res = await fetch(`/quizzes/${quizId}/readings`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ readingId })
+        });
+
+        if (res.ok) {
+          alert("Reading linked!");
+        } else {
+          alert("Error linking reading.");
+        }
+      });
+    </script>
+
+  </body>
 </html>

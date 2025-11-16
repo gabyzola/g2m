@@ -113,6 +113,10 @@ public class BusinessLogic {
         return dal.insertNewQuiz(quizName, instructorId, classId);
     }
 
+    public List<Map<String, Object>> getClassReadings(int classId) {
+        return dal.getClassReadings(classId);
+    }
+
     //adds a question to a quiz
     //api: done
     public boolean addQuestionToQuiz(QuestionData questionData) {
@@ -167,56 +171,49 @@ public class BusinessLogic {
 
     //return student objectives (needs to get sent to quiz taking process so it can choose questions)
     //api: done
-    public List<Integer> getStudentObjectives(int studentId) {
-        return dal.getStudentObjective(studentId);
+    public List<Map<String, Object>> getStudentObjectives(int studentId) {
+        return dal.getStudentObjectives(studentId);
     }
 
     //calculate and group quiz questions for specific student
     public List<QuizQuestion> getStudentQuizQuestions(int studentId, int quizId, int numQuestions) {
-        List<Map<String, Object>> allQuestions = dal.getQuizQuestions(quizId);
-        List<Integer> studentObjectives = dal.getStudentObjective(studentId);
 
-        //compare objective ids (i want to limit this)
-        List<Map<String, Object>> filtered = allQuestions.stream()
-                .filter(q -> studentObjectives.contains((Integer) q.get("objectiveId")))
-                .collect(Collectors.toList());
+    //get all quiz questions
+    List<Map<String, Object>> allQuestions = dal.getQuizQuestions(quizId);
 
-        //take subset
-        Collections.shuffle(filtered);
-        int count = Math.min(numQuestions, filtered.size());
-        List<Map<String, Object>> subset = filtered.subList(0, count);
+    //get student objectives
+    List<Map<String, Object>> studentObjectives = dal.getStudentObjectives(studentId);
 
-        //stick them in quiz questions object
-        Map<Integer, QuizQuestion> questionMap = new HashMap<>();
-        List<QuizQuestion> studentQuizQuestions = new ArrayList<>();
+    //convert student objectives into list of integers
+    List<Integer> objectiveIds = studentObjectives.stream()
+            .map(o -> (Integer) o.get("objectiveId"))
+            .collect(Collectors.toList());
 
-        for (Map<String, Object> row : subset) {
-            int questionNumber = (int) row.get("questionNumber");
-            QuizQuestion question = questionMap.get(questionNumber);
+    //filter questions to maych choseen objectives
+    List<Map<String, Object>> filtered = allQuestions.stream()
+            .filter(q -> objectiveIds.contains(q.get("objectiveId")))
+            .collect(Collectors.toList());
+    Collections.shuffle(filtered);
 
-            if (question == null) {
-                question = new QuizQuestion();
-                question.setQuestionId((int) row.get("questionId"));
-                question.setQuestionNumber(questionNumber);
-                question.setQuestionText((String) row.get("questionText"));
-                question.setLearningObjective((String) row.get("learningObjective"));
-                question.setDifficulty(DifficultyLevel.valueOf((String) row.get("difficulty")));
-                question.setChoices(new ArrayList<>());
-                question.setCorrectChoiceId((int) row.get("correctChoiceId"));
-                questionMap.put(questionNumber, question);
-                studentQuizQuestions.add(question);
-            }
+    //get the subset
+    int count = Math.min(numQuestions, filtered.size());
+    List<Map<String, Object>> subset = filtered.subList(0, count);
 
-            QuizQuestion.Choice choice = new QuizQuestion.Choice(
-                    (int) row.get("choiceId"),
-                    (String) row.get("choiceLabel"),
-                    (String) row.get("choiceText")
-            );
-            question.getChoices().add(choice);
-        }
-
-        return studentQuizQuestions;
+    //add to quizquestion object
+    List<QuizQuestion> result = new ArrayList<>();
+    for (Map<String, Object> row : subset) {
+        QuizQuestion q = new QuizQuestion();
+        q.setQuestionId((Integer) row.get("questionId"));
+        q.setQuestionText((String) row.get("questionText"));
+        q.setObjectiveId((Integer) row.get("objectiveId"));
+        result.add(q);
     }
+
+    return result;
+}
+
+
+    //get questions and choices
 
      //submit answer
 

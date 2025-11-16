@@ -258,6 +258,25 @@ public class QuizDal {
         }
     }
 
+    //get all the readings in a class
+    public List<Map<String, Object>> getClassReadings(int classId) {
+        List<Map<String, Object>> results = new ArrayList<>();
+        try (CallableStatement cs = myConnection.prepareCall("{CALL getReadingsByClass(?)}")) {
+            cs.setInt(1, classId);
+            ResultSet rs = cs.executeQuery();
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("readingId", rs.getInt("readingId"));
+                row.put("readingName", rs.getString("readingName"));
+                row.put("filePath", rs.getString("filePath"));
+                results.add(row);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return results;
+    }
+
     //create quiz- instructor priv
     //creates a quiz module- sets quiz name and automatically passes classId and instructorId
     //bl: done
@@ -386,7 +405,8 @@ public class QuizDal {
             ResultSet rs = cs.executeQuery();
             while (rs.next()) {
                 Map<String, Object> row = new HashMap<>();
-                row.put("quizName", rs.getString("quizName"));
+                row.put("objectiveId", rs.getInt("objectiveId"));
+                row.put("objectiveName", rs.getString("objectiveName"));
                 results.add(row);
             }
         } catch (SQLException e) {
@@ -454,24 +474,30 @@ public class QuizDal {
 
     //get student objectives
     //bl: done
-    public List<Integer> getStudentObjective(int studentId) {
-        List<Integer> results = new ArrayList<>();
+   public List<Map<String, Object>> getStudentObjectives(int studentId) {
+    List<Map<String, Object>> results = new ArrayList<>();
 
-        try (CallableStatement cs = myConnection.prepareCall("{CALL getStudentObjectives(?)}")) {
-            cs.setInt(1, studentId);
+    try (CallableStatement cs = myConnection.prepareCall("{CALL getStudentObjectives(?)}")) {
+        cs.setInt(1, studentId);
 
-            try (ResultSet rs = cs.executeQuery()) {
-                while (rs.next()) {
-                    results.add(rs.getInt("objectiveId")); 
-                }
+        try (ResultSet rs = cs.executeQuery()) {
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("objectiveId", rs.getInt("objectiveId"));
+                row.put("objectiveName", rs.getString("objectiveName"));
+                results.add(row);
             }
+        }
 
         } catch (SQLException e) {
             System.out.println("Error fetching student objectives.");
             e.printStackTrace();
         }
+
         return results;
     }
+
+
 
     //get next question (or first question)
     public Map<String, Object> getNextQuestion(int quizId, int studentId) {
