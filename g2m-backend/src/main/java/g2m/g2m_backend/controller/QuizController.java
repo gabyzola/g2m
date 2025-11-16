@@ -101,6 +101,27 @@ public class QuizController {
         return bl.getClassReadings(classId);
     }
 
+    //checks if create quiz button can be available
+    @GetMapping("/canCreate/{classId}")
+    public Map<String, Boolean> canCreateQuiz(@PathVariable int classId) {
+        int userId = 4; //hardcoded for testing, try 1 if you want to test a student
+        boolean canCreate = bl.canCreateQuiz(userId, classId);
+        return Map.of("canCreate", canCreate);
+    }
+
+   @PostMapping("/classes/{classId}/quizzcreation")
+    public ResponseEntity<Map<String, Integer>> createQuiz(@PathVariable int classId) {
+        int userId = 4; //hardcoded for now
+        int newQuizId = bl.createQuiz(userId, classId);
+
+        if (newQuizId > 0) {
+            return ResponseEntity.ok(Map.of("quizId", newQuizId));
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                .body(Map.of("quizId", -1));
+        }
+    }
+
     //upload reading: UNTESTED
     //frontend:
     @PostMapping("/classes/{classId}/readingupload")
@@ -199,6 +220,13 @@ public class QuizController {
     public List<Map<String, Object>>viewObjectivesByQuiz(@PathVariable int quizId) {
         return bl.viewObjectivesByQuiz(quizId);
     }
+
+    //display reading objectives for dropdown menu
+    @GetMapping("/quizzes/{readingId}/readingobjectives")
+    public List<Map<String, Object>> viewReadingObjectives(@PathVariable int readingId) {
+        return bl.viewReadingObjectives(readingId);
+    }
+
 
     //student selects objectives that were displayed in viewObjectivesByQuiz and they are then sent here
     //UNTESTED

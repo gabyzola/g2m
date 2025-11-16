@@ -1,7 +1,7 @@
 //this is like main.js, but specifically for the class module since this can get tricky 
 
 //gets backend.js
-import { getClassQuizzes, getClassEnrollees } from "./backend.js";
+import { getClassQuizzes, getClassEnrollees, canCreateQuiz } from "./backend.js";
 
 //gets class id from a query string (in the url)
 const params = new URLSearchParams(window.location.search);
@@ -17,7 +17,6 @@ async function loadClassData() {
 
   //placeholder info for now... we can get more info about the class later
   document.getElementById("class-title").textContent = `Class ID: ${classId}`;
-
   //load quizzes
   const quizzes = await getClassQuizzes(classId);
   const quizzesContainer = document.getElementById("quizzes");
@@ -36,6 +35,47 @@ async function loadClassData() {
       `;
       quizzesContainer.appendChild(card);
     });
+  }
+
+  try {
+    const res = await fetch(`/api/canCreate/${classId}`);
+    const data = await res.json();
+
+    if (data.canCreate) {
+      const btn = document.createElement("button");
+      btn.textContent = "Create Quiz";
+      btn.id = "createQuizBtn";
+      btn.style.marginBottom = "1rem";
+
+      //button
+      quizzesContainer.prepend(btn);
+
+      btn.addEventListener("click", async () => {
+        try {
+          const res = await fetch(`/api/classes/${classId}/quizzcreation`, {
+            method: "POST"
+          });
+
+          if (!res.ok) throw new Error("Failed to create quiz");
+
+          const data = await res.json();
+          const newQuizId = data.quizId;
+
+          if (newQuizId > 0) {
+            window.location.href = `quiz-create.html?quizId=${newQuizId}&classId=${classId}`;
+          } else {
+            alert("Error creating quiz on server");
+          }
+
+        } catch (err) {
+          console.error("Error creating quiz:", err);
+          alert("Failed to create quiz. See console for details.");
+        }
+      });
+
+    }
+  } catch (err) {
+    console.error("Error checking if user can create quiz:", err);
   }
 
   //same thing but for enrollees, we gotta stick this in a sidebar

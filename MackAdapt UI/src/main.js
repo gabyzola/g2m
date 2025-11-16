@@ -1,5 +1,5 @@
 //import backend.js to get the jsons 
-import { getInstructorClasses } from "./src/api/backend.js";
+import { getInstructorClasses } from "./api/backend.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const loadClassesBtn = document.getElementById("loadClasses");

@@ -40,3 +40,29 @@ export async function getClassEnrollees(classId) {
     return null;
   }
 }
+
+export async function getReadingObjectives(readingId) {
+  try {
+    const res = await fetch(`/api/quizzes/${readingId}/objectives`);
+    if (!res.ok) throw new Error("Failed request");
+    return await res.json();
+  } catch (err) {
+    console.error("Error fetching class enrollees:", err);
+    return null;
+  }
+}
+
+
+export async function canCreateQuiz(classId) {
+  try {
+    const res = await fetch(`/api/canCreate/${classId}`);
+    
+    if (!res.ok) throw new Error("Failed request");
+
+    const data = await res.json();
+    return data.canCreate;
+  } catch (err) {
+    console.error("Error checking if quiz can be created:", err);
+    return false; 
+  }
+}

@@ -304,6 +304,38 @@ public class QuizDal {
         }
     }
 
+    public int insertQuiz(int instructorId, int classId) {
+        CallableStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            stmt = myConnection.prepareCall("{CALL InsertQuiz(?, ?)}");
+            stmt.setInt(1, instructorId);
+            stmt.setInt(2, classId);
+            boolean hasResult = stmt.execute();
+
+            if (hasResult) {
+                rs = stmt.getResultSet();
+                if (rs.next()) {
+                    int newQuizId = rs.getInt("quizId");
+                    System.out.println("New quiz inserted with ID: " + newQuizId);
+                    return newQuizId;
+                }
+            }
+            System.out.println("No quiz ID returned from procedure.");
+            return -1;
+
+        } catch (SQLException e) {
+            System.out.println("Error inserting new quiz.");
+            e.printStackTrace();
+            return -1;
+        } finally {
+            try { if (rs != null) rs.close(); } catch (SQLException e) { e.printStackTrace(); }
+            try { if (stmt != null) stmt.close(); } catch (SQLException e) { e.printStackTrace(); }
+        }
+    }
+
+
 
     //assign reading to quiz
     //during quiz creation there will be a button where the prof can link a reading
@@ -402,6 +434,23 @@ public class QuizDal {
         List<Map<String, Object>> results = new ArrayList<>();
         try (CallableStatement cs = myConnection.prepareCall("{CALL getQuizObjectives(?)}")) {
             cs.setInt(1, quizId);
+            ResultSet rs = cs.executeQuery();
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("objectiveId", rs.getInt("objectiveId"));
+                row.put("objectiveName", rs.getString("objectiveName"));
+                results.add(row);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return results;
+    }
+
+    public List<Map<String, Object>> getReadingObjectives(int readingId) {
+        List<Map<String, Object>> results = new ArrayList<>();
+        try (CallableStatement cs = myConnection.prepareCall("{CALL getReadingObjectives(?)}")) {
+            cs.setInt(1, readingId);
             ResultSet rs = cs.executeQuery();
             while (rs.next()) {
                 Map<String, Object> row = new HashMap<>();
@@ -752,6 +801,31 @@ public class QuizDal {
         }
         return -1; // failed
     }
+
+    //check that someone can create a quiz
+    public boolean canCreateQuiz(int userId, int classId) {
+        boolean canCreate = false;
+
+        String sql = "{CALL canCreateQuiz(?, ?)}";
+
+        try (CallableStatement cs = myConnection.prepareCall(sql)) {
+            cs.setInt(1, userId);
+            cs.setInt(2, classId);
+
+            ResultSet rs = cs.executeQuery();
+
+            if (rs.next()) {
+                int result = rs.getInt("canCreate"); 
+                canCreate = (result == 1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return canCreate;
+    }
+
+
 
 
     //searchForStudentById

@@ -5,6 +5,8 @@ import g2m.g2m_backend.DAL.javaSQLobjects.QuestionData;
 import g2m.g2m_backend.DAL.javaSQLobjects.QuizQuestion;
 import g2m.g2m_backend.DAL.QuizDal;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -109,12 +111,16 @@ public class BusinessLogic {
     }
 
     //creates quiz- really just the name
-    public int createQuiz(String quizName, int instructorId, int classId) {
-        return dal.insertNewQuiz(quizName, instructorId, classId);
+    public int createQuiz(int instructorId, int classId) {
+        return dal.insertQuiz(instructorId, classId);
     }
 
     public List<Map<String, Object>> getClassReadings(int classId) {
         return dal.getClassReadings(classId);
+    }
+
+    public List<Map<String, Object>> viewReadingObjectives(int readingId) {
+        return dal.getReadingObjectives(readingId);
     }
 
     //adds a question to a quiz
@@ -178,39 +184,44 @@ public class BusinessLogic {
     //calculate and group quiz questions for specific student
     public List<QuizQuestion> getStudentQuizQuestions(int studentId, int quizId, int numQuestions) {
 
-    //get all quiz questions
-    List<Map<String, Object>> allQuestions = dal.getQuizQuestions(quizId);
+        //get all quiz questions
+        List<Map<String, Object>> allQuestions = dal.getQuizQuestions(quizId);
 
-    //get student objectives
-    List<Map<String, Object>> studentObjectives = dal.getStudentObjectives(studentId);
+        //get student objectives
+        List<Map<String, Object>> studentObjectives = dal.getStudentObjectives(studentId);
 
-    //convert student objectives into list of integers
-    List<Integer> objectiveIds = studentObjectives.stream()
-            .map(o -> (Integer) o.get("objectiveId"))
-            .collect(Collectors.toList());
+        //convert student objectives into list of integers
+        List<Integer> objectiveIds = studentObjectives.stream()
+                .map(o -> (Integer) o.get("objectiveId"))
+                .collect(Collectors.toList());
 
-    //filter questions to maych choseen objectives
-    List<Map<String, Object>> filtered = allQuestions.stream()
-            .filter(q -> objectiveIds.contains(q.get("objectiveId")))
-            .collect(Collectors.toList());
-    Collections.shuffle(filtered);
+        //filter questions to maych choseen objectives
+        List<Map<String, Object>> filtered = allQuestions.stream()
+                .filter(q -> objectiveIds.contains(q.get("objectiveId")))
+                .collect(Collectors.toList());
+        Collections.shuffle(filtered);
 
-    //get the subset
-    int count = Math.min(numQuestions, filtered.size());
-    List<Map<String, Object>> subset = filtered.subList(0, count);
+        //get the subset
+        int count = Math.min(numQuestions, filtered.size());
+        List<Map<String, Object>> subset = filtered.subList(0, count);
 
-    //add to quizquestion object
-    List<QuizQuestion> result = new ArrayList<>();
-    for (Map<String, Object> row : subset) {
-        QuizQuestion q = new QuizQuestion();
-        q.setQuestionId((Integer) row.get("questionId"));
-        q.setQuestionText((String) row.get("questionText"));
-        q.setObjectiveId((Integer) row.get("objectiveId"));
-        result.add(q);
+        //add to quizquestion object
+        List<QuizQuestion> result = new ArrayList<>();
+        for (Map<String, Object> row : subset) {
+            QuizQuestion q = new QuizQuestion();
+            q.setQuestionId((Integer) row.get("questionId"));
+            q.setQuestionText((String) row.get("questionText"));
+            q.setObjectiveId((Integer) row.get("objectiveId"));
+            result.add(q);
+        }
+
+        return result;
     }
 
-    return result;
-}
+    //checks if user can create a quiz
+    public boolean canCreateQuiz(int userId, int classId) {
+        return dal.canCreateQuiz(userId, classId);
+    }
 
 
     //get questions and choices
