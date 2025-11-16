@@ -30,29 +30,27 @@
             </nav>
         </header>
         <div class="page-wrapper">
-            <main class="main-content">
-                <h2>Class Name</h2>
-                <div class="quiz-card">
+            <main id="main" class="main-content">
+                <h2 id="class-title">Loading class...</h2>
+                <div id="quizzes">
                     <h5><b>Quiz Module 1</b></h5>
                     <p>
-                        <button>Start Quiz</button>
+                       <button>Start Quiz</button>
                     </p>
                 </div>
             </main>
 
             <aside class="sidebar w3-card">
                 <h3 class="sidebar-title">Class Enrollees</h3>
-
-                <div class="w3-container">
-                    <p>Student Name</p>
-                    <p>Student Email</p>
-                </div>
+                <ul id="enrollees">
+                    <li>Loading enrollees...</li>
+                </ul>
             </aside>
         </div>
 
         <footer>
             <p>&copy; 2025 MackAdapt – Built for Merrimack College</p>
         </footer>
-            <script type="module" src="/src/api/classmodule.js"></script>       
+        <script type="module" src="/src/api/classmodule.js"></script>       
     </body>
 </html>

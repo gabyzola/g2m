@@ -1,7 +1,7 @@
 //this is like main.js, but specifically for the class module since this can get tricky 
 
 //gets backend.js
-import { getClassQuizzes, getClassEnrollees } from "./api/backend.js";
+import { getClassQuizzes, getClassEnrollees } from "./backend.js";
 
 //gets class id from a query string (in the url)
 const params = new URLSearchParams(window.location.search);

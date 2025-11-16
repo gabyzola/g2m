@@ -1,5 +1,5 @@
 //import backend.js to get the jsons 
-import { getInstructorClasses } from "./api/backend.js";
+import { getInstructorClasses } from "./src/api/backend.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const loadClassesBtn = document.getElementById("loadClasses");
@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const link = document.createElement("a"); //this makes it a link
 
       //this sets the link to the actual class page where classId specifies which information needs to go on the page
-      link.href = `/src/classModule.html?classId=${c.classId}`;
+      link.href = `/class-module.html?classId=${c.classId}`;
       link.textContent = `${c.className} (ID: ${c.classId})`;
 
       li.appendChild(link); //add links ands list
