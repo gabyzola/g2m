@@ -113,10 +113,9 @@ export async function removeStudent(classId, studentId) {
   }
 }
 
-//CHECK ON THIS
+//CHECK ON THIS-- all good
 export async function searchStudents(query) {
   try {
-    // backend only supports type=email or name or id
     const res = await fetch(`/api/students/search?type=email&query=${encodeURIComponent(query)}`);
 
     if (!res.ok) throw new Error("Failed search");
@@ -125,5 +124,48 @@ export async function searchStudents(query) {
   } catch (err) {
     console.error("Search error:", err);
     return [];
+  }
+}
+
+async function loadQuestions() {
+    try {
+      const res = await fetch(`/api/quizzes/student/${studentId}/${quizId}/questions?numQuestions=5`);
+      if (!res.ok) throw new Error("Failed to load");
+
+      QUESTIONS = await res.json();
+      index = 0;
+      score = 0;
+      render();
+    } catch (err) {
+      console.error(err);
+      alert("Could not load quiz questions.");
+    }
+  }
+
+export async function getQuizObjectives(quizId) {
+  try {
+    const res = await fetch(`/api/quizzes/${quizId}/objectives`);
+    if (!res.ok) throw new Error("Failed request");
+    return await res.json();
+  } catch (err) {
+    console.error("Error fetching quiz objectives:", err);
+    return null;
+  }
+}
+
+export async function selectQuizObjective(quizId, studentId, objectiveId) {
+  try {
+    const res = await fetch(`/api/quizzes/${quizId}/objectives`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ studentId, objectiveId })
+    });
+
+    if (!res.ok) throw new Error("Failed to select objective");
+
+    return await res.json(); 
+  } catch (err) {
+    console.error("Error selecting quiz objective:", err);
+    return { status: "error" };
   }
 }

@@ -420,6 +420,7 @@ public class QuizDal {
             ResultSet rs = cs.executeQuery();
             while (rs.next()) {
                 Map<String, Object> row = new HashMap<>();
+                row.put("quizId", rs.getInt("quizId"));
                 row.put("quizName", rs.getString("quizName"));
                 results.add(row);
             }

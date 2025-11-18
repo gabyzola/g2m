@@ -9,202 +9,201 @@ display class name up top (based on where they clicked "Enroll Student")
 
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Enroll Students – MackAdapt</title>
-  <link rel="stylesheet" href="style.css" />
-  <style>
-    .wrap {
-      max-width: 900px;
-      margin: 3rem auto;
-      background: #fff;
-      padding: 1.5rem 1.25rem;
-      border-radius: 10px;
-      box-shadow: 0 2px 12px rgba(0,40,85,.1);
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Enroll Students – MackAdapt</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      .wrap {
+        max-width: 900px;
+        margin: 3rem auto;
+        background: #fff;
+        padding: 1.5rem 1.25rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 12px rgba(0,40,85,.1);
+      }
 
-    .row { display: flex; gap: .5rem; align-items: center; }
-    input[type="search"], button {
-      padding: .65rem .8rem;
-      border-radius: 6px;
-      border: 1px solid #ccd;
-    }
-    button {
-      background: var(--gold);
-      color: var(--navy);
-      font-weight: 700;
-      cursor: pointer;
-    }
-    button:hover { background: #e0b91f; }
-    .muted { color: #667; }
+      .row { display: flex; gap: .5rem; align-items: center; }
+      input[type="search"], button {
+        padding: .65rem .8rem;
+        border-radius: 6px;
+        border: 1px solid #ccd;
+      }
+      button {
+        background: var(--gold);
+        color: var(--navy);
+        font-weight: 700;
+        cursor: pointer;
+      }
+      button:hover { background: #e0b91f; }
+      .muted { color: #667; }
 
-    .lists {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      margin-top: 1rem;
-    }
+      .lists {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-top: 1rem;
+      }
 
-    .panel {
-      background: #f7f9ff;
-      border: 1px solid #e3e8f5;
-      border-radius: 8px;
-      padding: 1rem;
-    }
-    .panel h3 { margin-bottom: .5rem; }
+      .panel {
+        background: #f7f9ff;
+        border: 1px solid #e3e8f5;
+        border-radius: 8px;
+        padding: 1rem;
+      }
+      .panel h3 { margin-bottom: .5rem; }
 
-    .user {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: .45rem .5rem;
-      border-bottom: 1px solid #e7ecf7;
-    }
-    .user:last-child { border-bottom: none; }
-    .user small { color: #556; }
-    .empty { color: #889; }
-  </style>
-</head>
+      .user {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: .45rem .5rem;
+        border-bottom: 1px solid #e7ecf7;
+      }
+      .user:last-child { border-bottom: none; }
+      .user small { color: #556; }
+      .empty { color: #889; }
+    </style>
+  </head>
 
-<body>
-  <header>
-    <h1>MackAdapt</h1>
-    <nav>
-      <ul>
-        <li><a href="index.html">Home</a></li>
-        <li><a href="classes.html" class="active" aria-current="page">Classes</a></li>
-        <li><a href="student-dashboard.html">Student Dashboard</a></li>
-        <li><a href="login.html">Login</a></li>
-      </ul>
-    </nav>
-  </header>
+  <body>
+    <header>
+      <h1>MackAdapt</h1>
+      <nav>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="classes.html" class="active" aria-current="page">Classes</a></li>
+          <li><a href="student-dashboard.html">Student Dashboard</a></li>
+          <li><a href="login.html">Login</a></li>
+        </ul>
+      </nav>
+    </header>
 
-  <main class="wrap">
-    <h2>Enroll Students</h2>
-    <p class="muted">Search by email to add a student to this class. Demo-only; uses mock data for now.</p>
-    <div class="row" style="margin:.5rem 0 1rem">
-      <input id="search" type="search" placeholder="Search email (e.g., jstudent@merrimack.edu)" style="flex:1"/>
-      <button id="addBtn" type="button">Add</button>
-    </div>
-    <div class="lists">
-      <div class="panel">
-        <h3>Search Results</h3>
-        <div id="results"></div>
+    <main class="wrap">
+      <h2>Enroll Students</h2>
+      <p class="muted">Search by email to add a student to this class. Demo-only; uses mock data for now.</p>
+      <div class="row" style="margin:.5rem 0 1rem">
+        <input id="search" type="search" placeholder="Search email (e.g., jstudent@merrimack.edu)" style="flex:1"/>
+        <button id="addBtn" type="button">Add</button>
       </div>
-      <div class="panel">
-        <h3>Enrolled Students</h3>
-        <div id="enrolled"></div>
+      <div class="lists">
+        <div class="panel">
+          <h3>Search Results</h3>
+          <div id="results"></div>
+        </div>
+        <div class="panel">
+          <h3>Enrolled Students</h3>
+          <div id="enrolled"></div>
+        </div>
       </div>
-    </div>
-  </main>
-  <footer>
-    <p>&copy; 2025 MackAdapt – Built for Merrimack College</p>
-  </footer>
+    </main>
+    <footer>
+      <p>&copy; 2025 MackAdapt – Built for Merrimack College</p>
+    </footer>
 
-  <script type="module">
-    import { 
-      searchStudents, 
-      getClassEnrollees, 
-      enrollStudent, 
-      removeStudent 
-    } from "./src/api/backend.js";
+    <script type="module">
+      import { 
+        searchStudents, 
+        getClassEnrollees, 
+        enrollStudent, 
+        removeStudent 
+      } from "./src/api/backend.js";
 
-    const params = new URLSearchParams(window.location.search);
-    const classId = params.get("classId");
+      const params = new URLSearchParams(window.location.search);
+      const classId = params.get("classId");
 
-    if (!classId) {
-      alert("No class selected.");
-    }
-
-    const results = document.getElementById("results");
-    const enrolled = document.getElementById("enrolled");
-    const search = document.getElementById("search");
-    const addBtn = document.getElementById("addBtn");
-
-
-    async function loadEnrolled() {
-      const list = await getClassEnrollees(classId);
-
-      if (!list || list.length === 0) {
-        enrolled.innerHTML = `<p class="empty">No students enrolled yet.</p>`;
-        return;
+      if (!classId) {
+        alert("No class selected.");
       }
 
-      // backend returns: studentId, email, major, badge, totalPoints
-      enrolled.innerHTML = list.map(s => `
-        <div class="user">
-          <div>
-            <strong>Student #${s.studentId}</strong><br/>
-            <small>${s.email}</small>
+      const results = document.getElementById("results");
+      const enrolled = document.getElementById("enrolled");
+      const search = document.getElementById("search");
+      const addBtn = document.getElementById("addBtn");
+
+
+      async function loadEnrolled() {
+        const list = await getClassEnrollees(classId);
+
+        if (!list || list.length === 0) {
+          enrolled.innerHTML = `<p class="empty">No students enrolled yet.</p>`;
+          return;
+        }
+
+        enrolled.innerHTML = list.map(s => `
+          <div class="user">
+            <div>
+              <strong>Student #${s.studentId}</strong><br/>
+              <small>${s.email}</small>
+            </div>
+            <button type="button" data-remove-id="${s.studentId}">Remove</button>
           </div>
-          <button type="button" data-remove-id="${s.studentId}">Remove</button>
-        </div>
-      `).join('');
-    }
-
-
-    async function doSearch() {
-      const query = search.value.trim();
-      if (!query) {
-        results.innerHTML = `<p class="empty">Start typing to search...</p>`;
-        return;
+        `).join('');
       }
 
-      const matches = await searchStudents(query);
 
-      if (!matches || matches.length === 0) {
-        results.innerHTML = `<p class="empty">No matching students.</p>`;
-        return;
-      }
+      async function doSearch() {
+        const query = search.value.trim();
+        if (!query) {
+          results.innerHTML = `<p class="empty">Start typing to search...</p>`;
+          return;
+        }
 
-      results.innerHTML = matches.map(s => `
-        <div class="user">
-          <div>
-            <strong>Student #${s.studentId}</strong><br/>
-            <small>${s.email}</small><br/>
-            <small>Major: ${s.major}</small>
+        const matches = await searchStudents(query);
+
+        if (!matches || matches.length === 0) {
+          results.innerHTML = `<p class="empty">No matching students.</p>`;
+          return;
+        }
+
+        results.innerHTML = matches.map(s => `
+          <div class="user">
+            <div>
+              <strong>Student #${s.studentId}</strong><br/>
+              <small>${s.email}</small><br/>
+              <small>Major: ${s.major}</small>
+            </div>
+            <button type="button" data-add-email="${s.email}">Add</button>
           </div>
-          <button type="button" data-add-email="${s.email}">Add</button>
-        </div>
-      `).join('');
-    }
-
-
-    search.addEventListener("input", doSearch);
-
-    addBtn.addEventListener("click", async () => {
-      const query = search.value.trim();
-      const matches = await searchStudents(query);
-
-      if (matches[0]) {
-        await enrollStudent(classId, matches[0].email);
-        await loadEnrolled();
-        await doSearch();
-      }
-    });
-
-
-    document.addEventListener("click", async (e) => {
-      const add = e.target.closest("[data-add-email]");
-      if (add) {
-        const email = add.getAttribute("data-add-email");
-        await enrollStudent(classId, email);
-        await loadEnrolled();
-        await doSearch();
+        `).join('');
       }
 
-      const remove = e.target.closest("[data-remove-id]");
-      if (remove) {
-        const studentId = remove.getAttribute("data-remove-id");
-        await removeStudent(classId, studentId);
-        await loadEnrolled();
-        await doSearch();
-      }
-    });
 
-    loadEnrolled();
-  </script>
+      search.addEventListener("input", doSearch);
 
-</body>
+      addBtn.addEventListener("click", async () => {
+        const query = search.value.trim();
+        const matches = await searchStudents(query);
+
+        if (matches[0]) {
+          await enrollStudent(classId, matches[0].email);
+          await loadEnrolled();
+          await doSearch();
+        }
+      });
+
+
+      document.addEventListener("click", async (e) => {
+        const add = e.target.closest("[data-add-email]");
+        if (add) {
+          const email = add.getAttribute("data-add-email");
+          await enrollStudent(classId, email);
+          await loadEnrolled();
+          await doSearch();
+        }
+
+        const remove = e.target.closest("[data-remove-id]");
+        if (remove) {
+          const studentId = remove.getAttribute("data-remove-id");
+          await removeStudent(classId, studentId);
+          await loadEnrolled();
+          await doSearch();
+        }
+      });
+
+        loadEnrolled();
+    </script>
+
+  </body>
 </html>

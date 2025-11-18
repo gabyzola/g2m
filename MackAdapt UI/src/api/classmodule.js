@@ -27,15 +27,15 @@ async function loadClassData() {
     quizzesContainer.innerHTML = "<p>No quizzes available for this class.</p>";
   } else {
     quizzes.forEach(q => {
-      const card = document.createElement("div");
-      card.className = "quiz-card";
-      card.innerHTML = `
-        <h3>${q.quizName || "Quiz #" + q.quizId}</h3>
-        <a href="/src/quiz.html?quizId=${q.quizId}">Go to Quiz</a>
-      `;
-      quizzesContainer.appendChild(card);
-    });
-  }
+    const card = document.createElement("div");
+    card.className = "quiz-card";
+    card.innerHTML = `
+      <h3>${q.quizName || "Quiz #" + q.quizId}</h3>
+      <a href="quiz.html?quizId=${q.quizId}&classId=${classId}">Go to Quiz</a>
+    `;
+    quizzesContainer.appendChild(card);
+  });
+}
 
   try {
     const res = await fetch(`/api/canCreate/${classId}`);
