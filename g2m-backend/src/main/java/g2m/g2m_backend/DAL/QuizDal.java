@@ -180,6 +180,7 @@ public class QuizDal {
                 row.put("studentId", rs.getInt("studentId"));
                 row.put("firstName", rs.getString("firstName"));
                 row.put("lastName", rs.getString("lastName"));
+                row.put("email", rs.getString("email"));
                 results.add(row);
             }
         } catch (SQLException e) {

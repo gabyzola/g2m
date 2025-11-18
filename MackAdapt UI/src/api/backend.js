@@ -19,6 +19,23 @@ export async function getInstructorClasses(instructorId) {
   }
 }
 
+export async function getStudentClasses(studentId) {
+  try {
+
+    //this calls api endpoint (get instructr classes based on id)
+    const res = await fetch(`/api/students/${studentId}/classes`);
+
+    //failure check
+    if (!res.ok) throw new Error("Failed request");
+
+    //return content in json format
+    return await res.json();
+  } catch (err) {
+    console.error("Error fetching student classes:", err);
+    return null;
+  }
+}
+
 export async function getClassQuizzes(classId) {
   try {
     const res = await fetch(`/api/classes/${classId}/quizzes`);

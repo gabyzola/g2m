@@ -73,7 +73,18 @@ async function loadClassData() {
         }
       });
 
+      const enrollBtn = document.createElement("button");
+      enrollBtn.textContent = "Enroll Student";
+      enrollBtn.id = "enrollStudentBtn";
+      enrollBtn.style.marginBottom = "1rem";
+      quizzesContainer.prepend(enrollBtn);
+
+      enrollBtn.addEventListener("click", () => {
+        // redirect to enrollment page with classId in query string
+        window.location.href = `class-enroll.html?classId=${classId}`;
+      });
     }
+ 
   } catch (err) {
     console.error("Error checking if user can create quiz:", err);
   }

@@ -130,7 +130,7 @@
 
     async function loadObjectives(readingId) {
       try {
-        const res = await fetch(`/api/quizzes/${readingId}/objectives`);
+        const res = await fetch(`/api/quizzes/${readingId}/readingobjectives`);
         if (!res.ok) throw new Error("Failed to fetch objectives");
 
         const data = await res.json();
@@ -147,7 +147,7 @@
 
         data.forEach(obj => {
           const op = document.createElement("option");
-          op.value = obj.objectiveId; // make sure this matches your backend field
+          op.value = obj.objectiveId; 
           op.textContent = obj.objectiveName;
           objectiveSelect.appendChild(op);
         });

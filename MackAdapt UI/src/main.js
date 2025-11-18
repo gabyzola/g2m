@@ -1,5 +1,8 @@
 //import backend.js to get the jsons 
-import { getInstructorClasses } from "./api/backend.js";
+import { getInstructorClasses, getStudentClasses } from "./api/backend.js";
+
+//get student emails for dropdown
+//enroll student -> "Add" button
 
 document.addEventListener("DOMContentLoaded", () => {
   const loadClassesBtn = document.getElementById("loadClasses");
@@ -33,7 +36,32 @@ document.addEventListener("DOMContentLoaded", () => {
       list.appendChild(li);
     });
   });
+
+  const loadStudentBtn = document.getElementById("loadStudentClasses");
+  loadStudentBtn.addEventListener("click", async () => {
+    const studentId = document.getElementById("studentId").value;
+    const classes = await getStudentClasses(studentId);
+
+    const list = document.getElementById("studentClassList");
+    list.innerHTML = "";
+
+    if (!classes) {
+      list.innerHTML = "<li>Error loading classes</li>";
+      return;
+    }
+
+    classes.forEach(c => {
+      const li = document.createElement("li");
+      const link = document.createElement("a");
+      link.href = `/class-module.html?classId=${c.classId}`;
+      link.textContent = `${c.className} (ID: ${c.classId})`;
+      li.appendChild(link);
+      list.appendChild(li);
+    });
+  });
 });
+
+
 
 
 /*<script>
