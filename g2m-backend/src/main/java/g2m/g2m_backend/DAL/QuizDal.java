@@ -722,65 +722,6 @@ public class QuizDal {
         }
     }
 
-
-    //searchForStudentByEmail
-    //LOOK UP STUDENT BY EMAIL
-    public ArrayList<Student> searchForStudentByEmail(String emailQuery) {
-        ArrayList<Student> students = new ArrayList<>();
-        String sql = "SELECT s.badge, s.studentId, u.username, u.email, s.major, s.totalPoints " +
-                    "FROM Students s " +
-                    "JOIN UserAccounts u ON s.studentId = u.userId " +
-                    "WHERE u.email LIKE ?";
-
-        try (PreparedStatement ps = myConnection.prepareStatement(sql)) {
-            ps.setString(1, "%" + emailQuery + "%");
-            ResultSet rs = ps.executeQuery();
-
-            while (rs.next()) {
-                Student student = new Student(
-                    rs.getInt("studentId"),
-                    rs.getString("badge"),
-                    rs.getInt("totalPoints"),
-                    rs.getString("major")
-                );
-                students.add(student);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return students;
-    }
-
-    //searchForStudentByName
-    //LOOK UP STUDENT BY NAME
-    public ArrayList<Student> searchForStudentByName(String nameQuery) {
-        ArrayList<Student> students = new ArrayList<>();
-        String sql = "SELECT s.studentId, u.username, u.email, s.major, s.totalPoints " +
-                    "FROM Students s " +
-                    "JOIN UserAccounts u ON s.studentId = u.userId " +
-                    "WHERE u.username LIKE ?";
-
-        try (PreparedStatement ps = myConnection.prepareStatement(sql)) {
-            ps.setString(1, "%" + nameQuery + "%");
-            ResultSet rs = ps.executeQuery();
-
-        while (rs.next()) {
-                Student student = new Student(
-                    rs.getInt("studentId"),
-                    rs.getString("badge"),
-                    rs.getInt("totalPoints"),
-                    rs.getString("major")
-                );
-                students.add(student);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return students;
-    }
-
     // get the most recent quiz created by this instructor
     public int getLastQuizId(int instructorId) {
         PreparedStatement stmt = null;
@@ -827,35 +768,87 @@ public class QuizDal {
     }
 
 
-
-
-    //searchForStudentById
-    //LOOK UP STUDENT BY ID
-    public ArrayList<Student> searchForStudentById(String IdQuery) {
-        ArrayList<Student> students = new ArrayList<>();
-        String sql = "SELECT s.studentId, u.username, u.email, s.major, s.totalPoints " +
+    public ArrayList<HashMap<String, Object>> searchForStudentByEmail(String emailQuery) {
+        ArrayList<HashMap<String, Object>> students = new ArrayList<>();
+        String sql = "SELECT s.badge, s.studentId, u.email, s.major, s.totalPoints " +
                     "FROM Students s " +
-                    "WHERE studentId LIKE ?";
+                    "JOIN UserAccounts u ON s.studentId = u.userId " +
+                    "WHERE u.email LIKE ?";
 
         try (PreparedStatement ps = myConnection.prepareStatement(sql)) {
-            ps.setString(1, "%" + IdQuery + "%");
+            ps.setString(1, "%" + emailQuery + "%");
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-                Student student = new Student(
-                    rs.getInt("studentId"),
-                    rs.getString("badge"),
-                    rs.getInt("totalPoints"),
-                    rs.getString("major")
-                );
-                students.add(student);
+                HashMap<String, Object> row = new HashMap<>();
+                row.put("studentId", rs.getInt("studentId"));
+                row.put("badge", rs.getString("badge"));
+                row.put("totalPoints", rs.getInt("totalPoints"));
+                row.put("major", rs.getString("major"));
+                row.put("email", rs.getString("email"));
+
+                students.add(row);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         return students;
     }
+
+    public ArrayList<HashMap<String, Object>> searchForStudentByName(String nameQuery) {
+        ArrayList<HashMap<String, Object>> students = new ArrayList<>();
+        String sql = "SELECT s.badge, s.studentId, u.email, s.major, s.totalPoints " +
+                    "FROM Students s " +
+                    "JOIN UserAccounts u ON s.studentId = u.userId " +
+                    "WHERE u.username LIKE ?";
+
+        try (PreparedStatement ps = myConnection.prepareStatement(sql)) {
+            ps.setString(1, "%" + nameQuery + "%");
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                HashMap<String, Object> row = new HashMap<>();
+                row.put("studentId", rs.getInt("studentId"));
+                row.put("badge", rs.getString("badge"));
+                row.put("totalPoints", rs.getInt("totalPoints"));
+                row.put("major", rs.getString("major"));
+                row.put("email", rs.getString("email"));
+
+                students.add(row);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return students;
+    }
+
+    public ArrayList<HashMap<String, Object>> searchForStudentById(String idQuery) {
+        ArrayList<HashMap<String, Object>> students = new ArrayList<>();
+        String sql = "SELECT s.badge, s.studentId, u.email, s.major, s.totalPoints " +
+                    "FROM Students s " +
+                    "JOIN UserAccounts u ON s.studentId = u.userId " +
+                    "WHERE s.studentId LIKE ?";
+
+        try (PreparedStatement ps = myConnection.prepareStatement(sql)) {
+            ps.setString(1, "%" + idQuery + "%");
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                HashMap<String, Object> row = new HashMap<>();
+                row.put("studentId", rs.getInt("studentId"));
+                row.put("badge", rs.getString("badge"));
+                row.put("totalPoints", rs.getInt("totalPoints"));
+                row.put("major", rs.getString("major"));
+                row.put("email", rs.getString("email"));
+
+                students.add(row);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return students;
+    }
+
 
     public void close() {
         try {

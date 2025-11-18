@@ -102,157 +102,109 @@ display class name up top (based on where they clicked "Enroll Student")
     <p>&copy; 2025 MackAdapt – Built for Merrimack College</p>
   </footer>
 
-  <script>
-    const DIRECTORY = [
-      { id: 1, name: 'Jamie Student', email: 'jstudent@merrimack.edu' },
-      { id: 2, name: 'Alex Learner', email: 'alearner@merrimack.edu' },
-      { id: 3, name: 'Taylor Rivera', email: 'trivera@merrimack.edu' },
-      { id: 4, name: 'Jordan Chen', email: 'jchen@merrimack.edu' },
-      { id: 5, name: 'Sam Patel', email: 'spatel@merrimack.edu' },
-    ];
+  <script type="module">
+    import { 
+      searchStudents, 
+      getClassEnrollees, 
+      enrollStudent, 
+      removeStudent 
+    } from "./src/api/backend.js";
 
-    const roster = [
-      { id: 2, name: 'Alex Learner', email: 'alearner@merrimack.edu' },
-      { id: 4, name: 'Jordan Chen', email: 'jchen@merrimack.edu' },
-    ];
+    const params = new URLSearchParams(window.location.search);
+    const classId = params.get("classId");
 
-    // --- Cached DOM elements ---
-    const $ = (id) => document.getElementById(id);
-    const results = $('results');
-    const enrolled = $('enrolled');
-    const search = $('search');
-    const addBtn = $('addBtn');
-
-    // --- Class name display based on ?class= param ---
-    const CLASS_MAP = {
-      psyc101: 'PSY 101 – Intro to Psychology',
-      csc2620: 'CSC 2620 – Algorithms',
-      stat201: 'STAT 201 – Statistics',
-    };
-    const params = new URLSearchParams(location.search);
-    const classId = params.get('class') || 'psyc101';
-    const className = CLASS_MAP[classId] || 'Selected Class';
-    const h2 = document.querySelector('main.wrap h2');
-    if (h2) h2.textContent = `Enroll Students — ${className}`;
-
-    // --- Back link under title ---
-    const wrap = document.querySelector('main.wrap');
-    const back = document.createElement('p');
-    back.className = 'small-text';
-    back.style.marginTop = '-.5rem';
-    back.innerHTML = `<a href="classes.html">← Back to Classes</a>`;
-    wrap.insertBefore(back, wrap.children[1]);
-
-    /* ============================================================
-       Helper functions (easy to convert into API requests later)
-       ============================================================ */
-
-    /**
-     * Render both the search results and enrolled students.
-     * @param {Array} matches - Array of matching users from DIRECTORY
-     */
-    function renderLists(matches = []) {
-      // --- Search Results ---
-      if (!matches.length) {
-        results.innerHTML = '<p class="empty">No matches. Try another email.</p>';
-      } else {
-        results.innerHTML = matches.map(u => `
-          <div class="user">
-            <div>
-              <strong>${u.name}</strong><br/>
-              <small>${u.email}</small>
-            </div>
-            <button type="button" data-email="${u.email}" data-name="${u.name}">Add</button>
-          </div>
-        `).join('');
-      }
-
-      // --- Enrolled Students List ---
-      if (!roster.length) {
-        enrolled.innerHTML = '<p class="empty">No students enrolled yet.</p>';
-      } else {
-        enrolled.innerHTML = roster.map(u => `
-          <div class="user">
-            <div>
-              <strong>${u.name}</strong><br/>
-              <small>${u.email}</small>
-            </div>
-            <button type="button" data-remove="${u.email}">Remove</button>
-          </div>
-        `).join('');
-      }
+    if (!classId) {
+      alert("No class selected.");
     }
 
-    /**
-     * Search mock student directory.
-     * @param {string} query - Email text from search box.
-     */
-    function searchDirectory(query) {
-      query = (query || '').toLowerCase();
-      if (!query) return [];
-      return DIRECTORY.filter(u => u.email.toLowerCase().includes(query));
+    const results = document.getElementById("results");
+    const enrolled = document.getElementById("enrolled");
+    const search = document.getElementById("search");
+    const addBtn = document.getElementById("addBtn");
+
+
+    async function loadEnrolled() {
+      const list = await getClassEnrollees(classId);
+
+      if (!list || list.length === 0) {
+        enrolled.innerHTML = `<p class="empty">No students enrolled yet.</p>`;
+        return;
+      }
+
+      // backend returns: studentId, email, major, badge, totalPoints
+      enrolled.innerHTML = list.map(s => `
+        <div class="user">
+          <div>
+            <strong>Student #${s.studentId}</strong><br/>
+            <small>${s.email}</small>
+          </div>
+          <button type="button" data-remove-id="${s.studentId}">Remove</button>
+        </div>
+      `).join('');
     }
 
-    // --- Initial render ---
-    renderLists([]);
 
-    // --- Live search event ---
-    search.addEventListener('input', () => {
-      const matches = searchDirectory(search.value);
-      renderLists(matches);
-    });
-
-    // --- Click handling (Add / Remove buttons) ---
-    document.addEventListener('click', (e) => {
-      const addEl = e.target.closest('[data-email]');
-      const remEl = e.target.closest('[data-remove]');
-
-      // ADD student
-      if (addEl) {
-        const email = addEl.getAttribute('data-email');
-        const name = addEl.getAttribute('data-name');
-        if (!roster.find(r => r.email === email)) roster.push({ name, email });
-        renderLists(searchDirectory(search.value));
+    async function doSearch() {
+      const query = search.value.trim();
+      if (!query) {
+        results.innerHTML = `<p class="empty">Start typing to search...</p>`;
+        return;
       }
 
-      // REMOVE student
-      if (remEl) {
-        const email = remEl.getAttribute('data-remove');
-        const idx = roster.findIndex(r => r.email === email);
-        if (idx >= 0) roster.splice(idx, 1);
-        renderLists(searchDirectory(search.value));
-      }
-    });
+      const matches = await searchStudents(query);
 
-    // --- Add button (adds first matched result) ---
-    addBtn.addEventListener('click', () => {
-      const matches = searchDirectory(search.value);
+      if (!matches || matches.length === 0) {
+        results.innerHTML = `<p class="empty">No matching students.</p>`;
+        return;
+      }
+
+      results.innerHTML = matches.map(s => `
+        <div class="user">
+          <div>
+            <strong>Student #${s.studentId}</strong><br/>
+            <small>${s.email}</small><br/>
+            <small>Major: ${s.major}</small>
+          </div>
+          <button type="button" data-add-email="${s.email}">Add</button>
+        </div>
+      `).join('');
+    }
+
+
+    search.addEventListener("input", doSearch);
+
+    addBtn.addEventListener("click", async () => {
+      const query = search.value.trim();
+      const matches = await searchStudents(query);
+
       if (matches[0]) {
-        const { name, email } = matches[0];
-        if (!roster.find(r => r.email === email)) roster.push({ name, email });
-        renderLists(matches);
+        await enrollStudent(classId, matches[0].email);
+        await loadEnrolled();
+        await doSearch();
       }
     });
 
-    /* ============================================================
-       🚀 Backend Integration Notes (Future Implementation)
-       ============================================================
-       1. Replace DIRECTORY with an API call:
-          fetch('/api/students?query=' + encodeURIComponent(search.value))
-             .then(r => r.json())
-             .then(data => renderLists(data))
 
-       2. Replace roster array with database-backed roster:
-          fetch('/api/classes/' + classId + '/students')
+    document.addEventListener("click", async (e) => {
+      const add = e.target.closest("[data-add-email]");
+      if (add) {
+        const email = add.getAttribute("data-add-email");
+        await enrollStudent(classId, email);
+        await loadEnrolled();
+        await doSearch();
+      }
 
-       3. Hook up Add/Remove buttons to POST/DELETE routes:
-          POST   /api/classes/:id/students { email }
-          DELETE /api/classes/:id/students/:studentId
+      const remove = e.target.closest("[data-remove-id]");
+      if (remove) {
+        const studentId = remove.getAttribute("data-remove-id");
+        await removeStudent(classId, studentId);
+        await loadEnrolled();
+        await doSearch();
+      }
+    });
 
-       4. Secure endpoints with instructor authentication token.
-
-       5. Return JSON response with updated class roster for re-rendering.
-    ============================================================ */
+    loadEnrolled();
   </script>
+
 </body>
 </html>

@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "*") 
@@ -338,13 +339,21 @@ public class QuizController {
         return bl.displayAllBadges();
     }
 
-
+    //removes class enrollee
+    @DeleteMapping("/classes/{classId}/enrollees/{studentId}")
+    public boolean removeEnrollee(
+            @PathVariable int classId,
+            @PathVariable int studentId
+    ) {
+        return bl.removeEnrollee(classId, studentId);
+    }
+    
     // Search students: Ready to connect
     //TESTED: Error, but not a big deal i never use this
     //frontend:
     //frontend tested:
     @GetMapping("/students/search")
-    public ArrayList<Student> searchStudent(@RequestParam String type, @RequestParam String query) {
+    public ArrayList<HashMap<String, Object>> searchStudent(@RequestParam String type, @RequestParam String query) {
         return bl.searchStudent(type, query);
     }
 }

@@ -83,3 +83,47 @@ export async function canCreateQuiz(classId) {
     return false; 
   }
 }
+
+export async function enrollStudent(classId, email) {
+  try {
+    const res = await fetch(`/api/instructors/classes/enroll`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ classId, email })
+    });
+
+    return await res.json(); 
+  } catch (err) {
+    console.error("Error enrolling student:", err);
+    return false;
+  }
+}
+
+export async function removeStudent(classId, studentId) {
+  try {
+    const res = await fetch(`/api/classes/${classId}/enrollees/${studentId}`, {
+      method: "DELETE"
+    });
+
+    if (!res.ok) throw new Error("Failed to remove student");
+    return await res.json(); 
+  } catch (err) {
+    console.error("Error removing student:", err);
+    return false;
+  }
+}
+
+//CHECK ON THIS
+export async function searchStudents(query) {
+  try {
+    // backend only supports type=email or name or id
+    const res = await fetch(`/api/students/search?type=email&query=${encodeURIComponent(query)}`);
+
+    if (!res.ok) throw new Error("Failed search");
+
+    return await res.json();
+  } catch (err) {
+    console.error("Search error:", err);
+    return [];
+  }
+}

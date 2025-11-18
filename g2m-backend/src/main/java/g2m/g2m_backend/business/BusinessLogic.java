@@ -250,10 +250,15 @@ public class BusinessLogic {
         return dal.getAllBadges();
     }
 
+    //delete class enrollee
+    public boolean removeEnrollee(int classId, int studentId) {
+        return dal.deleteClassEnrollee(classId, studentId);
+    }
+
     /*misc*/
 
     //search for a student by email, name, or ID
-    public ArrayList<Student> searchStudent(String filterType, String query) {
+    public ArrayList<HashMap<String, Object>> searchStudent(String filterType, String query) {
         switch (filterType.toLowerCase()) {
             case "email":
                 return dal.searchForStudentByEmail(query);

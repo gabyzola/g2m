@@ -49,7 +49,6 @@ async function loadClassData() {
 
       //button
       quizzesContainer.prepend(btn);
-
       btn.addEventListener("click", async () => {
         try {
           const res = await fetch(`/api/classes/${classId}/quizzcreation`, {
