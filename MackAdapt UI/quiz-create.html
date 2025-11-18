@@ -1,66 +1,73 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Create Quiz – MackAdapt</title>
-  <link rel="stylesheet" href="style.css"/>
-  <style>
-    .panel{background:#fff;padding:1.25rem;border-radius:10px;box-shadow:0 2px 10px rgba(0,40,85,.08);margin:1rem 0}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
-    label{display:block;margin:.5rem 0 .25rem}
-    input,select,textarea{width:100%;padding:.65rem;border:1px solid #ccc;border-radius:6px}
-    textarea{min-height:110px}
-    .actions{display:flex;gap:.75rem;margin-top:1rem}
-    .notice{font-size:.9rem;color:#444;margin-top:.5rem}
-  </style>
-</head>
-<body>
-  <header>
-  <h1>MackAdapt</h1>
-  <nav>
-    <ul>
-      <li><a href="index.html">Home</a></li>
-      <li><a href="classes.html" class="active" aria-current="page">Classes</a></li>
-      <li><a href="student-dashboard.html">Student Dashboard</a></li>
-      <li><a href="login.html">Login</a></li>
-    </ul>
-  </nav>
-</header>
+  <head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Create Quiz – MackAdapt</title>
+    <link rel="stylesheet" href="style.css"/>
+    <style>
+      .panel{background:#fff;padding:1.25rem;border-radius:10px;box-shadow:0 2px 10px rgba(0,40,85,.08);margin:1rem 0}
+      .row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+      label{display:block;margin:.5rem 0 .25rem}
+      input,select,textarea{width:100%;padding:.65rem;border:1px solid #ccc;border-radius:6px}
+      textarea{min-height:110px}
+      .actions{display:flex;gap:.75rem;margin-top:1rem}
+      .notice{font-size:.9rem;color:#444;margin-top:.5rem}
+    </style>
+  </head>
+  <body>
+    <header>
+    <h1>MackAdapt</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="classes.html" class="active" aria-current="page">Classes</a></li>
+        <li><a href="student-dashboard.html">Student Dashboard</a></li>
+        <li><a href="login.html">Login</a></li>
+      </ul>
+    </nav>
+  </header>
 
   <main>
     <h2>Create Quiz</h2>
     <div style="margin:.25rem 0 1rem">
-  <strong>Quick Links:</strong>
-  <a href="analytics.html">View Analytics</a> ·
-  <a href="classes.html">Back to Classes</a>
-</div>
-
-    <div class="panel">
-      <h3>Upload Questions (doc/pdf/csv)</h3>
-      <input type="file" accept=".doc,.docx,.pdf,.csv" />
-      <p class="small-text">Or add questions manually below.</p>
+      <strong>Quick Links:</strong>
+      <a href="analytics.html">View Analytics</a> ·
+      <a href="classes.html">Back to Classes</a>
     </div>
 
     <div class="panel">
-      <h3>Add Question Manually</h3>
+      <h3>Link a Reading</h3>
+
+      <label>Select Reading</label>
+      <select id="readingSelect">
+        
+      </select>
+
+      <div class="actions">
+        <button id="addReadingBtn">Attach Reading</button>
+      </div>
+
+      <p class="notice">Reading will be linked to this quiz using your backend mapping.</p>
+    </div>
+
+    <div class="panel">
+      <h3>Add Question</h3>
       <label>Question Text</label>
       <textarea placeholder="Enter the question stem..."></textarea>
       <div class="row">
         <div>
           <label>Difficulty</label>
-          <select><option>Easy</option><option>Medium</option><option>Hard</option></select>
+          <select id="difficulty">
+            <option>Easy</option>
+            <option>Medium</option>
+            <option>Hard</option>
+          </select>
         </div>
         <div>
           <label>Learning Objective</label>
-          <select>
-            <option>LO1 – Memory & Recall</option>
-            <option>LO2 – Experimental Design</option>
-            <option>LO3 – Learning Theories</option>
-            <option>LO4 – Statistics Basics</option>
-            <option>LO5 – Research Ethics</option>
+          <select id="objective">
+            <option disabled selected>Loading objectives...</option>
           </select>
         </div>
       </div>
@@ -77,5 +84,149 @@
   </main>
 
   <footer><p>&copy; 2025 MackAdapt – Built for Merrimack College</p></footer>
-</body>
+  <script>
+    const query = new URLSearchParams(window.location.search);
+    const quizId = query.get("quizId");
+    const classId = query.get("classId");
+
+    const readingSelect = document.getElementById("readingSelect");
+    const objectiveSelect = document.querySelector("#objective"); 
+
+    
+    async function loadReadings() {
+      try {
+        const res = await fetch(`/api/classes/${classId}/readings`);
+        if (!res.ok) throw new Error("Failed to fetch readings");
+
+        const data = await res.json();
+        readingSelect.innerHTML = "";
+
+        if (!data || data.length === 0) {
+          const op = document.createElement("option");
+          op.textContent = "No readings available";
+          op.disabled = true;
+          op.selected = true;
+          readingSelect.appendChild(op);
+          return;
+        }
+
+        data.forEach(reading => {
+          const op = document.createElement("option");
+          op.value = reading.readingId;
+          op.textContent = reading.readingName;
+          readingSelect.appendChild(op);
+        });
+
+        // load objectives for the first reading by default
+        loadObjectives(data[0].readingId);
+
+      } catch (err) {
+        console.error("Failed to load readings:", err);
+        readingSelect.innerHTML = "<option disabled selected>Error loading readings</option>";
+      }
+    }
+
+    loadReadings();
+
+    async function loadObjectives(readingId) {
+      try {
+        const res = await fetch(`/api/quizzes/${readingId}/readingobjectives`);
+        if (!res.ok) throw new Error("Failed to fetch objectives");
+
+        const data = await res.json();
+        objectiveSelect.innerHTML = "";
+
+        if (!data || data.length === 0) {
+          const op = document.createElement("option");
+          op.textContent = "No objectives available";
+          op.disabled = true;
+          op.selected = true;
+          objectiveSelect.appendChild(op);
+          return;
+        }
+
+        data.forEach(obj => {
+          const op = document.createElement("option");
+          op.value = obj.objectiveId; 
+          op.textContent = obj.objectiveName;
+          objectiveSelect.appendChild(op);
+        });
+
+      } catch (err) {
+        console.error("Failed to load objectives:", err);
+        objectiveSelect.innerHTML = "<option disabled selected>Error loading objectives</option>";
+      }
+    }
+
+    //reload objectives when a new reading is selected
+    readingSelect.addEventListener("change", () => {
+      const selectedReadingId = parseInt(readingSelect.value);
+      if (selectedReadingId) loadObjectives(selectedReadingId);
+    });
+
+  
+    document.getElementById("addReadingBtn").addEventListener("click", async () => {
+      try {
+        const readingId = parseInt(readingSelect.value);
+        if (!readingId) return alert("Please select a reading first.");
+
+        const res = await fetch(`/api/quizzes/${quizId}/readings`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ readingId })
+        });
+
+        const result = await res.json();
+
+        if (res.ok && result.status === "success") {
+          alert("Reading linked to quiz!");
+        } else {
+          console.error("Error linking reading:", result);
+          alert("Failed to link reading.");
+        }
+      } catch (err) {
+        console.error("Error adding reading:", err);
+        alert("Failed to link reading. See console for details.");
+      }
+    });
+
+    // ---------- ADD QUESTION TO QUIZ ----------
+    document.getElementById("addQuestionBtn")?.addEventListener("click", async () => {
+      try {
+        const questionText = document.querySelector("#questionText").value.trim();
+        const difficulty = document.querySelector("#difficulty").value;
+        const choiceA = document.querySelector("#choiceA").value.trim();
+        const choiceB = document.querySelector("#choiceB").value.trim();
+        const choiceC = document.querySelector("#choiceC").value.trim();
+        const choiceD = document.querySelector("#choiceD").value.trim();
+        const correctAnswer = document.querySelector("#correctAnswer").value.trim();
+        const objectiveId = parseInt(objectiveSelect.value);
+
+        if (!questionText || !choiceA || !choiceB || !choiceC || !choiceD || !correctAnswer) {
+          return alert("Please fill out all question fields.");
+        }
+
+        const payload = { questionText, difficulty, choiceA, choiceB, choiceC, choiceD, correctAnswer, objectiveId };
+
+        const res = await fetch(`/api/quizzes/${quizId}/questions`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await res.json();
+
+        if (res.ok && result.status === "success") {
+          alert("Question added!");
+        } else {
+          console.error("Error adding question:", result);
+          alert("Failed to add question.");
+        }
+      } catch (err) {
+        console.error("Error adding question:", err);
+        alert("Failed to add question. See console for details.");
+      }
+    });
+  </script>
+  </body>
 </html>

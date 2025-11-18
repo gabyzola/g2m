@@ -17,6 +17,8 @@ public class QuizManager {
         this.currentDifficulty = DifficultyLevel.MEDIUM; // Start medium by default
     }
 
+    //not in api yet !
+
     //get question 9one by one)
     public QuizQuestion getNextQuestion() {
         if (remainingQuestions.isEmpty()) {

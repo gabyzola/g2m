@@ -1,3 +1,12 @@
+<!-- thigs to do: -->
+ <!-- 
+get student emails for dropdown
+enroll student -> "Add" button 
+getClassEnrollees in that enrollee card
+remove enrollee (i gotta flesh that out in backend)
+display class name up top (based on where they clicked "Enroll Student")
+-->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,7 +15,6 @@
   <title>Enroll Students – MackAdapt</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    /* ----- LAYOUT & STYLE ----- */
     .wrap {
       max-width: 900px;
       margin: 3rem auto;
@@ -60,7 +68,6 @@
 </head>
 
 <body>
-  <!-- ✅ SHARED HEADER -->
   <header>
     <h1>MackAdapt</h1>
     <nav>
@@ -73,18 +80,13 @@
     </nav>
   </header>
 
-  <!-- ✅ MAIN ENROLL SECTION -->
   <main class="wrap">
     <h2>Enroll Students</h2>
     <p class="muted">Search by email to add a student to this class. Demo-only; uses mock data for now.</p>
-
-    <!-- Search + Add Row -->
     <div class="row" style="margin:.5rem 0 1rem">
       <input id="search" type="search" placeholder="Search email (e.g., jstudent@merrimack.edu)" style="flex:1"/>
       <button id="addBtn" type="button">Add</button>
     </div>
-
-    <!-- Two-column layout: Search results + Enrolled students -->
     <div class="lists">
       <div class="panel">
         <h3>Search Results</h3>
@@ -96,19 +98,11 @@
       </div>
     </div>
   </main>
-
-  <!-- ✅ FOOTER -->
   <footer>
     <p>&copy; 2025 MackAdapt – Built for Merrimack College</p>
   </footer>
 
   <script>
-    /* ============================================================
-       ENROLL STUDENTS — FRONTEND MOCK
-       This file is structured to be easy to replace with real API calls later.
-       ============================================================ */
-
-    // --- Mock directory (simulates DB table: Students) ---
     const DIRECTORY = [
       { id: 1, name: 'Jamie Student', email: 'jstudent@merrimack.edu' },
       { id: 2, name: 'Alex Learner', email: 'alearner@merrimack.edu' },
@@ -117,7 +111,6 @@
       { id: 5, name: 'Sam Patel', email: 'spatel@merrimack.edu' },
     ];
 
-    // --- Mock roster (simulates DB table: Enrollments) ---
     const roster = [
       { id: 2, name: 'Alex Learner', email: 'alearner@merrimack.edu' },
       { id: 4, name: 'Jordan Chen', email: 'jchen@merrimack.edu' },
