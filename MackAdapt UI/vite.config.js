@@ -8,10 +8,10 @@ export default defineConfig({
     // cors: false,
     proxy: {
       "/api": {
-        target: "http://localhost:8080",  
+        target: "http://localhost:49161",  
         changeOrigin: true,
         secure: false
       }
     }
   }
-});
+}); 
