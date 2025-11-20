@@ -661,6 +661,22 @@ public class QuizDal {
         }
     }
 
+    public boolean updateQuizName(int quizId, String quizName) {
+        String sql = "{CALL updateQuizName(?, ?)}";
+        try (CallableStatement stmt = myConnection.prepareCall(sql)) {
+
+            stmt.setInt(1, quizId);
+            stmt.setString(2, quizName);
+
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     
     /*DELETIONS */
     public boolean deleteQuestion(int questionId) { return executeSimpleDelete("{CALL DeleteQuestion(?)}", questionId); }

@@ -133,6 +133,7 @@ public class QuizController {
                                 .body(Map.of("quizId", -1));
         }
     }
+    
 
     //upload reading: UNTESTED
     //frontend:
@@ -220,6 +221,24 @@ public class QuizController {
                                 .body(Map.of("status", "error"));
         }
     }
+
+    //updates the quiz name
+    @PostMapping("/quizzes/{quizId}/name")
+    public ResponseEntity<Map<String, Object>> updateQuizName(
+            @PathVariable int quizId,
+            @RequestBody Map<String, Object> requestBody) {
+
+        String newName = (String) requestBody.get("quizName");
+        boolean success = bl.updateQuizName(quizId, newName);
+
+        if (success) {
+            return ResponseEntity.ok(Map.of("status", "success"));
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                .body(Map.of("status", "error"));
+        }
+    }
+
 
     //view quizzes for a class
     //TESTED: Good!

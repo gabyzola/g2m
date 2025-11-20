@@ -1,7 +1,8 @@
-//this is like main.js, but specifically for the class module since this can get tricky 
+//this is like main.js, but specifically for the class module since this can get tricky
+//TO DOs
 
 //gets backend.js
-import { getClassQuizzes, getClassEnrollees, canCreateQuiz } from "./backend.js";
+import { getClassQuizzes, getClassEnrollees, canCreateQuiz, getClassReadings } from "./backend.js";
 
 //gets class id from a query string (in the url)
 const params = new URLSearchParams(window.location.search);
@@ -72,6 +73,7 @@ async function loadClassData() {
         }
       });
 
+      //create enrollment button
       const enrollBtn = document.createElement("button");
       enrollBtn.textContent = "Enroll Student";
       enrollBtn.id = "enrollStudentBtn";
@@ -79,7 +81,19 @@ async function loadClassData() {
       quizzesContainer.prepend(enrollBtn);
 
       enrollBtn.addEventListener("click", () => {
-        // redirect to enrollment page with classId in query string
+        //redirect to enrollment page with classId in query string
+        window.location.href = `class-enroll.html?classId=${classId}`;
+      });
+
+      //add a reading button
+      const readingBtn = document.createElement("button");
+      readingBtn.textContent = "Add Reading";
+      readingBtn.id = "addReadingBtn";
+      readingBtn.style.marginBottom = "1rem";
+      quizzesContainer.prepend(readingBtn);
+
+      readingBtn.addEventListener("click", () => {
+        //redirect to enrollment page with classId in query string
         window.location.href = `class-enroll.html?classId=${classId}`;
       });
     }
@@ -88,14 +102,28 @@ async function loadClassData() {
     console.error("Error checking if user can create quiz:", err);
   }
 
+  //make another sidebar but for readings
+  const readings = await getClassReadings(classId); //gets all the class readings
+  const list1 = document.getElementById("readings");
+  list1.innerHTML = "";
+  if (!readings || readings.length === 0) { //checks if there are any readings
+    list1.innerHTML = "<li>No readings added yet.</li>";
+  } else {
+    readings.forEach(s => { //list readings
+      const li = document.createElement("li");
+      li.textContent = `${s.readingName}`;
+      list1.appendChild(li);
+    });
+  }
+
   //same thing but for enrollees, we gotta stick this in a sidebar
-  const enrollees = await getClassEnrollees(classId);
+  const enrollees = await getClassEnrollees(classId); //sptres in enrollees
   const list = document.getElementById("enrollees");
   list.innerHTML = "";
-  if (!enrollees || enrollees.length === 0) {
+  if (!enrollees || enrollees.length === 0) { //checks if there are any enrollees
     list.innerHTML = "<li>No students enrolled yet.</li>";
   } else {
-    enrollees.forEach(s => {
+    enrollees.forEach(s => { //list enrollees
       const li = document.createElement("li");
       li.textContent = `${s.firstName} ${s.lastName} (${s.email})`;
       list.appendChild(li);
@@ -103,4 +131,5 @@ async function loadClassData() {
   }
 }
 
+//loads everything
 loadClassData();

@@ -115,6 +115,12 @@ public class BusinessLogic {
         return dal.insertQuiz(instructorId, classId);
     }
 
+    //updates quiz name
+    public boolean updateQuizName(int quizId, String newName) {
+        return dal.updateQuizName(quizId, newName);
+    }
+
+
     public List<Map<String, Object>> getClassReadings(int classId) {
         return dal.getClassReadings(classId);
     }

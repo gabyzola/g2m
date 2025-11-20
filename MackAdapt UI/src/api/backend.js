@@ -58,6 +58,17 @@ export async function getClassEnrollees(classId) {
   }
 }
 
+export async function getClassReadings(classId) {
+  try {
+    const res = await fetch(`/api/classes/${classId}/readings`);
+    if (!res.ok) throw new Error("Failed request");
+    return await res.json();
+  } catch (err) {
+    console.error("Error fetching class readings:", err);
+    return null;
+  }
+}
+
 export async function getReadingObjectives(readingId) {
   try {
     const res = await fetch(`/api/quizzes/${readingId}/objectives`);
@@ -169,3 +180,55 @@ export async function selectQuizObjective(quizId, studentId, objectiveId) {
     return { status: "error" };
   }
 }
+
+export async function createQuiz(classId) {
+  try {
+    const res = await fetch(`/api/classes/${classId}/quizzcreation`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" }
+    });
+
+    if (!res.ok) throw new Error("Failed to create quiz");
+
+    const data = await res.json();
+    return data.quizId;
+  } catch (err) {
+    console.error("Error creating quiz:", err);
+    return -1;
+  }
+}
+
+export async function updateQuizName(quizId, newName) {
+  try {
+    const res = await fetch(`/api/quizzes/${quizId}/name`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ quizName: newName })
+    });
+
+    if (!res.ok) throw new Error("Failed to update quiz name");
+
+    return await res.json();
+  } catch (err) {
+    console.error("Error updating quiz name:", err);
+    return { status: "error" };
+  }
+}
+
+
+export async function addQuestion(quizId, questionData) {
+  try {
+    const res = await fetch(`/api/quizzes/${quizId}/questions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(questionData)
+    });
+
+    return await res.json();
+  } catch (err) {
+    console.error("Error adding question:", err);
+    return { status: "error" };
+  }
+}
+
+

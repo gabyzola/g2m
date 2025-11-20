@@ -59,4 +59,18 @@ document.addEventListener("DOMContentLoaded", () => {
       list.appendChild(li);
     });
   });
+
+  /*
+  //add create new class button
+      const enrollBtn = document.createElement("button");
+      enrollBtn.textContent = "Create Class";
+      enrollBtn.id = "enrollStudentBtn";
+      enrollBtn.style.marginBottom = "1rem";
+      quizzesContainer.prepend(enrollBtn);
+
+      enrollBtn.addEventListener("click", () => {
+        //redirect to enrollment page with classId in query string
+        window.location.href = `class-create.html?classId=${classId}`;
+      });
+      */
 });
