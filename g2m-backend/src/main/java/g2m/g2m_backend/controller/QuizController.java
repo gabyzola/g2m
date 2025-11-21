@@ -29,7 +29,7 @@ public class QuizController {
         this.bl = bl;
         this.ql = ql;
     }
-
+ 
     // Register a new user: UNTESTED
     //frontend:
     //frontend tested:
@@ -142,10 +142,10 @@ public class QuizController {
     public Map<String, Object> uploadReading(@PathVariable int classId, @RequestBody Map<String, Object> data) {
         int instructorId = Integer.parseInt(data.get("instructorId").toString());
         String readingName = (String) data.get("readingName");
-        String filePath = (String) data.get("filePath");
+        // String filePath = (String) data.get("filePath");
 
-        int readingId = bl.uploadReading(instructorId, classId, readingName, filePath);
-        return Map.of("readingId", readingId); // now returns actual ID
+        int readingId = bl.uploadReading(instructorId, classId, readingName);
+        return Map.of("readingId", readingId); 
     }
 
 
@@ -381,7 +381,7 @@ public class QuizController {
     }
     
     // Search students: Ready to connect
-    //TESTED: Error, but not a big deal i never use this
+    //TESTED: Good
     //frontend:
     //frontend tested:
     @GetMapping("/students/search")

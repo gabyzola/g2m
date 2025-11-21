@@ -214,14 +214,14 @@ public class QuizDal {
 
     //insert reading into class module- another instructor only priv
     //bl: done
-    public boolean insertNewReading(int instructorId, int classId, String readingName, String filePath) {
+    public boolean insertNewReading(int instructorId, int classId, String readingName) {
         CallableStatement stmt = null;
         try {
             stmt = myConnection.prepareCall("{CALL InsertNewReading(?, ?, ?, ?)}");
             stmt.setInt(1, instructorId);
             stmt.setInt(2, classId);
             stmt.setString(3, readingName);
-            stmt.setString(4, filePath);
+            // stmt.setString(4, filePath);
             stmt.execute();
             return true;
         } catch (SQLException e) {

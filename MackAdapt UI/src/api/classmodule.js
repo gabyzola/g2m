@@ -85,47 +85,46 @@ async function loadClassData() {
         window.location.href = `class-enroll.html?classId=${classId}`;
       });
 
-      //add a reading button
-      const readingBtn = document.createElement("button");
-      readingBtn.textContent = "Add Reading";
-      readingBtn.style.marginBottom = "1rem";
-      quizzesContainer.prepend(readingBtn);
+      //add a reading button- massive debugging needed i fear
+      const readingBtn = document.createElement("button"); //create the button
+      readingBtn.textContent = "Add Reading"; //label the button
+      readingBtn.style.marginBottom = "1rem"; //styling
+      quizzesContainer.prepend(readingBtn); //pre load the button
 
-      // modal elements (assumes you have them in HTML)
-      const readingModal = document.getElementById("readingModal");
-      const objectivesContainer = document.getElementById("objectivesContainer");
-      const addObjectiveBtn = document.getElementById("addObjectiveBtn");
-      const cancelReadingBtn = document.getElementById("cancelReadingBtn");
-      const saveReadingBtn = document.getElementById("saveReadingBtn");
-      const readingNameInput = document.getElementById("readingNameInput");
+      const readingModal = document.getElementById("readingModal"); //create modal
+      const objectivesContainer = document.getElementById("objectivesContainer"); //objectives  section
+      const addObjectiveBtn = document.getElementById("addObjectiveBtn"); //add objective button, should add more objective fields
+      const cancelReadingBtn = document.getElementById("cancelReadingBtn"); //cancel, gets rid of modal
+      const saveReadingBtn = document.getElementById("saveReadingBtn"); //save reading --> THIS MUST CALL UPLOAD READING
+      const readingNameInput = document.getElementById("readingNameInput"); //input field
 
-      readingBtn.addEventListener("click", () => {
-        readingNameInput.value = "";
-        objectivesContainer.innerHTML = `
+      readingBtn.addEventListener("click", () => { //adds event listener for Add Reading button
+        readingNameInput.value = ""; //clears og input
+        objectivesContainer.innerHTML = `  //adds objectives section
           <label>
             Objective:
             <input type="text" name="objective" style="width:100%; margin-top:.25rem; margin-bottom:.25rem;">
           </label>
         `;
-        readingModal.style.display = "flex";
+        readingModal.style.display = "flex"; //display, shoudlnt cause any issues
       });
 
-      addObjectiveBtn.addEventListener("click", () => {
-        const newInput = document.createElement("label");
-        newInput.innerHTML = `
+      addObjectiveBtn.addEventListener("click", () => { //adds event listener for add objective button (this creates more fields)
+        const newInput = document.createElement("label"); 
+        newInput.innerHTML = ` 
           Objective:
           <input type="text" name="objective" style="width:100%; margin-top:.25rem; margin-bottom:.25rem;">
-        `;
-        objectivesContainer.appendChild(newInput);
+        `; //objective input --> DOUBLE CHECK THIS
+        objectivesContainer.appendChild(newInput); //add input
       });
 
-      cancelReadingBtn.addEventListener("click", () => {
+      cancelReadingBtn.addEventListener("click", () => { //cancel button just gets rid of modal
         readingModal.style.display = "none";
       });
 
-      saveReadingBtn.addEventListener("click", async () => {
+      saveReadingBtn.addEventListener("click", async () => { //SAVE READING--IMPORTANT CHECK THIS PLS
         const readingName = readingNameInput.value.trim();
-        if (!readingName) return alert("Enter a reading name");
+        if (!readingName) return alert("Enter a reading name"); //checks input
 
         const objectiveInputs = objectivesContainer.querySelectorAll('input[name="objective"]');
         const objectives = Array.from(objectiveInputs)

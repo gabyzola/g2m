@@ -59,13 +59,12 @@ public class BusinessLogic {
     //add reading to a class module
     //partly a placeholder rn, not really the best implementation
     //api: done
-    public int uploadReading(int instructorId, int classId, String readingName, String filePath) {
+    public int uploadReading(int instructorId, int classId, String readingName) {
         try {
-            boolean readingInserted = dal.insertNewReading(instructorId, classId, readingName, filePath);
+            boolean readingInserted = dal.insertNewReading(instructorId, classId, readingName);
             if (!readingInserted) return -1;
 
-            // Get last inserted ID
-            int readingId = dal.getLastInsertId(); // you'll need a DAL method
+            int readingId = dal.getLastInsertId(); 
             return readingId;
 
         } catch (Exception e) {
