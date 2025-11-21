@@ -2,6 +2,32 @@
 //this is just responsible for contacting api mappings in springboot, main.js handles the actual buttons and populating fields
 //returns json formatted db items
 
+//added procedures 17/26
+
+//register user
+//calls QuizController: registerUser
+
+//create class
+//calls QuizController: createClass
+export async function createClass(classId) {
+  try {
+    const res = await fetch(`/api/classes/${classId}/create`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" }
+    });
+
+    if (!res.ok) throw new Error("Failed to create class");
+
+    const data = await res.json();
+    return data.quizId;
+  } catch (err) {
+    console.error("Error creating class:", err);
+    return -1;
+  }
+}
+
+
+//calls QuizController: viewInstructorClasses
 export async function getInstructorClasses(instructorId) {
   try {
 
@@ -19,6 +45,7 @@ export async function getInstructorClasses(instructorId) {
   }
 }
 
+//calls QuizController: viewStudentClasses
 export async function getStudentClasses(studentId) {
   try {
 
@@ -138,21 +165,6 @@ export async function searchStudents(query) {
   }
 }
 
-async function loadQuestions() {
-    try {
-      const res = await fetch(`/api/quizzes/student/${studentId}/${quizId}/questions?numQuestions=5`);
-      if (!res.ok) throw new Error("Failed to load");
-
-      QUESTIONS = await res.json();
-      index = 0;
-      score = 0;
-      render();
-    } catch (err) {
-      console.error(err);
-      alert("Could not load quiz questions.");
-    }
-  }
-
 export async function getQuizObjectives(quizId) {
   try {
     const res = await fetch(`/api/quizzes/${quizId}/objectives`);
@@ -161,23 +173,6 @@ export async function getQuizObjectives(quizId) {
   } catch (err) {
     console.error("Error fetching quiz objectives:", err);
     return null;
-  }
-}
-
-export async function selectQuizObjective(quizId, studentId, objectiveId) {
-  try {
-    const res = await fetch(`/api/quizzes/${quizId}/objectives`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ studentId, objectiveId })
-    });
-
-    if (!res.ok) throw new Error("Failed to select objective");
-
-    return await res.json(); 
-  } catch (err) {
-    console.error("Error selecting quiz objective:", err);
-    return { status: "error" };
   }
 }
 
@@ -198,6 +193,7 @@ export async function createQuiz(classId) {
   }
 }
 
+//calls QuizController: updateQuizName
 export async function updateQuizName(quizId, newName) {
   try {
     const res = await fetch(`/api/quizzes/${quizId}/name`, {
@@ -215,7 +211,7 @@ export async function updateQuizName(quizId, newName) {
   }
 }
 
-
+//calls QuizController: addQuestion
 export async function addQuestion(quizId, questionData) {
   try {
     const res = await fetch(`/api/quizzes/${quizId}/questions`, {
@@ -230,5 +226,126 @@ export async function addQuestion(quizId, questionData) {
     return { status: "error" };
   }
 }
+
+//loads all questions (not just student)
+//Calls QuizController: 
+export async function getQuizQuestions(quizId) {
+  try {
+    const res = await fetch(`/api/quizzes/${quizId}/questions`);
+
+    if (!res.ok) throw new Error("Failed to fetch quiz questions");
+
+    return await res.json(); 
+  } catch (err) {
+    console.error("Error fetching quiz questions:", err);
+    return [];
+  }
+}
+
+//calls quiz controller: viewStudentQuestions
+async function loadStudentQuestions() {
+    try {
+      const res = await fetch(`/api/quizzes/student/${studentId}/${quizId}/questions?numQuestions=5`);
+      if (!res.ok) throw new Error("Failed to load");
+
+      QUESTIONS = await res.json();
+      index = 0;
+      score = 0;
+      render();
+    } catch (err) {
+      console.error(err);
+      alert("Could not load quiz questions.");
+    }
+  }
+
+  export async function assignBadge(studentId) {
+  try {
+    const res = await fetch(`/api/students/${studentId}/badgeAssign`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" }
+    });
+
+    if (!res.ok) throw new Error("Failed to assign badge");
+
+    return await res.json(); 
+  } catch (err) {
+    console.error("Error assigning badge:", err);
+    return false;
+  }
+}
+
+//readingUpload
+// Upload a new reading for a class
+export async function uploadReading(classId, instructorId, readingName, filePath = "") {
+  try {
+    const res = await fetch(`/api/classes/${classId}/readingupload`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ classId, instructorId, readingName, filePath })
+    });
+
+    if (!res.ok) throw new Error("Failed to upload reading");
+
+    return await res.json(); 
+  } catch (err) {
+    console.error("Error uploading reading:", err);
+    return null;
+  }
+}
+
+//assign objective to a reading
+export async function addReadingObjective(readingId, classId, objectiveName) {
+  try {
+    const res = await fetch(`/api/readings/${readingId}/objectives`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ classId, objectiveName })
+    });
+
+    if (!res.ok) throw new Error("Failed to add reading objective");
+
+    return await res.json();
+  } catch (err) {
+    console.error("Error adding reading objective:", err);
+    return null;
+  }
+}
+
+export async function getObjectivesByQuiz(quizId) {
+  try {
+    const res = await fetch(`/api/quizzes/${quizId}/objectives`);
+
+    if (!res.ok) throw new Error("Failed to fetch objectives");
+
+    return await res.json(); 
+  } catch (err) {
+    console.error("Error getting objectives:", err);
+    return [];
+  }
+}
+
+export async function selectObjectiveForQuiz(quizId, studentId, objectiveId) {
+  try {
+    const res = await fetch(`/api/quizzes/${quizId}/objectives`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        studentId,
+        objectiveId
+      })
+    });
+
+    if (!res.ok) throw new Error("Failed to select objective");
+
+    return await res.json(); 
+  } catch (err) {
+    console.error("Error selecting objective:", err);
+    return { status: "error" };
+  }
+}
+
+
+
+
 
 

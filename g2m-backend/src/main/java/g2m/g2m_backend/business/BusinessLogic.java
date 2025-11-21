@@ -59,29 +59,22 @@ public class BusinessLogic {
     //add reading to a class module
     //partly a placeholder rn, not really the best implementation
     //api: done
-    public boolean uploadReading(int instructorId, int classId, String readingName, String filePath) {
+    public int uploadReading(int instructorId, int classId, String readingName, String filePath) {
         try {
-            if (filePath == null || !filePath.isEmpty()) {
-                System.out.println("Invalid reading file.");
-                return false;
-            }
-
             boolean readingInserted = dal.insertNewReading(instructorId, classId, readingName, filePath);
+            if (!readingInserted) return -1;
 
-            if (!readingInserted) {
-                System.out.println("Failed.");
-                return false;
-            }
-    
-            System.out.println("success");
-            return true;
+            // Get last inserted ID
+            int readingId = dal.getLastInsertId(); // you'll need a DAL method
+            return readingId;
 
         } catch (Exception e) {
-            System.out.println("Error uploading reading.");
             e.printStackTrace();
-            return false;
+            return -1;
         }
     }
+
+
 
     //add reading objective + profs will enter it manually for now
     //stretch goal: ml gets them from the reading
@@ -237,6 +230,9 @@ public class BusinessLogic {
     //get quiz score
 
     //assign badge check
+    public boolean assignBadge(int studentId) {
+        return dal.assignBadge(studentId);
+    }
 
     // helper to check if choice is correct- will use this soon, its nowehre yet
     private boolean isCorrectChoice(QuizQuestion.Choice choice, QuizQuestion question) {

@@ -46,7 +46,7 @@ public class QuizController {
         return bl.registerUser(username, email, isInstructor, major, subject, firstName, lastName);
     }
 
-    //create class: UNTESTED
+    //create class: NEEDS A FIX
     //frontend:
     //frontend tested:
     @PostMapping("/classes/create")
@@ -139,12 +139,16 @@ public class QuizController {
     //frontend:
     //frontend tested:
     @PostMapping("/classes/{classId}/readingupload")
-    public boolean uploadReading(@PathVariable int classId, @RequestBody Map<String, Object> data) {
+    public Map<String, Object> uploadReading(@PathVariable int classId, @RequestBody Map<String, Object> data) {
         int instructorId = Integer.parseInt(data.get("instructorId").toString());
         String readingName = (String) data.get("readingName");
         String filePath = (String) data.get("filePath");
-        return bl.uploadReading(instructorId, classId, readingName, filePath);
+
+        int readingId = bl.uploadReading(instructorId, classId, readingName, filePath);
+        return Map.of("readingId", readingId); // now returns actual ID
     }
+
+
 
     //add objectives to reading: UNTESTED
     //this needs to be manual for now bc time crucnch
@@ -168,6 +172,11 @@ public class QuizController {
         }
     }
 
+    //call this when a student submits quiz
+    @PostMapping("/students/{studentId}/badgeAssign")
+    public boolean assignBadge(@PathVariable int studentId) {
+        return bl.assignBadge(studentId);
+    }
 
     //instructor links readig to quiz during quiz creation: UNTESTED
     //this basically gets the reading id from the reading they're linking
@@ -193,6 +202,7 @@ public class QuizController {
     //that info is made into a QuesitonData obj
     //i send that to bl
     //UNTESTED
+    //async: done
     //frontend: Implemented
     //frontend tested:
     @PostMapping("/quizzes/{quizId}/questions")
@@ -223,6 +233,7 @@ public class QuizController {
     }
 
     //updates the quiz name
+    //async: done
     @PostMapping("/quizzes/{quizId}/name")
     public ResponseEntity<Map<String, Object>> updateQuizName(
             @PathVariable int quizId,
@@ -302,6 +313,7 @@ public class QuizController {
     }
 
     //backend gcalculates a subset of questions for student, make sure these can be displayed
+    //async: done
     //frontend:
     //frontend tested:
     @GetMapping("/quizzes/student/{studentId}/{quizId}/questions")
@@ -317,6 +329,7 @@ public class QuizController {
     //probably wont need since students arent answering all of these but just in case
     //TESTED: Good!
     //retest: good!
+    //async: done
     //frontend:
     //frontend tested:
     @GetMapping("/quizzes/{quizId}/questions")

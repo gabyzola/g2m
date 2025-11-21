@@ -15,7 +15,7 @@ Display quiz questions one by one
       .choices label{display:block;margin:.6rem 0;padding:.6rem;border:1px solid #ddd;border-radius:6px;cursor:pointer}
       .choices input{margin-right:.4rem}
       .actions{display:flex;gap:.75rem;margin-top:1rem}
-      #resultModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);align-items:center;justify-content:center}
+      #resultModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);align-items:center;justify-content:center;z-index: 9999;}
       #resultModal .inner{background:#fff;padding:1.25rem;border-radius:10px;width:min(520px,92%)}
     </style>
   </head>
@@ -44,8 +44,8 @@ Display quiz questions one by one
 
     <div id="resultModal"><div class="inner">
       <h3>Quiz Complete</h3>
-      <p id="scoreLine">You scored 0%.</p>
-      <p class="small-text">Focus next on: LO2 (Experimental Design), LO4 (Statistics)</p>
+      <p id="scoreLine"></p>
+      <p class="small-text" id="focusLine"></p>
       <div style="display:flex;gap:.5rem">
         <button onclick="location.href='student-dashboard.html'">Return to Dashboard</button>
         <button onclick="location.href='classroom.html'">Back to Class</button>
@@ -55,9 +55,7 @@ Display quiz questions one by one
     <footer><p>&copy; 2025 MackAdapt – Built for Merrimack College</p></footer>
 
     <script type="module">
-      import { 
-        loadQuestions
-      } from "./src/api/backend.js";
+      import { getQuizQuestions } from "./src/api/backend.js";
 
       const params = new URLSearchParams(window.location.search);
       const classId = params.get("classId");
@@ -74,8 +72,50 @@ Display quiz questions one by one
       let QUESTIONS = [];
       let index = 0;
       let score = 0;
-      
+
+      let userAnswers = {}; 
+
+
+      async function loadQuestions() {
+        const raw = await getQuizQuestions(quizId);
+
+        if (!raw || raw.length === 0) {
+          qStem.textContent = "No questions available.";
+          nextBtn.style.display = "none";
+          return;
+        }
+
+        const grouped = {};
+        raw.forEach(row => {
+          const qid = row.questionId;
+
+          if (!grouped[qid]) {
+            grouped[qid] = {
+              questionId: qid,
+              questionText: row.questionText,
+              difficulty: row.difficulty,
+              learningObjective: row.learningObjective,
+              choices: {},   
+              correctChoiceId: row.correctChoiceId
+            };
+          }
+
+          grouped[qid].choices[row.choiceLabel] = row.choiceText;
+        });
+
+        QUESTIONS = Object.values(grouped);
+
+        QUESTIONS.forEach(q => {
+          const match = raw.find(r => r.choiceId === q.correctChoiceId);
+          q.correctAnswer = match ? match.choiceLabel : null;
+        });
+
+        index = 0;
+        render();
+      }
+
       function render() {
+
         const q = QUESTIONS[index];
 
         qStem.textContent = q.questionText;
@@ -85,7 +125,7 @@ Display quiz questions one by one
         choices.innerHTML = opts.map(letter => `
           <label>
             <input type="radio" name="ans" value="${letter}">
-            ${q["choice" + letter]}
+            ${q.choices[letter]}
           </label>
         `).join("");
 
@@ -94,6 +134,7 @@ Display quiz questions one by one
           ? "Submit & Next"
           : "Submit & Finish";
       }
+
 
       nextBtn.addEventListener("click", () => {
         const selected = document.querySelector('input[name="ans"]:checked');
@@ -104,6 +145,8 @@ Display quiz questions one by one
 
         const chosenLetter = selected.value;
         const correctLetter = QUESTIONS[index].correctAnswer;
+
+        userAnswers[QUESTIONS[index].questionId] = chosenLetter;
 
         if (chosenLetter === correctLetter) {
           score++;

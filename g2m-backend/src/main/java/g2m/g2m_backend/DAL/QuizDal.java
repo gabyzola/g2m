@@ -222,19 +222,23 @@ public class QuizDal {
             stmt.setInt(2, classId);
             stmt.setString(3, readingName);
             stmt.setString(4, filePath);
-
             stmt.execute();
             return true;
         } catch (SQLException e) {
-            System.out.println("Error adding reading.");
             e.printStackTrace();
             return false;
         } finally {
-            try {
-                if (stmt != null) stmt.close();
-            } catch (SQLException e) { e.printStackTrace(); }
+            try { if (stmt != null) stmt.close(); } catch (SQLException e) { e.printStackTrace(); }
         }
     }
+
+    public int getLastInsertId() throws SQLException {
+        Statement stmt = myConnection.createStatement();
+        ResultSet rs = stmt.executeQuery("SELECT LAST_INSERT_ID() AS id");
+        if (rs.next()) return rs.getInt("id");
+        return -1;
+    }
+
 
     //insert reading objectives into proper table (see business layer)
     //bl: done

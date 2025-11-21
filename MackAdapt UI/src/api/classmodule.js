@@ -2,7 +2,7 @@
 //TO DOs
 
 //gets backend.js
-import { getClassQuizzes, getClassEnrollees, canCreateQuiz, getClassReadings } from "./backend.js";
+import { getClassQuizzes, getClassEnrollees, canCreateQuiz, getClassReadings, uploadReading, addReadingObjective } from "./backend.js";
 
 //gets class id from a query string (in the url)
 const params = new URLSearchParams(window.location.search);
@@ -88,18 +88,87 @@ async function loadClassData() {
       //add a reading button
       const readingBtn = document.createElement("button");
       readingBtn.textContent = "Add Reading";
-      readingBtn.id = "addReadingBtn";
       readingBtn.style.marginBottom = "1rem";
       quizzesContainer.prepend(readingBtn);
 
+      // modal elements (assumes you have them in HTML)
+      const readingModal = document.getElementById("readingModal");
+      const objectivesContainer = document.getElementById("objectivesContainer");
+      const addObjectiveBtn = document.getElementById("addObjectiveBtn");
+      const cancelReadingBtn = document.getElementById("cancelReadingBtn");
+      const saveReadingBtn = document.getElementById("saveReadingBtn");
+      const readingNameInput = document.getElementById("readingNameInput");
+
       readingBtn.addEventListener("click", () => {
-        //redirect to enrollment page with classId in query string
-        window.location.href = `class-enroll.html?classId=${classId}`;
+        readingNameInput.value = "";
+        objectivesContainer.innerHTML = `
+          <label>
+            Objective:
+            <input type="text" name="objective" style="width:100%; margin-top:.25rem; margin-bottom:.25rem;">
+          </label>
+        `;
+        readingModal.style.display = "flex";
+      });
+
+      addObjectiveBtn.addEventListener("click", () => {
+        const newInput = document.createElement("label");
+        newInput.innerHTML = `
+          Objective:
+          <input type="text" name="objective" style="width:100%; margin-top:.25rem; margin-bottom:.25rem;">
+        `;
+        objectivesContainer.appendChild(newInput);
+      });
+
+      cancelReadingBtn.addEventListener("click", () => {
+        readingModal.style.display = "none";
+      });
+
+      saveReadingBtn.addEventListener("click", async () => {
+        const readingName = readingNameInput.value.trim();
+        if (!readingName) return alert("Enter a reading name");
+
+        const objectiveInputs = objectivesContainer.querySelectorAll('input[name="objective"]');
+        const objectives = Array.from(objectiveInputs)
+          .map(i => i.value.trim())
+          .filter(v => v.length > 0);
+
+        try {
+          // upload reading
+          const uploadRes = await fetch(`/api/classes/${classId}/readingupload`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              instructorId: 7, // replace dynamically if needed
+              classId,
+              readingName,
+              filePath: ""
+            })
+          });
+
+          if (!uploadRes.ok) throw new Error("Failed to upload reading");
+          const readingData = await uploadRes.json();
+          const readingId = readingData.readingId;
+
+          // add objectives
+          for (let obj of objectives) {
+            await fetch(`/api/readings/${readingId}/objectives`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ classId, objectiveName: obj })
+            });
+          }
+
+          alert("Reading added successfully!");
+          readingModal.style.display = "none";
+          loadClassData(); // refresh readings list
+        } catch (err) {
+          console.error(err);
+          alert("Error adding reading. Check console for details.");
+        }
       });
     }
- 
   } catch (err) {
-    console.error("Error checking if user can create quiz:", err);
+    console.error("Error checking canCreate:", err);
   }
 
   //make another sidebar but for readings
