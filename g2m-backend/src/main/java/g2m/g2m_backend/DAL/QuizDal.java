@@ -511,7 +511,7 @@ public class QuizDal {
         try {
             stmt = myConnection.prepareCall("{CALL SelectStudentObjective(?, ?, ?)}");
             stmt.setInt(1, studentId);
-            stmt.setInt(2, objectiveId);
+            stmt.setInt(2, quizId);
             stmt.setInt(3, objectiveId);
 
             stmt.execute();
@@ -644,7 +644,6 @@ public class QuizDal {
 
     //display all badges that can be earned
     public ArrayList<Badge> getAllBadges() {
-
         Statement myStatement;
         try {
             myStatement = myConnection.createStatement();
@@ -658,6 +657,26 @@ public class QuizDal {
             }
 
             return Badges;
+
+        } catch (SQLException e) { 
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public String getClassName(int classId) {
+        Statement myStatement;
+        try {
+            myStatement = myConnection.createStatement();
+            ResultSet rs = myStatement.executeQuery(
+                "SELECT className FROM Classroom WHERE classId = " + classId
+            );
+
+            if (rs.next()) {
+                return rs.getString("className");
+            } else {
+                return null; 
+            }
 
         } catch (SQLException e) { 
             e.printStackTrace();

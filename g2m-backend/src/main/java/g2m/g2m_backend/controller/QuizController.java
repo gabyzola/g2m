@@ -182,17 +182,18 @@ public class QuizController {
     //this basically gets the reading id from the reading they're linking
     //frontend: Implemented
     //frontend tested:
-    @PostMapping("/quizzes/{quizId}/readings")
-    public ResponseEntity<Map<String, Object>> addQuizReading(@PathVariable int quizId, @RequestBody Map<String, Object> requestBody) {
-        int readingId = (int) requestBody.get("readingId");
+    @PostMapping("/quiz/{quizId}/addReading")
+    public Map<String, Object> addReadingToQuiz(
+            @PathVariable int quizId,
+            @RequestBody Map<String, Object> data) {
+
+        int readingId = Integer.parseInt(data.get("readingId").toString());
+
         boolean success = bl.addReadingToQuiz(quizId, readingId);
 
-        if (success) {
-            return ResponseEntity.ok(Map.of("status", "success"));
-        } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                .body(Map.of("status", "error"));
-        }
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", success);
+        return response;
     }
 
     //publish quiz (DOES NOT UPDATE QUIZ ID) -> i need to make this in db but i know EXACTLY what i need for that so ill do it soon
@@ -286,21 +287,41 @@ public class QuizController {
     //frontend tested:
     @PostMapping("/quizzes/{quizId}/objectives")
     public ResponseEntity<Map<String, Object>> selectObjective(
-            @PathVariable int quizId,
-            @RequestBody Map<String, Object> requestBody) {
+        @PathVariable int quizId,
+        @RequestBody Map<String, Object> requestBody) {
 
-        int studentId = (int) requestBody.get("studentId");
-        int objectiveId = (int) requestBody.get("objectiveId");
+        // === Debug logs for incoming data ===
+        System.out.println("=== Incoming POST to selectObjective ===");
+        System.out.println("Quiz ID from path: " + quizId);
+        System.out.println("Request Body: " + requestBody);
 
+        // Safely parse integers from request body
+        int studentId;
+        int objectiveId;
+        try {
+            studentId = Integer.parseInt(requestBody.get("studentId").toString());
+            objectiveId = Integer.parseInt(requestBody.get("objectiveId").toString());
+        } catch (Exception e) {
+            System.out.println("Failed to parse studentId or objectiveId: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                .body(Map.of("status", "error", "message", "Invalid IDs"));
+        }
+
+        System.out.println("Parsed studentId: " + studentId);
+        System.out.println("Parsed objectiveId: " + objectiveId);
+
+        // Call your business logic
         boolean success = bl.selectObjectiveForStudent(studentId, quizId, objectiveId);
+        System.out.println("BL result = " + success);
 
         if (success) {
             return ResponseEntity.ok(Map.of("status", "success"));
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                                .body(Map.of("status", "error"));
+                                .body(Map.of("status", "error", "message", "BL returned false"));
         }
     }
+
 
     //display chosen objectives
     //if gio wants to add a section where the student can see what they chose, not urgent
@@ -387,5 +408,16 @@ public class QuizController {
     @GetMapping("/students/search")
     public ArrayList<HashMap<String, Object>> searchStudent(@RequestParam String type, @RequestParam String query) {
         return bl.searchStudent(type, query);
+    }
+
+    @GetMapping("/classes/{classId}/name")
+    public Map<String, Object> getClassName(@PathVariable int classId) {
+        String name = bl.getClassName(classId);
+
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("classId", classId);
+        resp.put("className", name);
+
+        return resp;
     }
 }

@@ -73,8 +73,6 @@ public class BusinessLogic {
         }
     }
 
-
-
     //add reading objective + profs will enter it manually for now
     //stretch goal: ml gets them from the reading
     //api: done
@@ -219,6 +217,10 @@ public class BusinessLogic {
     //checks if user can create a quiz
     public boolean canCreateQuiz(int userId, int classId) {
         return dal.canCreateQuiz(userId, classId);
+    }
+
+    public String getClassName(int classId) {
+        return dal.getClassName(classId);
     }
 
 
