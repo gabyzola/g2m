@@ -2,7 +2,7 @@
 //TO DOs
 
 //gets backend.js
-import { getClassQuizzes, getClassEnrollees, canCreateQuiz, getClassReadings, uploadReading, addReadingObjective } from "./backend.js";
+import { getClassQuizzes, getClassEnrollees, canCreateQuiz, getClassReadings, uploadReading, addReadingObjective, getClassName } from "./backend.js";
 
 //gets class id from a query string (in the url)
 const params = new URLSearchParams(window.location.search);
@@ -17,7 +17,13 @@ if (!classId) {
 async function loadClassData() {
 
   //placeholder info for now... we can get more info about the class later
-  document.getElementById("class-title").textContent = `Class ID: ${classId}`;
+  const cname = await getClassName(classId);
+
+  if (cname && cname.className) {
+    document.getElementById("class-title").textContent = cname.className;
+  } else {
+    document.getElementById("class-title").textContent = `Class ID: ${classId}`;
+  }
   //load quizzes
   const quizzes = await getClassQuizzes(classId);
   const quizzesContainer = document.getElementById("quizzes");
@@ -75,7 +81,7 @@ async function loadClassData() {
 
       //create enrollment button
       const enrollBtn = document.createElement("button");
-      enrollBtn.textContent = "Enroll Student";
+      enrollBtn.textContent = "Manage Enrollees";
       enrollBtn.id = "enrollStudentBtn";
       enrollBtn.style.marginBottom = "1rem";
       quizzesContainer.prepend(enrollBtn);

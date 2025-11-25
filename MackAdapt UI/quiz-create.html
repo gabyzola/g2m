@@ -1,10 +1,3 @@
-<!-- To Dos -->
- <!-- 
-Add field for quiz name
-Add individual fields for choices
-Add new section for "Add Question" button
-Make sure questions are added
- -->
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -83,7 +76,7 @@ Make sure questions are added
 
   <footer><p>&copy; 2025 MackAdapt – Built for Merrimack College</p></footer>
   <script type="module">
-      import { createQuiz, addQuestion } from "./src/api/backend.js";
+      import { createQuiz, addQuestion, addReadingToQuiz } from "./src/api/backend.js";
 
 
     const query = new URLSearchParams(window.location.search);
@@ -147,6 +140,7 @@ Make sure questions are added
 
    
     async function loadReadings() {
+      
       try {
         const res = await fetch(`/api/classes/${classId}/readings`);
         if (!res.ok) throw new Error("Failed to fetch readings");
@@ -223,29 +217,22 @@ Make sure questions are added
 
   
     document.getElementById("addReadingBtn").addEventListener("click", async () => {
-      try {
-        const readingId = parseInt(readingSelect.value);
-        if (!readingId) return alert("Please select a reading first.");
+    const readingId = parseInt(readingSelect.value);
 
-        const res = await fetch(`/api/quizzes/${quizId}/readings`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ readingId })
-        });
+    if (!readingId) {
+      alert("Please select a reading first.");
+      return;
+    }
 
-        const result = await res.json();
+    const result = await addReadingToQuiz(quizId, readingId);
 
-        if (res.ok && result.status === "success") {
-          alert("Reading linked to quiz!");
-        } else {
-          console.error("Error linking reading:", result);
-          alert("Failed to link reading.");
-        }
-      } catch (err) {
-        console.error("Error adding reading:", err);
-        alert("Failed to link reading. See console for details.");
-      }
-    });
+    if (result && result.success) {
+      alert("Reading linked to quiz!");
+    } else {
+      console.error("Error linking reading:", result);
+      alert("Failed to link reading.");
+    }
+  });
 
     document.getElementById("saveQuizBtn").addEventListener("click", async () => {
       const quizName = document.getElementById("quizName").value.trim();

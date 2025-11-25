@@ -1,8 +1,3 @@
-<!-- To Dos -->
-<!-- 
-Display quiz questions one by one
-
--->
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -33,6 +28,15 @@ Display quiz questions one by one
   </header>
 
     <main>
+      <div class="card" id="objective-card" style="display:none;">
+        <h2>Choose an Objective to Focus On</h2>
+        <div id="objective-list"></div>
+
+        <button id="objectiveSubmitBtn" style="margin-top:1rem;">
+          Begin Quiz
+        </button>
+      </div>
+
       <div class="card">
         <h2 id="q-stem">Loading question…</h2>
         <div class="choices" id="choices"></div>
@@ -55,13 +59,21 @@ Display quiz questions one by one
     <footer><p>&copy; 2025 MackAdapt – Built for Merrimack College</p></footer>
 
     <script type="module">
-      import { getQuizQuestions } from "./src/api/backend.js";
+      import { getQuizQuestions, getQuizObjectives, selectObjectiveForQuiz } from "./src/api/backend.js";
 
       const params = new URLSearchParams(window.location.search);
       const classId = params.get("classId");
       const quizId = params.get("quizId");
 
       const STUDENT_ID = 7;
+
+      const objectiveCard = document.getElementById("objective-card");
+      const questionCard = document.querySelector(".card"); 
+      const objectiveList = document.getElementById("objective-list");
+      const submitObjectiveBtn = document.getElementById("objectiveSubmitBtn");
+
+      questionCard.style.display = "none"; 
+
 
       const qStem = document.getElementById('q-stem');
       const choices = document.getElementById('choices');
@@ -73,7 +85,53 @@ Display quiz questions one by one
       let index = 0;
       let score = 0;
 
-      let userAnswers = {}; 
+      let userAnswers = {};
+
+      async function loadObjectives() {
+        const objectives = await getQuizObjectives(quizId);
+
+        // If the quiz has no objectives, skip selection
+        if (!objectives || objectives.length === 0) {
+          objectiveCard.style.display = "none";
+          questionCard.style.display = "block";
+          loadQuestions();
+          return;
+        }
+
+        objectiveList.innerHTML = objectives.map(obj => `
+          <label style="display:block; margin:.6rem 0;">
+            <input type="radio" name="objective" value="${obj.objectiveId}">
+            ${obj.objectiveName}
+          </label>
+        `).join("");
+
+        objectiveCard.style.display = "block";
+      }
+
+      // When student selects an objective
+      submitObjectiveBtn.addEventListener("click", async () => {
+        const selected = document.querySelector("input[name='objective']:checked");
+
+        if (!selected) {
+          alert("Please select an objective.");
+          return;
+        }
+
+        const objectiveId = selected.value;
+
+        const result = await selectObjectiveForQuiz(quizId, STUDENT_ID, objectiveId);
+
+        if (result.status !== "success") {
+          alert("Failed to select objective.");
+          return;
+        }
+
+        // hide objectives card, show quiz card
+        objectiveCard.style.display = "none";
+        questionCard.style.display = "block";
+
+        loadQuestions();
+      });
 
 
       async function loadQuestions() {
@@ -168,7 +226,7 @@ Display quiz questions one by one
       }
 
 
-      loadQuestions();
+      loadObjectives();
     </script>
 
   </body>

@@ -369,6 +369,40 @@ export async function searchStudents(query) {
   }
 }
 
+export async function getClassName(classId) {
+  try {
+    const res = await fetch(`/api/classes/${classId}/name`);
+
+    if (!res.ok) throw new Error("Failed request");
+
+    return await res.json();
+  } catch (err) {
+    console.error("Error fetching class name:", err);
+    return null;
+  }
+}
+
+export async function addReadingToQuiz(quizId, readingId) {
+  const response = await fetch(`/api/quiz/${quizId}/addReading`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ readingId }),
+  });
+
+  return response.json();
+}
+
+export async function getQuizObjectives(quizId) {
+  const response = await fetch(`/api/quizzes/${quizId}/objectives`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
+
+  return response.json();
+}
+
+
+
 
 
 
