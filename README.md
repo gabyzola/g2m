@@ -1,5 +1,10 @@
 # g2m
 Senior Capstone
+
+Poster Draft (via docs): https://docs.google.com/document/d/1imDGjoBx7VBDjpGvWBRPDBdA1sf7Gva60LxYLQl4kYo/edit?tab=t.0
+
+Poster Draft (via Canva): https://www.canva.com/design/DAG5D_BzUDc/uDJ4RzrzUUPr-ADeX9MECQ/edit 
+
 Manual: https://docs.google.com/document/d/1NuvCfgkw-Xi-c3sWsTgoDRcMb-lZrXIR8mnugDSMcGs/edit?tab=t.0
 Senior Capstone 
 
