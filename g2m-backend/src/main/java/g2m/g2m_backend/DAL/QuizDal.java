@@ -214,54 +214,63 @@ public class QuizDal {
 
     //insert reading into class module- another instructor only priv
     //bl: done
-    public boolean insertNewReading(int instructorId, int classId, String readingName) {
+    public int insertNewReading(int instructorId, int classId, String readingName) {
         CallableStatement stmt = null;
         try {
-            stmt = myConnection.prepareCall("{CALL InsertNewReading(?, ?, ?, ?)}");
+            stmt = myConnection.prepareCall("{CALL InsertNewReading(?, ?, ?)}");
             stmt.setInt(1, instructorId);
             stmt.setInt(2, classId);
             stmt.setString(3, readingName);
-            // stmt.setString(4, filePath);
-            stmt.execute();
-            return true;
+
+            boolean hasResults = stmt.execute();
+
+            if (hasResults) {
+                ResultSet rs = stmt.getResultSet();
+                if (rs.next()) {
+                    return rs.getInt("readingId");  
+                }
+            }
+            return -1;
+
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
+            return -1;
         } finally {
-            try { if (stmt != null) stmt.close(); } catch (SQLException e) { e.printStackTrace(); }
+            try { if (stmt != null) stmt.close(); } catch (SQLException ignored) {}
         }
     }
 
-    public int getLastInsertId() throws SQLException {
-        Statement stmt = myConnection.createStatement();
-        ResultSet rs = stmt.executeQuery("SELECT LAST_INSERT_ID() AS id");
-        if (rs.next()) return rs.getInt("id");
-        return -1;
-    }
 
-
-    //insert reading objectives into proper table (see business layer)
-    //bl: done
-    public boolean insertNewReadingObjective(int readingId, int classId, String objectiveName) {
+    public int insertNewReadingObjective(int readingId, int classId, String objectiveName) {
         CallableStatement stmt = null;
+
         try {
             stmt = myConnection.prepareCall("{CALL InsertNewReadingObjective(?, ?, ?)}");
             stmt.setInt(1, readingId);
             stmt.setInt(2, classId);
             stmt.setString(3, objectiveName);
 
-            stmt.execute();
-            return true;
+            boolean hasResults = stmt.execute();
+            if (hasResults) {
+                ResultSet rs = stmt.getResultSet();
+                if (rs.next()) {
+                    return rs.getInt("objectiveId");   // ← returned from SELECT LAST_INSERT_ID()
+                }
+            }
+
+            return -1;  
+
         } catch (SQLException e) {
             System.out.println("Error adding objective.");
             e.printStackTrace();
-            return false;
+            return -1;
         } finally {
             try {
                 if (stmt != null) stmt.close();
-            } catch (SQLException e) { e.printStackTrace(); }
+            } catch (SQLException ignored) {}
         }
     }
+
 
     //get all the readings in a class
     public List<Map<String, Object>> getClassReadings(int classId) {
@@ -296,7 +305,7 @@ public class QuizDal {
 
             stmt.execute();
 
-            int newQuizId = stmt.getInt(4); // retrieve the OUT parameter
+            int newQuizId = stmt.getInt(4);
             System.out.println("New quiz inserted with ID: " + newQuizId);
             return newQuizId;
 
@@ -487,6 +496,7 @@ public class QuizDal {
                     row.put("questionText", rs.getString("questionText"));
                     row.put("difficulty", rs.getString("difficulty").toUpperCase());
                     row.put("learningObjective", rs.getString("learningObjective"));
+                    row.put("objectiveId", rs.getInt("objectiveId"));
                     row.put("choiceId", rs.getInt("choiceId"));
                     row.put("choiceLabel", rs.getString("choiceLabel"));
                     row.put("choiceText", rs.getString("choiceText"));

@@ -139,14 +139,17 @@ public class QuizController {
     //frontend:
     //frontend tested:
     @PostMapping("/classes/{classId}/readingupload")
-    public Map<String, Object> uploadReading(@PathVariable int classId, @RequestBody Map<String, Object> data) {
+    public Map<String, Object> uploadReading(@PathVariable int classId,
+                                            @RequestBody Map<String, Object> data) {
+
         int instructorId = Integer.parseInt(data.get("instructorId").toString());
-        String readingName = (String) data.get("readingName");
-        // String filePath = (String) data.get("filePath");
+        String readingName = data.get("readingName").toString();
 
         int readingId = bl.uploadReading(instructorId, classId, readingName);
-        return Map.of("readingId", readingId); 
+
+        return Map.of("readingId", readingId);
     }
+
 
 
 
@@ -159,18 +162,20 @@ public class QuizController {
             @PathVariable int readingId,
             @RequestBody Map<String, Object> requestBody) {
 
-        int classId = (int) requestBody.get("classId");
-        String objectiveName = (String) requestBody.get("objectiveName");
+        int classId = Integer.parseInt(requestBody.get("classId").toString());
+        String objectiveName = requestBody.get("objectiveName").toString();
 
-        boolean success = bl.insertNewReadingObjective(readingId, classId, objectiveName);
+        int insertedId = bl.insertNewReadingObjective(readingId, classId, objectiveName);
 
-        if (success) {
-            return ResponseEntity.ok(Map.of("status", "success"));
+        if (insertedId > 0) {
+            return ResponseEntity.ok(Map.of("status", "success", "objectiveId", insertedId));
         } else {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                                 .body(Map.of("status", "error"));
         }
     }
+
+
 
     //call this when a student submits quiz
     @PostMapping("/students/{studentId}/badgeAssign")
@@ -340,10 +345,9 @@ public class QuizController {
     @GetMapping("/quizzes/student/{studentId}/{quizId}/questions")
     public List<QuizQuestion> viewStudentQuestions(
             @PathVariable int studentId,
-            @PathVariable int quizId,
-            @RequestParam(defaultValue = "5") int numQuestions
+            @PathVariable int quizId
     ) {
-        return bl.getStudentQuizQuestions(studentId, quizId, numQuestions);
+        return bl.getStudentQuizQuestions(studentId, quizId);
     }
 
     //get ALL quiz questions

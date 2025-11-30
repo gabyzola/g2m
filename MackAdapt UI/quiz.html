@@ -59,13 +59,13 @@
     <footer><p>&copy; 2025 MackAdapt – Built for Merrimack College</p></footer>
 
     <script type="module">
-      import { getQuizQuestions, getQuizObjectives, selectObjectiveForQuiz } from "./src/api/backend.js";
+      import { getStudentQuestions, getQuizObjectives, selectObjectiveForQuiz } from "./src/api/backend.js";
 
       const params = new URLSearchParams(window.location.search);
       const classId = params.get("classId");
       const quizId = params.get("quizId");
 
-      const STUDENT_ID = 7;
+      const STUDENT_ID = 1;
 
       const objectiveCard = document.getElementById("objective-card");
       const questionCard = document.querySelector(".card"); 
@@ -87,10 +87,9 @@
 
       let userAnswers = {};
 
-      async function loadObjectives() {
+      async function loadObjectives() { //tested: good
         const objectives = await getQuizObjectives(quizId);
 
-        // If the quiz has no objectives, skip selection
         if (!objectives || objectives.length === 0) {
           objectiveCard.style.display = "none";
           questionCard.style.display = "block";
@@ -108,7 +107,7 @@
         objectiveCard.style.display = "block";
       }
 
-      // When student selects an objective
+      //student selects objective- all good
       submitObjectiveBtn.addEventListener("click", async () => {
         const selected = document.querySelector("input[name='objective']:checked");
 
@@ -132,8 +131,9 @@
       });
 
 
+      //fixed, this is good: just need to store attempt in db so instructor can get results
       async function loadQuestions() {
-        const raw = await getQuizQuestions(quizId);
+        const raw = await getStudentQuestions(STUDENT_ID, quizId);
 
         if (!raw || raw.length === 0) {
           qStem.textContent = "No questions available.";
@@ -141,29 +141,23 @@
           return;
         }
 
-        const grouped = {};
-        raw.forEach(row => {
-          const qid = row.questionId;
+        QUESTIONS = raw.map(q => {
+          const choicesMap = {};
+          q.choices.forEach(c => {
+            choicesMap[c.choiceLabel] = c.choiceText;
+          });
+          const correctChoice = q.choices.find(c => c.choiceId === q.correctChoiceId);
+          const correctLabel = correctChoice ? correctChoice.choiceLabel : null;
 
-          if (!grouped[qid]) {
-            grouped[qid] = {
-              questionId: qid,
-              questionText: row.questionText,
-              difficulty: row.difficulty,
-              learningObjective: row.learningObjective,
-              choices: {},   
-              correctChoiceId: row.correctChoiceId
-            };
-          }
-
-          grouped[qid].choices[row.choiceLabel] = row.choiceText;
-        });
-
-        QUESTIONS = Object.values(grouped);
-
-        QUESTIONS.forEach(q => {
-          const match = raw.find(r => r.choiceId === q.correctChoiceId);
-          q.correctAnswer = match ? match.choiceLabel : null;
+          return {
+            questionId: q.questionId,
+            questionText: q.questionText,
+            difficulty: q.difficulty,
+            learningObjective: q.learningObjective,
+            choices: choicesMap,
+            correctChoiceId: q.correctChoiceId,
+            correctAnswer: correctLabel
+          };
         });
 
         index = 0;
@@ -200,22 +194,33 @@
         }
 
         const chosenLetter = selected.value;
-        const correctLetter = QUESTIONS[index].correctAnswer;
+        const q = QUESTIONS[index];
+        const correctLetter = q.correctAnswer;
 
-        userAnswers[QUESTIONS[index].questionId] = chosenLetter;
+        const allLabels = document.querySelectorAll("#choices label");
+        allLabels.forEach(label => label.style.backgroundColor = ""); 
 
+        const chosenLabel = [...allLabels].find(l => l.querySelector('input').value === chosenLetter);
         if (chosenLetter === correctLetter) {
-          score++;
-        }
-
-        index++;
-
-        if (index >= QUESTIONS.length) {
-          finishQuiz();
+          chosenLabel.style.backgroundColor = "#d4edda"; 
         } else {
-          render();
+          chosenLabel.style.backgroundColor = "#f8d7da"; 
+          const correctLabelEl = [...allLabels].find(l => l.querySelector('input').value === correctLetter);
+          if (correctLabelEl) correctLabelEl.style.backgroundColor = "#d4edda"; 
         }
+
+        userAnswers[q.questionId] = chosenLetter;
+
+        setTimeout(() => {
+          index++;
+          if (index >= QUESTIONS.length) {
+            finishQuiz();
+          } else {
+            render();
+          }
+        }, 1000); 
       });
+
 
       function finishQuiz() {
         const pct = Math.round((score / QUESTIONS.length) * 100);

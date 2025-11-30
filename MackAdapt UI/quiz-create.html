@@ -209,7 +209,6 @@
       }
     }
 
-    //reload objectives when a new reading is selected
     readingSelect.addEventListener("change", () => {
       const selectedReadingId = parseInt(readingSelect.value);
       if (selectedReadingId) loadObjectives(selectedReadingId);
@@ -273,7 +272,7 @@
       }
 
       alert("Quiz saved successfully!");
-      window.location.href = `classmodule.html?classId=${classId}`;
+      window.location.href = `class-module.html?classId=${classId}`;
     });
   </script>
   </body>

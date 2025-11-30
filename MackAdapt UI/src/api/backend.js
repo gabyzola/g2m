@@ -74,8 +74,6 @@ export async function getClassEnrollees(classId) {
 //calls QuizController: viewStudentClasses
 export async function getStudentClasses(studentId) {
   try {
-
-    //this calls api endpoint (get instructr classes based on id)
     const res = await fetch(`/api/students/${studentId}/classes`);
 
     //failure check
@@ -172,24 +170,6 @@ export async function createQuiz(classId) {
   }
 }
 
-//add quiz reading
-export async function addQuizReading(quizId, readingId) { //gets readingId from request body
-  try {
-    const res = await fetch(`/api/quizzes/${quizId}/readings`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ readingId })
-    });
-
-    if (!res.ok) throw new Error("Failed to add reading");
-
-    return await res.json();
-  } catch (err) {
-    console.error("Error linking reading:", err);
-    return null;
-  }
-}
-
 //add question
 export async function addQuestion(quizId, questionData) {
   try {
@@ -262,8 +242,6 @@ export async function getObjectivesByQuiz(quizId) {
   }
 }
 
-
-
 //student selects objective at beginning of quiz
 export async function selectObjectiveForQuiz(quizId, studentId, objectiveId) {
   try {
@@ -286,9 +264,6 @@ export async function selectObjectiveForQuiz(quizId, studentId, objectiveId) {
 }
 
 //view student objectives
-
-//loads all questions (not just student)
-//Calls QuizController: 
 export async function getQuizQuestions(quizId) {
   try {
     const res = await fetch(`/api/quizzes/${quizId}/questions`);
@@ -301,6 +276,22 @@ export async function getQuizQuestions(quizId) {
     return [];
   }
 }
+
+export async function getStudentQuestions(studentId, quizId) {
+  try {
+    const res = await fetch(
+      `/api/quizzes/student/${studentId}/${quizId}/questions`
+    );
+
+    if (!res.ok) throw new Error("Failed to fetch student quiz questions");
+
+    return await res.json();  //returns List<QuizQuestion>
+  } catch (err) {
+    console.error("Error fetching student questions:", err);
+    return [];
+  }
+}
+
 
 //calls quiz controller: viewStudentQuestions
 export async function viewStudentQuestions() {

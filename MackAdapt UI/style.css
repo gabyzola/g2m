@@ -283,10 +283,10 @@ footer {
 
 .sidebar {
   flex: 0 0 260px;
-  background-color: #f8f5fb;
-  color: #381467;
+  background-color: #ffffff;
+  color: var(--navy);;
   padding: 20px;
-  border-left: 3px solid #381467;
+  border-left: 3px solid var(--navy);
   border-radius: 10px;
   height: fit-content;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -351,7 +351,7 @@ footer {
 }
 
 .service-card.w3-card-4 {
-  min-height: 400px;
+  min-height: 400px; 
   display: flex;
   flex-direction: column;
   justify-content: space-between;

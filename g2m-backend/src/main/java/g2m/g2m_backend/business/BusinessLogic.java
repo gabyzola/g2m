@@ -61,12 +61,8 @@ public class BusinessLogic {
     //api: done
     public int uploadReading(int instructorId, int classId, String readingName) {
         try {
-            boolean readingInserted = dal.insertNewReading(instructorId, classId, readingName);
-            if (!readingInserted) return -1;
-
-            int readingId = dal.getLastInsertId(); 
-            return readingId;
-
+            int readingId = dal.insertNewReading(instructorId, classId, readingName);
+            return readingId;   // already correct: if -1, failure
         } catch (Exception e) {
             e.printStackTrace();
             return -1;
@@ -76,9 +72,9 @@ public class BusinessLogic {
     //add reading objective + profs will enter it manually for now
     //stretch goal: ml gets them from the reading
     //api: done
-    public boolean insertNewReadingObjective(int readingId, int classId, String objectiveName) {
+    public int insertNewReadingObjective(int readingId, int classId, String objectiveName) {
         if (objectiveName == null || objectiveName.isEmpty()) {
-        return false;
+            return -1;
         }
         return dal.insertNewReadingObjective(readingId, classId, objectiveName);
     }
@@ -178,41 +174,64 @@ public class BusinessLogic {
     }
 
     //calculate and group quiz questions for specific student
-    public List<QuizQuestion> getStudentQuizQuestions(int studentId, int quizId, int numQuestions) {
-
-        //get all quiz questions
-        List<Map<String, Object>> allQuestions = dal.getQuizQuestions(quizId);
-
-        //get student objectives
-        List<Map<String, Object>> studentObjectives = dal.getStudentObjectives(studentId);
-
-        //convert student objectives into list of integers
-        List<Integer> objectiveIds = studentObjectives.stream()
-                .map(o -> (Integer) o.get("objectiveId"))
+    public List<QuizQuestion> getStudentQuizQuestions(int studentId, int quizId) {
+        List<Map<String, Object>> allRows = dal.getQuizQuestions(quizId);
+        System.out.println("All quiz rows: " + allRows.size());
+        List<Map<String, Object>> studentObjectivesRaw = dal.getStudentObjectives(studentId);
+        List<Integer> studentObjectiveIds = studentObjectivesRaw.stream()
+                .map(o -> ((Number) o.get("objectiveId")).intValue())  // ensure type safety
                 .collect(Collectors.toList());
+        System.out.println("Student objectives: " + studentObjectiveIds);
 
-        //filter questions to maych choseen objectives
-        List<Map<String, Object>> filtered = allQuestions.stream()
-                .filter(q -> objectiveIds.contains(q.get("objectiveId")))
+        List<Map<String, Object>> filtered = allRows.stream()
+                .filter(row -> studentObjectiveIds.contains(((Number) row.get("objectiveId")).intValue()))
                 .collect(Collectors.toList());
+        System.out.println("Filtered questions: " + filtered.size());
         Collections.shuffle(filtered);
 
-        //get the subset
-        int count = Math.min(numQuestions, filtered.size());
-        List<Map<String, Object>> subset = filtered.subList(0, count);
 
-        //add to quizquestion object
-        List<QuizQuestion> result = new ArrayList<>();
-        for (Map<String, Object> row : subset) {
-            QuizQuestion q = new QuizQuestion();
-            q.setQuestionId((Integer) row.get("questionId"));
+        Map<Integer, QuizQuestion> grouped = new HashMap<>();
+
+        for (Map<String, Object> row : filtered) {
+            int qid = ((Number) row.get("questionId")).intValue();
+            grouped.putIfAbsent(qid, new QuizQuestion());
+            QuizQuestion q = grouped.get(qid);
+
+            q.setQuestionId(qid);
             q.setQuestionText((String) row.get("questionText"));
-            q.setObjectiveId((Integer) row.get("objectiveId"));
-            result.add(q);
+            q.setObjectiveId(((Number) row.get("objectiveId")).intValue());
+            q.setLearningObjective((String) row.get("learningObjective"));
+
+            String diffStr = ((String) row.get("difficulty")).toUpperCase();
+            try {
+                q.setDifficulty(DifficultyLevel.valueOf(diffStr));
+            } catch (IllegalArgumentException e) {
+                System.out.println("Unknown difficulty: " + diffStr + ", defaulting to EASY");
+                q.setDifficulty(DifficultyLevel.EASY);
+            }
+
+            q.setCorrectChoiceId(((Number) row.get("correctChoiceId")).intValue());
+
+            List<QuizQuestion.Choice> choices = q.getChoices();
+            if (choices == null) {
+                choices = new ArrayList<>();
+                q.setChoices(choices);
+            }
+
+            QuizQuestion.Choice choice = new QuizQuestion.Choice(
+                    ((Number) row.get("choiceId")).intValue(),
+                    (String) row.get("choiceLabel"),
+                    (String) row.get("choiceText")
+            );
+
+            choices.add(choice);
         }
 
+        List<QuizQuestion> result = new ArrayList<>(grouped.values());
+        System.out.println("Returning " + result.size() + " questions.");
         return result;
     }
+
 
     //checks if user can create a quiz
     public boolean canCreateQuiz(int userId, int classId) {

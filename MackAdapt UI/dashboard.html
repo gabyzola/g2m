@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dashboard – MackAdapt</title>
   <link rel="stylesheet" href="style.css" />
-  <script src="https://alcdn.msauth.net/browser/2.32.2/js/msal-browser.min.js"></script>
 </head>
 <body>
   <!-- ✅ Shared Header -->
@@ -63,30 +62,5 @@
     <p>&copy; 2025 MackAdapt – Built for Merrimack College</p>
   </footer>
 
-  <script>
-    const msalConfig = {
-      auth: {
-        clientId: "f1eb948d-5297-47ce-a4c4-419d1f699607",
-        authority: "https://login.microsoftonline.com/57e1236c-0fa3-4739-9edf-fd0721c8744d/",
-        redirectUri: window.location.origin + window.location.pathname
-      },
-      cache: { cacheLocation: "localStorage", storeAuthStateInCookie: false }
-    };
-  
-    const msalInstance = new msal.PublicClientApplication(msalConfig);
-    const loginRequest = { scopes: ["openid","profile","email","User.Read"] };
-  
-    msalInstance.handleRedirectPromise()
-      .then(resp => {
-        const account = resp?.account || msalInstance.getActiveAccount();
-        if (account) {
-          msalInstance.setActiveAccount(account);
-          document.getElementById("welcome-text").textContent = `Welcome, ${account.name} 👋`;
-          document.getElementById("user-email").textContent = account.username;
-        } else {
-          msalInstance.loginRedirect(loginRequest);
-        }
-      }).catch(console.error);
-  </script>
   </body>
   </html>
