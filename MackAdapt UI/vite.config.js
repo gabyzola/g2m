@@ -5,7 +5,7 @@ export default defineConfig({
     host: true,
     allowedHosts: true,
     port: 49160,
-    // cors: false,
+    //cors: false,
     proxy: {
       "/api": {
         target: "http://cs.merrimack.edu:49161",  
