@@ -30,8 +30,6 @@
       </ul>
     </nav>
   </header>
-  
-  </header>
 
   <!-- Main Page Content -->
   <main>
@@ -111,49 +109,34 @@
     AOS.init();
   </script>
 
-  <!-- MSAL Integration -->
-  <script>
-    const msalConfig = {
-      auth: {
-        clientId: "f1eb948d-5297-47ce-a4c4-419d1f699607",
-        authority: "https://login.microsoftonline.com/57e1236c-0fa3-4739-9edf-fd0721c8744d/",
-        redirectUri: window.location.origin + window.location.pathname
-      },
-      cache: { cacheLocation: "localStorage", storeAuthStateInCookie: false }
-    };
+  <!-- Google OAuth Integration -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+  const GOOGLE_CLIENT_ID = 762914522263-mshmosk8e89upni0c0p3upirltuqt7m6.apps.googleusercontent.com;;
 
-    const msalInstance = new msal.PublicClientApplication(msalConfig);
-    const loginRequest = { scopes: ["openid","profile","email","User.Read"] };
-
-    const loginBtn = document.getElementById("ms-login-header");
-
-    // Login on header button click
-    loginBtn.addEventListener("click", async () => {
-      try {
-        const response = await msalInstance.loginPopup(loginRequest);
-        msalInstance.setActiveAccount(response.account);
-        loginBtn.textContent = `Hello, ${response.account.name}`;
-        document.getElementById("welcome-text").textContent = `Welcome, ${response.account.name} 👋`;
-      } catch (err) {
-        console.error("Login failed:", err);
-        alert("Login failed. Check console for details.");
-      }
+  function initGoogle() {
+    google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      callback: handleGoogleResponse,
     });
 
-    // Handle existing session / redirect responses
-    window.addEventListener("DOMContentLoaded", () => {
-      msalInstance.handleRedirectPromise()
-        .then(response => {
-          const account = response?.account || msalInstance.getActiveAccount();
-          if (account) {
-            msalInstance.setActiveAccount(account);
-            loginBtn.textContent = `Hello, ${account.name}`;
-            document.getElementById("welcome-text").textContent = `Welcome, ${account.name} 👋`;
-          }
-        })
-        .catch(console.error);
-    });
-  </script>
+    // Show One-Tap prompt
+    google.accounts.id.prompt();
+  }
+
+  function handleGoogleResponse(response) {
+    const credential = response.credential;
+
+    // TEMP: Auto-redirect after login
+    window.location.href = "/classes.html";
+  }
+
+  window.onload = initGoogle;
+
+  document.getElementById("ms-login-header").addEventListener("click", () => {
+    google.accounts.id.prompt();
+  });
+</script>
 
 </body>
 </html>
