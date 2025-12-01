@@ -59,36 +59,22 @@ public class BusinessLogic {
     //add reading to a class module
     //partly a placeholder rn, not really the best implementation
     //api: done
-    public boolean uploadReading(int instructorId, int classId, String readingName, String filePath) {
+    public int uploadReading(int instructorId, int classId, String readingName) {
         try {
-            if (filePath == null || !filePath.isEmpty()) {
-                System.out.println("Invalid reading file.");
-                return false;
-            }
-
-            boolean readingInserted = dal.insertNewReading(instructorId, classId, readingName, filePath);
-
-            if (!readingInserted) {
-                System.out.println("Failed.");
-                return false;
-            }
-    
-            System.out.println("success");
-            return true;
-
+            int readingId = dal.insertNewReading(instructorId, classId, readingName);
+            return readingId;   // already correct: if -1, failure
         } catch (Exception e) {
-            System.out.println("Error uploading reading.");
             e.printStackTrace();
-            return false;
+            return -1;
         }
     }
 
     //add reading objective + profs will enter it manually for now
     //stretch goal: ml gets them from the reading
     //api: done
-    public boolean insertNewReadingObjective(int readingId, int classId, String objectiveName) {
+    public int insertNewReadingObjective(int readingId, int classId, String objectiveName) {
         if (objectiveName == null || objectiveName.isEmpty()) {
-        return false;
+            return -1;
         }
         return dal.insertNewReadingObjective(readingId, classId, objectiveName);
     }
@@ -114,6 +100,12 @@ public class BusinessLogic {
     public int createQuiz(int instructorId, int classId) {
         return dal.insertQuiz(instructorId, classId);
     }
+
+    //updates quiz name
+    public boolean updateQuizName(int quizId, String newName) {
+        return dal.updateQuizName(quizId, newName);
+    }
+
 
     public List<Map<String, Object>> getClassReadings(int classId) {
         return dal.getClassReadings(classId);
@@ -182,45 +174,72 @@ public class BusinessLogic {
     }
 
     //calculate and group quiz questions for specific student
-    public List<QuizQuestion> getStudentQuizQuestions(int studentId, int quizId, int numQuestions) {
-
-        //get all quiz questions
-        List<Map<String, Object>> allQuestions = dal.getQuizQuestions(quizId);
-
-        //get student objectives
-        List<Map<String, Object>> studentObjectives = dal.getStudentObjectives(studentId);
-
-        //convert student objectives into list of integers
-        List<Integer> objectiveIds = studentObjectives.stream()
-                .map(o -> (Integer) o.get("objectiveId"))
+    public List<QuizQuestion> getStudentQuizQuestions(int studentId, int quizId) {
+        List<Map<String, Object>> allRows = dal.getQuizQuestions(quizId);
+        System.out.println("All quiz rows: " + allRows.size());
+        List<Map<String, Object>> studentObjectivesRaw = dal.getStudentObjectives(studentId);
+        List<Integer> studentObjectiveIds = studentObjectivesRaw.stream()
+                .map(o -> ((Number) o.get("objectiveId")).intValue())  // ensure type safety
                 .collect(Collectors.toList());
+        System.out.println("Student objectives: " + studentObjectiveIds);
 
-        //filter questions to maych choseen objectives
-        List<Map<String, Object>> filtered = allQuestions.stream()
-                .filter(q -> objectiveIds.contains(q.get("objectiveId")))
+        List<Map<String, Object>> filtered = allRows.stream()
+                .filter(row -> studentObjectiveIds.contains(((Number) row.get("objectiveId")).intValue()))
                 .collect(Collectors.toList());
+        System.out.println("Filtered questions: " + filtered.size());
         Collections.shuffle(filtered);
 
-        //get the subset
-        int count = Math.min(numQuestions, filtered.size());
-        List<Map<String, Object>> subset = filtered.subList(0, count);
 
-        //add to quizquestion object
-        List<QuizQuestion> result = new ArrayList<>();
-        for (Map<String, Object> row : subset) {
-            QuizQuestion q = new QuizQuestion();
-            q.setQuestionId((Integer) row.get("questionId"));
+        Map<Integer, QuizQuestion> grouped = new HashMap<>();
+
+        for (Map<String, Object> row : filtered) {
+            int qid = ((Number) row.get("questionId")).intValue();
+            grouped.putIfAbsent(qid, new QuizQuestion());
+            QuizQuestion q = grouped.get(qid);
+
+            q.setQuestionId(qid);
             q.setQuestionText((String) row.get("questionText"));
-            q.setObjectiveId((Integer) row.get("objectiveId"));
-            result.add(q);
+            q.setObjectiveId(((Number) row.get("objectiveId")).intValue());
+            q.setLearningObjective((String) row.get("learningObjective"));
+
+            String diffStr = ((String) row.get("difficulty")).toUpperCase();
+            try {
+                q.setDifficulty(DifficultyLevel.valueOf(diffStr));
+            } catch (IllegalArgumentException e) {
+                System.out.println("Unknown difficulty: " + diffStr + ", defaulting to EASY");
+                q.setDifficulty(DifficultyLevel.EASY);
+            }
+
+            q.setCorrectChoiceId(((Number) row.get("correctChoiceId")).intValue());
+
+            List<QuizQuestion.Choice> choices = q.getChoices();
+            if (choices == null) {
+                choices = new ArrayList<>();
+                q.setChoices(choices);
+            }
+
+            QuizQuestion.Choice choice = new QuizQuestion.Choice(
+                    ((Number) row.get("choiceId")).intValue(),
+                    (String) row.get("choiceLabel"),
+                    (String) row.get("choiceText")
+            );
+
+            choices.add(choice);
         }
 
+        List<QuizQuestion> result = new ArrayList<>(grouped.values());
+        System.out.println("Returning " + result.size() + " questions.");
         return result;
     }
+
 
     //checks if user can create a quiz
     public boolean canCreateQuiz(int userId, int classId) {
         return dal.canCreateQuiz(userId, classId);
+    }
+
+    public String getClassName(int classId) {
+        return dal.getClassName(classId);
     }
 
 
@@ -231,6 +250,9 @@ public class BusinessLogic {
     //get quiz score
 
     //assign badge check
+    public boolean assignBadge(int studentId) {
+        return dal.assignBadge(studentId);
+    }
 
     // helper to check if choice is correct- will use this soon, its nowehre yet
     private boolean isCorrectChoice(QuizQuestion.Choice choice, QuizQuestion question) {
@@ -250,10 +272,15 @@ public class BusinessLogic {
         return dal.getAllBadges();
     }
 
+    //delete class enrollee
+    public boolean removeEnrollee(int classId, int studentId) {
+        return dal.deleteClassEnrollee(classId, studentId);
+    }
+
     /*misc*/
 
     //search for a student by email, name, or ID
-    public ArrayList<Student> searchStudent(String filterType, String query) {
+    public ArrayList<HashMap<String, Object>> searchStudent(String filterType, String query) {
         switch (filterType.toLowerCase()) {
             case "email":
                 return dal.searchForStudentByEmail(query);

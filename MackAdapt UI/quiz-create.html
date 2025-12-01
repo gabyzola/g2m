@@ -32,9 +32,16 @@
     <h2>Create Quiz</h2>
     <div style="margin:.25rem 0 1rem">
       <strong>Quick Links:</strong>
-      <a href="analytics.html">View Analytics</a> ·
       <a href="classes.html">Back to Classes</a>
     </div>
+
+    <div class="panel">
+      <h3>Quiz Details</h3>
+
+      <label>Quiz Name</label>
+      <input id="quizName" type="text" placeholder="Enter quiz name..." />
+    </div>
+
 
     <div class="panel">
       <h3>Link a Reading</h3>
@@ -47,53 +54,93 @@
       <div class="actions">
         <button id="addReadingBtn">Attach Reading</button>
       </div>
-
-      <p class="notice">Reading will be linked to this quiz using your backend mapping.</p>
     </div>
 
     <div class="panel">
-      <h3>Add Question</h3>
-      <label>Question Text</label>
-      <textarea placeholder="Enter the question stem..."></textarea>
-      <div class="row">
-        <div>
-          <label>Difficulty</label>
-          <select id="difficulty">
-            <option>Easy</option>
-            <option>Medium</option>
-            <option>Hard</option>
-          </select>
-        </div>
-        <div>
-          <label>Learning Objective</label>
-          <select id="objective">
-            <option disabled selected>Loading objectives...</option>
-          </select>
-        </div>
-      </div>
-      <label>Choices</label>
-      <textarea placeholder="A) ...&#10;B) ...&#10;C) ...&#10;D) ..."></textarea>
-      <label>Correct Answer</label>
-      <input placeholder="e.g., B" />
+      <h3>Questions</h3>
+
+      <label>Learning Objective</label>
+      <select id="objective"></select>
+
+      <div id="questionContainer"></div>
+
       <div class="actions">
-        <button onclick="alert('Question added')">Add Question</button>
-        <button onclick="alert('Quiz saved')">Save Quiz</button>
+        <button id="newQuestionBtn">Add Question</button>
+        <button id="saveQuizBtn">Save Quiz</button>
       </div>
-      <p class="notice">Demo only: these buttons just show alerts. Backend wiring will save to the DB and validate fields.</p>
+
+      <p class="notice">Add as many questions as you need.</p>
     </div>
+
   </main>
 
   <footer><p>&copy; 2025 MackAdapt – Built for Merrimack College</p></footer>
-  <script>
+  <script type="module">
+      import { createQuiz, addQuestion, addReadingToQuiz } from "./src/api/backend.js";
+
+
     const query = new URLSearchParams(window.location.search);
     const quizId = query.get("quizId");
     const classId = query.get("classId");
 
     const readingSelect = document.getElementById("readingSelect");
-    const objectiveSelect = document.querySelector("#objective"); 
+    const objectiveSelect = document.querySelector("#objective");
 
-    
+    let questionIndex = 0;
+
+    function createQuestionBlock() {
+      const block = document.createElement("div");
+      block.classList.add("panel");
+      block.style.border = "1px solid #ccc";
+      block.style.padding = "1rem";
+      block.style.marginBottom = "1rem";
+
+      const idx = questionIndex++;
+
+      block.innerHTML = `
+          <h4>Question ${idx + 1}</h4>
+
+          <label>Question Text</label>
+          <textarea class="q-text"></textarea>
+
+          <label>Difficulty</label>
+          <select class="q-difficulty">
+            <option>Easy</option>
+            <option>Medium</option>
+            <option>Hard</option>
+          </select>
+
+          <label>Learning Objective</label>
+          <select class="q-objective">
+            ${objectiveSelect.innerHTML}
+          </select>
+
+          <label>A)</label>
+          <input class="q-A">
+
+          <label>B)</label>
+          <input class="q-B">
+
+          <label>C)</label>
+          <input class="q-C">
+
+          <label>D)</label>
+          <input class="q-D">
+
+          <label>Correct Answer (A/B/C/D)</label>
+          <input class="q-correct" maxlength="1" placeholder="A/B/C/D">
+      `;
+
+      return block;
+    }
+
+    document.getElementById("newQuestionBtn").addEventListener("click", () => {
+      document.getElementById("questionContainer").appendChild(createQuestionBlock());
+    });
+
+   
     async function loadReadings() {
+      
       try {
         const res = await fetch(`/api/classes/${classId}/readings`);
         if (!res.ok) throw new Error("Failed to fetch readings");
@@ -117,7 +164,6 @@
           readingSelect.appendChild(op);
         });
 
-        // load objectives for the first reading by default
         loadObjectives(data[0].readingId);
 
       } catch (err) {
@@ -152,13 +198,17 @@
           objectiveSelect.appendChild(op);
         });
 
+        if (questionIndex === 0) {
+          document.getElementById("questionContainer").appendChild(createQuestionBlock());
+        }
+
+
       } catch (err) {
         console.error("Failed to load objectives:", err);
         objectiveSelect.innerHTML = "<option disabled selected>Error loading objectives</option>";
       }
     }
 
-    //reload objectives when a new reading is selected
     readingSelect.addEventListener("change", () => {
       const selectedReadingId = parseInt(readingSelect.value);
       if (selectedReadingId) loadObjectives(selectedReadingId);
@@ -166,66 +216,63 @@
 
   
     document.getElementById("addReadingBtn").addEventListener("click", async () => {
-      try {
-        const readingId = parseInt(readingSelect.value);
-        if (!readingId) return alert("Please select a reading first.");
+    const readingId = parseInt(readingSelect.value);
 
-        const res = await fetch(`/api/quizzes/${quizId}/readings`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ readingId })
-        });
+    if (!readingId) {
+      alert("Please select a reading first.");
+      return;
+    }
 
-        const result = await res.json();
+    const result = await addReadingToQuiz(quizId, readingId);
 
-        if (res.ok && result.status === "success") {
-          alert("Reading linked to quiz!");
-        } else {
-          console.error("Error linking reading:", result);
-          alert("Failed to link reading.");
-        }
-      } catch (err) {
-        console.error("Error adding reading:", err);
-        alert("Failed to link reading. See console for details.");
-      }
+    if (result && result.success) {
+      alert("Reading linked to quiz!");
+    } else {
+      console.error("Error linking reading:", result);
+      alert("Failed to link reading.");
+    }
+  });
+
+    document.getElementById("saveQuizBtn").addEventListener("click", async () => {
+      const quizName = document.getElementById("quizName").value.trim();
+      if (!quizName) return alert("Please enter a quiz name!");
+      if (!quizId) return alert("Quiz ID not found in URL.");
+
+      const nameRes = await fetch(`/api/quizzes/${quizId}/name`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ quizName })
     });
 
-    // ---------- ADD QUESTION TO QUIZ ----------
-    document.getElementById("addQuestionBtn")?.addEventListener("click", async () => {
-      try {
-        const questionText = document.querySelector("#questionText").value.trim();
-        const difficulty = document.querySelector("#difficulty").value;
-        const choiceA = document.querySelector("#choiceA").value.trim();
-        const choiceB = document.querySelector("#choiceB").value.trim();
-        const choiceC = document.querySelector("#choiceC").value.trim();
-        const choiceD = document.querySelector("#choiceD").value.trim();
-        const correctAnswer = document.querySelector("#correctAnswer").value.trim();
-        const objectiveId = parseInt(objectiveSelect.value);
+    const nameResult = await nameRes.json();
+    if (!nameRes.ok || nameResult.status !== "success") {
+      alert("Failed to update quiz name.");
+      return;
+    }
 
-        if (!questionText || !choiceA || !choiceB || !choiceC || !choiceD || !correctAnswer) {
-          return alert("Please fill out all question fields.");
+      const blocks = document.querySelectorAll("#questionContainer .panel");
+
+      for (const block of blocks) {
+        const questionData = {
+          questionText: block.querySelector(".q-text").value.trim(),
+          difficulty: block.querySelector(".q-difficulty").value,
+          choiceA: block.querySelector(".q-A").value.trim(),
+          choiceB: block.querySelector(".q-B").value.trim(),
+          choiceC: block.querySelector(".q-C").value.trim(),
+          choiceD: block.querySelector(".q-D").value.trim(),
+          correctAnswer: block.querySelector(".q-correct").value.trim().toUpperCase(),
+          objectiveId: parseInt(block.querySelector(".q-objective").value)
+        };
+
+        const result = await addQuestion(quizId, questionData);
+        if (!result || result.status !== "success") {
+          alert("A question failed to save.");
+          return;
         }
-
-        const payload = { questionText, difficulty, choiceA, choiceB, choiceC, choiceD, correctAnswer, objectiveId };
-
-        const res = await fetch(`/api/quizzes/${quizId}/questions`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-
-        const result = await res.json();
-
-        if (res.ok && result.status === "success") {
-          alert("Question added!");
-        } else {
-          console.error("Error adding question:", result);
-          alert("Failed to add question.");
-        }
-      } catch (err) {
-        console.error("Error adding question:", err);
-        alert("Failed to add question. See console for details.");
       }
+
+      alert("Quiz saved successfully!");
+      window.location.href = `class-module.html?classId=${classId}`;
     });
   </script>
   </body>
