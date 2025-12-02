@@ -1,12 +1,11 @@
 # g2m
 Senior Capstone
 
-Poster Draft (via docs): https://docs.google.com/document/d/1imDGjoBx7VBDjpGvWBRPDBdA1sf7Gva60LxYLQl4kYo/edit?tab=t.0
+User Manual: https://docs.google.com/document/d/1gklsOJ7_RRqt7BvRt7qDb0l4ub9t_hzg5tlwZ9bsgms/edit?usp=sharing
 
-Poster Draft (via Canva): https://www.canva.com/design/DAG5D_BzUDc/uDJ4RzrzUUPr-ADeX9MECQ/edit 
+Poster: https://www.canva.com/design/DAG5D_BzUDc/uDJ4RzrzUUPr-ADeX9MECQ/edit
 
-Manual: https://docs.google.com/document/d/1NuvCfgkw-Xi-c3sWsTgoDRcMb-lZrXIR8mnugDSMcGs/edit?tab=t.0
-Senior Capstone 
+Springboot Manual (not a technical document): https://docs.google.com/document/d/1NuvCfgkw-Xi-c3sWsTgoDRcMb-lZrXIR8mnugDSMcGs/edit?tab=t.0
 
 Team Charter: https://docs.google.com/document/d/1LNb6OrMPr4ktsE0jp-va7Bwch1VctQt9jGeGtjCwpWs/edit?tab=t.0
 
