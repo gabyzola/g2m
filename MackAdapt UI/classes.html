@@ -1,60 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Classes – MackAdapt</title>
-    <link rel="stylesheet" href="style.css" />
-    <!-- <script src="https://alcdn.msauth.net/browser/2.33.0/js/msal-browser.min.js"></script> -->
-  </head>
-  <body>
-    <header>
-      <h1>MackAdapt</h1>
-      <nav>
-        <ul>
-          <li><a href="index.html">Home</a></li>
-          <li><a href="classes.html" class="active">Classes</a></li>
-          <li><a href="student-dashboard.html">Student Dashboard</a></li>
-          <li>
-            <button id="ms-login-header" style="background:none; border:none; color:var(--gold); font-weight:bold; cursor:pointer;">
-              Sign in
-            </button>
-          </li>
-        </ul>
-      </nav>
-    </header>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Classes – MackAdapt</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>MackAdapt</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="classes.html" class="active">Classes</a></li>
+        <li><a href="student-dashboard.html">Student Dashboard</a></li>
+        <li>
+          <button id="ms-login-header" style="background:none; border:none; color:var(--gold); font-weight:bold; cursor:pointer;">
+            Sign in
+          </button>
+        </li>
+      </ul>
+    </nav>
+  </header>
 
-    <main>
-      <h2>Testing Instructor Classes</h2>
+  <main>
+    <h2 id="classesHeading">Your Classes</h2>
+    <section class="class-list">
+      <ul id="classList"></ul>
+    </section>
+  </main>
 
-      <!-- testing prof id=4 -->
-      <label>Instructor ID:</label>
-      <input id="instructorId" type="number" value="0" />
+  <footer>
+    <p>&copy; 2025 MackAdapt – Built for Merrimack College</p>
+  </footer>
 
-      <button id="loadClasses" style="margin-top: 10px;">
-        Load Classes
-      </button>
-
-      <section class="class-list">
-        <ul id="classList"></ul>
-      </section>
-
-      <h2>Testing Student Classes</h2>
-
-      <!-- testing prof id=4 -->
-      <label>Student ID:</label>
-      <input id="studentId" type="number" value="0" />
-      <button id="loadStudentClasses" style="margin-top: 10px;">Load Classes</button>
-      <section class="class-list">
-        <ul id="studentClassList"></ul>
-      </section>
-    </main>
-
-    <footer>
-      <p>&copy; 2025 MackAdapt – Built for Merrimack College</p>
-    </footer>
-
-    <script type="module" src="/src/main.js"></script>
-
-  </body>
+  <script type="module" src="/src/main.js"></script>
+</body>
 </html>

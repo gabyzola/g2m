@@ -5,6 +5,7 @@ import g2m.g2m_backend.business.QuizManager;
 import g2m.g2m_backend.DAL.javaSQLobjects.Badge;
 import g2m.g2m_backend.DAL.javaSQLobjects.QuestionData;
 import g2m.g2m_backend.DAL.javaSQLobjects.Student;
+import g2m.g2m_backend.DAL.javaSQLobjects.User;
 import g2m.g2m_backend.DAL.javaSQLobjects.QuizQuestion;
 
 import org.springframework.http.HttpStatus;
@@ -29,22 +30,27 @@ public class QuizController {
         this.bl = bl;
         this.ql = ql;
     }
- 
-    // Register a new user: UNTESTED
-    //frontend:
-    //frontend tested:
-    @PostMapping("/users/register")
-    public boolean registerUser(@RequestBody Map<String, Object> data) {
-        String username = (String) data.get("username");
-        String email = (String) data.get("email");
-        boolean isInstructor = Boolean.parseBoolean(data.get("isInstructor").toString());
-        String major = (String) data.get("major");
-        String subject = (String) data.get("schoolSubject");
-        String firstName = (String) data.get("firstName");
-        String lastName = (String) data.get("lastName");
 
-        return bl.registerUser(username, email, isInstructor, major, subject, firstName, lastName);
+    @PostMapping("/users/register")
+    public User registerUser(@RequestBody Map<String, Object> data) {
+
+        String email = data.get("email").toString();
+        boolean isInstructor = Boolean.parseBoolean(data.get("isInstructor").toString());
+        String major = data.getOrDefault("major", "").toString();
+        String schoolSubject = data.getOrDefault("schoolSubject", "").toString();
+        String firstName = data.get("firstName").toString();
+        String lastName = data.get("lastName").toString();
+
+        return bl.getOrCreateUser(
+                email,
+                isInstructor,
+                major,
+                schoolSubject,
+                firstName,
+                lastName
+        );
     }
+    
 
     //create class: NEEDS A FIX
     //frontend:
@@ -57,6 +63,20 @@ public class QuizController {
         String instructorEmail = data.get("instructorEmail").toString();
         return bl.createClass(classId, className, instructorEmail);
     }
+
+    @PostMapping("/lookup")
+    public Map<String, Object> lookupUser(@RequestBody Map<String, Object> data) {
+        System.out.println("LOOKUP HIT — Incoming body: " + data);
+
+        String email = data.get("email").toString();
+        System.out.println("Extracted email: " + email);
+
+        int userId = bl.getUserIdByEmail(email);
+        System.out.println("Result from getUserIdByEmail: " + userId);
+
+        return Map.of("userId", userId);
+    }
+
 
     //display a list of instructor classes
     //TESTED: Good!
@@ -112,11 +132,19 @@ public class QuizController {
     //frontend: Implemented
     //frontend tested:
     @GetMapping("/canCreate/{classId}")
-    public Map<String, Boolean> canCreateQuiz(@PathVariable int classId) {
-        int userId = 4; //hardcoded for testing, try 1 if you want to test a student
+    public Map<String, Boolean> canCreateQuiz(
+            @PathVariable int classId,
+            @RequestParam int userId) {   //no more hardcoded id
         boolean canCreate = bl.canCreateQuiz(userId, classId);
         return Map.of("canCreate", canCreate);
     }
+
+    @GetMapping("/role/{userId}")
+    public Map<String, Object> getUserRole(@PathVariable int userId) {
+        int role = bl.getUserRole(userId); // 1 = instructor, 0 = student, -1 = not found/error
+        return Map.of("isInstructor", role == 1);
+    }
+
 
     //just returns a new quiz id to put it in the query string
     //frontend: Implemented

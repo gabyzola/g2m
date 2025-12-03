@@ -10,15 +10,18 @@ import {
 
 const params = new URLSearchParams(window.location.search);
 const classId = params.get("classId");
+const userId = params.get("userId");  
 
-if (!classId) {
-  document.getElementById("main").innerHTML = "<p>Error: No class selected.</p>";
+if (!classId || !userId) {
+  document.getElementById("main").innerHTML =
+    "<p>Error: Class or user not specified.</p>";
 }
 
 async function loadClassData() {
   const cname = await getClassName(classId);
   document.getElementById("class-title").textContent =
     cname?.className || `Class ID: ${classId}`;
+
   const quizzes = await getClassQuizzes(classId);
   const quizzesContainer = document.getElementById("quizzes");
   quizzesContainer.innerHTML = "";
@@ -31,43 +34,42 @@ async function loadClassData() {
       card.className = "quiz-card";
       card.innerHTML = `
         <h3>${q.quizName || "Quiz #" + q.quizId}</h3>
-        <a href="quiz.html?quizId=${q.quizId}&classId=${classId}">Go to Quiz</a>
+        <a href="quiz.html?quizId=${q.quizId}&classId=${classId}&userId=${userId}">Go to Quiz</a>
       `;
       quizzesContainer.appendChild(card);
     });
   }
 
-  //if person logged in is an instructor
+  //check if user is an isntructor or not
   try {
-    const res = await fetch(`/api/canCreate/${classId}`);
-    const data = await res.json();
+    const canCreate = await canCreateQuiz(classId, userId);  // pass userId now
 
-    if (data.canCreate) {
-      //creates quiz  option
+    if (canCreate) {
+      //create a quiz
       const btn = document.createElement("button");
       btn.textContent = "Create Quiz";
       btn.style.marginBottom = "1rem";
       quizzesContainer.prepend(btn);
 
       btn.addEventListener("click", async () => {
-        const res = await fetch(`/api/classes/${classId}/quizzcreation`, {
+        const res = await fetch(`/api/classes/${classId}/quizzcreation?userId=${userId}`, {
           method: "POST"
         });
         const data = await res.json();
-        window.location.href = `quiz-create.html?quizId=${data.quizId}&classId=${classId}`;
+        window.location.href = `quiz-create.html?quizId=${data.quizId}&classId=${classId}&userId=${userId}`;
       });
 
-      //add enrollees
+      //manage the enrollees
       const enrollBtn = document.createElement("button");
       enrollBtn.textContent = "Manage Enrollees";
       enrollBtn.style.marginBottom = "1rem";
       quizzesContainer.prepend(enrollBtn);
 
       enrollBtn.addEventListener("click", () => {
-        window.location.href = `class-enroll.html?classId=${classId}`;
+        window.location.href = `class-enroll.html?classId=${classId}&userId=${userId}`;
       });
 
-      //addsreading
+      //add a reading
       const readingBtn = document.createElement("button");
       readingBtn.textContent = "Add Reading";
       readingBtn.style.marginBottom = "1rem";
@@ -89,7 +91,7 @@ async function loadClassData() {
           </label>
         `;
         readingModal.style.display = "flex";
-      }); //i think this is good up until now. debugging the rest
+      });
 
       addObjectiveBtn.addEventListener("click", () => {
         const newInput = document.createElement("label");
@@ -102,9 +104,8 @@ async function loadClassData() {
 
       cancelReadingBtn.addEventListener("click", () => {
         readingModal.style.display = "none";
-      }); //this is working too, more reading objective fields are added -> we want this!!
+      });
 
-      //saves the readings and objectives
       saveReadingBtn.addEventListener("click", async () => {
         const readingName = readingNameInput.value.trim();
         if (!readingName) return alert("Enter a reading name");
@@ -115,12 +116,10 @@ async function loadClassData() {
           .filter(v => v.length > 0);
 
         try {
-          //create readings
-          // user/instructor id is hardcoded for now until auth is properly set up;
-          const readingRes = await uploadReading(classId, 4, readingName); 
+          //pass logged in userId here
+          const readingRes = await uploadReading(classId, userId, readingName);
           const readingId = readingRes.readingId;
 
-          //create objectives
           for (let obj of objectives) {
             await addReadingObjective(readingId, classId, obj);
           }
@@ -134,37 +133,37 @@ async function loadClassData() {
         }
       });
     }
-
   } catch (err) {
     console.error("Error checking canCreate:", err);
   }
 
- //sidebar stuff
+  // sidebar: readings
   const readings = await getClassReadings(classId);
-  const list1 = document.getElementById("readings");
-  list1.innerHTML = "";
+  const readingsList = document.getElementById("readings");
+  readingsList.innerHTML = "";
 
   if (!readings || readings.length === 0) {
-    list1.innerHTML = "<li>No readings added yet.</li>";
+    readingsList.innerHTML = "<li>No readings added yet.</li>";
   } else {
     readings.forEach(r => {
       const li = document.createElement("li");
       li.textContent = `${r.readingName}`;
-      list1.appendChild(li);
+      readingsList.appendChild(li);
     });
   }
 
+  // sidebar: enrollees
   const enrollees = await getClassEnrollees(classId);
-  const list = document.getElementById("enrollees");
-  list.innerHTML = "";
+  const enrolleesList = document.getElementById("enrollees");
+  enrolleesList.innerHTML = "";
 
   if (!enrollees || enrollees.length === 0) {
-    list.innerHTML = "<li>No students enrolled yet.</li>";
+    enrolleesList.innerHTML = "<li>No students enrolled yet.</li>";
   } else {
     enrollees.forEach(s => {
       const li = document.createElement("li");
       li.textContent = `${s.firstName} ${s.lastName} (${s.email})`;
-      list.appendChild(li);
+      enrolleesList.appendChild(li);
     });
   }
 }

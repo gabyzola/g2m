@@ -1,76 +1,49 @@
-//import backend.js to get the jsons 
-import { getInstructorClasses, getStudentClasses } from "./api/backend.js";
+import { getInstructorClasses, getStudentClasses, isUserInstructor } from "./api/backend.js";
 
-//get student emails for dropdown
-//enroll student -> "Add" button
+document.addEventListener("DOMContentLoaded", async () => {
+  //get userid from url
+  const params = new URLSearchParams(window.location.search);
+  const userId = params.get("userId");
+  console.log("[DEBUG] userId from URL:", userId);
 
-document.addEventListener("DOMContentLoaded", () => {
-  const loadClassesBtn = document.getElementById("loadClasses");
+  if (!userId) {
+    document.getElementById("classesHeading").textContent = "No user logged in.";
+    return;
+  }
 
-  loadClassesBtn.addEventListener("click", async () => {
-    //added a button for testing, this reads in the inputted instructor id
-    const instructorId = document.getElementById("instructorId").value;
+  const classList = document.getElementById("classList");
+  classList.innerHTML = "";
 
-    //fetches the classes from backend.js, stores them in classes
-    const classes = await getInstructorClasses(instructorId);
+  //check what the id is instructor or user
+  const instructor = await isUserInstructor(userId);
+  console.log("[DEBUG] is instructor?", instructor);
 
-    const list = document.getElementById("classList");
-    list.innerHTML = ""; //clears prev resultsa
+  let classes = [];
+  const heading = document.getElementById("classesHeading");
 
-    //error chekcS
-    if (!classes) {
-      list.innerHTML = "<li>Error loading classes</li>";
-      return;
-    }
+  if (instructor) {
+    console.log("[DEBUG] Loading instructor classes");
+    heading.textContent = "Your Instructor Classes";
+    classes = await getInstructorClasses(userId);
+  } else {
+    console.log("[DEBUG] Loading student classes");
+    heading.textContent = "Your Classes";
+    classes = await getStudentClasses(userId);
+  }
 
-    //iterates through each class that was returned
-    classes.forEach(c => {
-      const li = document.createElement("li"); //this cerates list element
-      const link = document.createElement("a"); //this makes it a link
+  if (!classes || classes.length === 0) {
+    classList.innerHTML = "<li>No classes found.</li>";
+    return;
+  }
 
-      //this sets the link to the actual class page where classId specifies which information needs to go on the page
-      link.href = `/class-module.html?classId=${c.classId}`;
-      link.textContent = `${c.className} (ID: ${c.classId})`;
+  classes.forEach(c => {
+    const li = document.createElement("li");
+    const link = document.createElement("a");
 
-      li.appendChild(link); //add links ands list
-      list.appendChild(li);
-    });
+    link.href = `/class-module.html?classId=${c.classId}&userId=${userId}`;
+    link.textContent = `${c.className} (ID: ${c.classId})`;
+
+    li.appendChild(link);
+    classList.appendChild(li);
   });
-
-  const loadStudentBtn = document.getElementById("loadStudentClasses");
-  loadStudentBtn.addEventListener("click", async () => {
-    const studentId = document.getElementById("studentId").value;
-    const classes = await getStudentClasses(studentId);
-
-    const list = document.getElementById("studentClassList");
-    list.innerHTML = "";
-
-    if (!classes) {
-      list.innerHTML = "<li>Error loading classes</li>";
-      return;
-    }
-
-    classes.forEach(c => {
-      const li = document.createElement("li");
-      const link = document.createElement("a");
-      link.href = `/class-module.html?classId=${c.classId}`;
-      link.textContent = `${c.className} (ID: ${c.classId})`;
-      li.appendChild(link);
-      list.appendChild(li);
-    });
-  });
-
-  /*
-  //add create new class button
-      const enrollBtn = document.createElement("button");
-      enrollBtn.textContent = "Create Class";
-      enrollBtn.id = "enrollStudentBtn";
-      enrollBtn.style.marginBottom = "1rem";
-      quizzesContainer.prepend(enrollBtn);
-
-      enrollBtn.addEventListener("click", () => {
-        //redirect to enrollment page with classId in query string
-        window.location.href = `class-create.html?classId=${classId}`;
-      });
-      */
 });

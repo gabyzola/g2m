@@ -43,6 +43,38 @@ export async function getInstructorClasses(instructorId) {
   }
 }
 
+export async function lookupUser(email) {
+  try {
+    const res = await fetch(`/api/lookup`, { 
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email })
+    });
+
+    if (!res.ok) throw new Error("Failed to lookup user");
+
+    const resData = await res.json();   //parse JSON, absolutelt needed or error
+    return resData.userId;              //return just the userId number, extremely mportant
+  } catch (err) {
+    console.error("Error looking up user:", err);
+    return -1;
+  }
+}
+
+export async function isUserInstructor(userId) {
+  try {
+    const res = await fetch(`/api/role/${userId}`);
+    if (!res.ok) throw new Error("Failed to fetch user role");
+
+    const data = await res.json();
+    return data.isInstructor;
+  } catch (err) {
+    console.error("Error fetching user role:", err);
+    return false; 
+  }
+}
+
+
 //enroll student
 export async function enrollStudent(classId, email) {
   try {
@@ -75,8 +107,6 @@ export async function getClassEnrollees(classId) {
 export async function getStudentClasses(studentId) {
   try {
     const res = await fetch(`/api/students/${studentId}/classes`);
-
-    //failure check
     if (!res.ok) throw new Error("Failed request");
 
     //return content in json format
@@ -137,11 +167,9 @@ export async function getClassReadings(classId) {
   }
 }
 
-//can create quiz check
-export async function canCreateQuiz(classId) {
+export async function canCreateQuiz(classId, userId) {
   try {
-    const res = await fetch(`/api/canCreate/${classId}`);
-    
+    const res = await fetch(`/api/canCreate/${classId}?userId=${userId}`);
     if (!res.ok) throw new Error("Failed request");
 
     const data = await res.json();

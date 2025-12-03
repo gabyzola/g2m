@@ -3,10 +3,12 @@ import g2m.g2m_backend.DAL.javaSQLobjects.Student;
 import g2m.g2m_backend.DAL.javaSQLobjects.Badge;
 import g2m.g2m_backend.DAL.javaSQLobjects.QuestionData;
 import g2m.g2m_backend.DAL.javaSQLobjects.QuizQuestion;
+import g2m.g2m_backend.DAL.javaSQLobjects.User;
 import g2m.g2m_backend.DAL.QuizDal;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -19,12 +21,37 @@ public class BusinessLogic {
         this.dal = dal;
     }
 
-    //register a new user
-    //api: done
-    public boolean registerUser(String username, String email, boolean isInstructor,
-                                String major, String schoolSubject, String firstName, String lastName) {
-        return dal.insertNewUser(username, email, isInstructor, major, schoolSubject, firstName, lastName);
+    public User findUserByEmail(String email) {
+        try {
+            return dal.findUserByEmail(email);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
+
+    public boolean createUser(String email, boolean isInstructor,
+                              String major, String schoolSubject,
+                              String firstName, String lastName) 
+    {
+        return dal.insertNewUser(email, isInstructor, major, schoolSubject, firstName, lastName);
+    }
+
+    public User getOrCreateUser(String email, boolean isInstructor,
+                                String major, String schoolSubject,
+                                String firstName, String lastName) 
+    {
+        return dal.getOrCreateUser(email, isInstructor, major, schoolSubject, firstName, lastName);
+    }
+
+    public int getUserIdByEmail(String email) {
+        return dal.lookupUserId(email);
+    }
+
+    public int getUserRole(int userId) {
+        return dal.getUserRole(userId);
+    }
+
 
     //create new class
     //api: done

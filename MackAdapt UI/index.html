@@ -1,163 +1,178 @@
-<!-- To Dos -->
-<!-- 
- fix  html/css
- -->
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MackAdapt – Home</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MackAdapt – Home</title>
 
-  <!-- Styles & Icons -->
-  <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet" />
-  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
-  <script src="https://alcdn.msauth.net/browser/2.33.0/js/msal-browser.min.js"></script>
-</head>
+    <!-- Styles & Icons -->
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet" />
+    <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+    <script src="https://alcdn.msauth.net/browser/2.33.0/js/msal-browser.min.js"></script>
+  </head>
 
-<body>
-  <!-- Header -->
-  <header>
-    <h1>MackAdapt</h1>
-    <nav>
-      <ul>
-        <li><a href="/index.html" class="active">Home</a></li>
-        <li><a href="/classes.html">Classes</a></li>
-        <li><a href="/student-dashboard.html">Student Dashboard</a></li>
-        <li>
-          <button id="ms-login-header" style="background:none; border:none; color:var(--gold); font-weight:bold; cursor:pointer;">
-            Sign in
-          </button>
-        </li>
-      </ul>
-    </nav>
-  </header>
-  
-  </header>
+  <body>
+    <!-- Header -->
+    <header>
+      <h1>MackAdapt</h1>
+      <nav>
+        <ul>
+          <li><a href="/index.html" class="active">Home</a></li>
+          <li><a href="/classes.html">Classes</a></li>
+          <li><a href="/student-dashboard.html">Student Dashboard</a></li>
+          <li>
+            <button
+              id="ms-login-header"
+              style="
+                background: none;
+                border: none;
+                color: var(--gold);
+                font-weight: bold;
+                cursor: pointer;
+              "
+            >
+              Sign in
+            </button>
+          </li>
+        </ul>
+      </nav>
+    </header>
 
-  <!-- Main Page Content -->
-  <main>
-    <!-- Hero Banner -->
-    <section class="hero-image" data-aos="fade-up">
-      <div class="hero-text">
-        <h2 id="welcome-text">Smarter Quizzes. Better Learning.</h2>
-        <p>MackAdapt is Merrimack College's next-gen adaptive quiz platform designed to help students master material efficiently and confidently.</p>
-        <a href="login.html"><button>Get Started</button></a>
-      </div>
-    </section>
-
-    <div class="divider"></div>
-
-    <!-- About Section -->
-    <section class="about" data-aos="fade-right">
-      <div class="about-container">
-        <div class="about-image">
-          <img src="images/adaptive-learning.png" alt="Adaptive Learning Illustration">
-        </div>
-        <div class="about-text">
-          <h3>What is MackAdapt?</h3>
+    <!-- Main Page Content -->
+    <main>
+      <!-- Hero Banner -->
+      <section class="hero-image" data-aos="fade-up">
+        <div class="hero-text">
+          <h2 id="welcome-text">Smarter Quizzes. Better Learning.</h2>
           <p>
-            MackAdapt is an adaptive learning tool built for Merrimack students and professors.
-            Our mission is to personalize quiz experiences based on your progress — no more one-size-fits-all testing.
+            MackAdapt is Merrimack College's next-gen adaptive quiz platform
+            designed to help students master material efficiently and
+            confidently.
           </p>
-          <ul>
-            <li><i class="fas fa-brain"></i> Real-time adaptation based on your answers</li>
-            <li><i class="fas fa-bullseye"></i> Aligned with your learning objectives</li>
-            <li><i class="fas fa-chalkboard-teacher"></i> Easy-to-use dashboard for students and instructors</li>
-          </ul>
+          <a href="login.html"><button>Get Started</button></a>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <div class="divider"></div>
+      <div class="divider"></div>
 
-    <!-- How It Works -->
-    <section class="how-it-works" data-aos="fade-up">
-      <h3>How It Works</h3>
-      <div class="steps">
-        <div class="step">
-          <i class="fas fa-user-circle"></i>
-          <h4>1. Sign In</h4>
-          <p>Log in to your student dashboard with your school credentials.</p>
+      <!-- About Section -->
+      <section class="about" data-aos="fade-right">
+        <div class="about-container">
+          <div class="about-image">
+            <img
+              src="images/adaptive-learning.png"
+              alt="Adaptive Learning Illustration"
+            />
+          </div>
+          <div class="about-text">
+            <h3>What is MackAdapt?</h3>
+            <p>
+              MackAdapt is an adaptive learning tool built for Merrimack
+              students and professors. Our mission is to personalize quiz
+              experiences based on your progress — no more one-size-fits-all
+              testing.
+            </p>
+            <ul>
+              <li>
+                <i class="fas fa-brain"></i> Real-time adaptation based on your
+                answers
+              </li>
+              <li>
+                <i class="fas fa-bullseye"></i> Aligned with your learning
+                objectives
+              </li>
+              <li>
+                <i class="fas fa-chalkboard-teacher"></i> Easy-to-use dashboard
+                for students and instructors
+              </li>
+            </ul>
+          </div>
         </div>
-        <div class="step">
-          <i class="fas fa-clipboard-check"></i>
-          <h4>2. Take Adaptive Quizzes</h4>
-          <p>Questions adapt to your performance in real time.</p>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- How It Works -->
+      <section class="how-it-works" data-aos="fade-up">
+        <h3>How It Works</h3>
+        <div class="steps">
+          <div class="step">
+            <i class="fas fa-user-circle"></i>
+            <h4>1. Sign In</h4>
+            <p>
+              Log in to your student dashboard with your school credentials.
+            </p>
+          </div>
+          <div class="step">
+            <i class="fas fa-clipboard-check"></i>
+            <h4>2. Take Adaptive Quizzes</h4>
+            <p>Questions adapt to your performance in real time.</p>
+          </div>
+          <div class="step">
+            <i class="fas fa-chart-line"></i>
+            <h4>3. Track Your Progress</h4>
+            <p>See what you’ve mastered and where to focus next.</p>
+          </div>
         </div>
-        <div class="step">
-          <i class="fas fa-chart-line"></i>
-          <h4>3. Track Your Progress</h4>
-          <p>See what you’ve mastered and where to focus next.</p>
-        </div>
-      </div>
-    </section>
+      </section>
 
-    <div class="divider"></div>
+      <div class="divider"></div>
 
-    <!-- Call to Action -->
-    <section class="cta" data-aos="zoom-in">
-      <h3>Ready to learn smarter?</h3>
-      <p>Login to access your personalized dashboard and start mastering your courses.</p>
-      <a href="login.html"><button>Login Now</button></a>
-    </section>
-  </main>
+      <!-- Call to Action -->
+      <section class="cta" data-aos="zoom-in">
+        <h3>Ready to learn smarter?</h3>
+        <p>
+          Login to access your personalized dashboard and start mastering your
+          courses.
+        </p>
+        <a href="login.html"><button>Login Now</button></a>
+      </section>
+    </main>
 
-  <!-- Footer -->
-  <footer>
-    <p>&copy; 2025 MackAdapt – Built for Merrimack College</p>
-  </footer>
+    <!-- Footer -->
+    <footer>
+      <p>&copy; 2025 MackAdapt – Built for Merrimack College</p>
+    </footer>
 
-  <!-- Initialize AOS -->
-  <script>
-    AOS.init();
-  </script>
+    <!-- Initialize AOS -->
+    <script>
+      AOS.init();
+    </script>
 
-  <!-- MSAL Integration -->
-  <script>
-    const msalConfig = {
-      auth: {
-        clientId: "f1eb948d-5297-47ce-a4c4-419d1f699607",
-        authority: "https://login.microsoftonline.com/57e1236c-0fa3-4739-9edf-fd0721c8744d/",
-        redirectUri: window.location.origin + window.location.pathname
-      },
-      cache: { cacheLocation: "localStorage", storeAuthStateInCookie: false }
-    };
+    <!-- Google OAuth Integration -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+      const GOOGLE_CLIENT_ID = "762914522263-mshmosk8e89upni0c0p3upirltuqt7m6.apps.googleusercontent.com";
 
-    const msalInstance = new msal.PublicClientApplication(msalConfig);
-    const loginRequest = { scopes: ["openid","profile","email","User.Read"] };
+      function initGoogle() {
+        google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: handleGoogleResponse,
+        });
 
-    const loginBtn = document.getElementById("ms-login-header");
-
-    // Login on header button click
-    loginBtn.addEventListener("click", async () => {
-      try {
-        const response = await msalInstance.loginPopup(loginRequest);
-        msalInstance.setActiveAccount(response.account);
-        loginBtn.textContent = `Hello, ${response.account.name}`;
-        document.getElementById("welcome-text").textContent = `Welcome, ${response.account.name} 👋`;
-      } catch (err) {
-        console.error("Login failed:", err);
-        alert("Login failed. Check console for details.");
+        // Show One-Tap prompt
+        google.accounts.id.prompt();
       }
-    });
 
-    // Handle existing session / redirect responses
-    window.addEventListener("DOMContentLoaded", () => {
-      msalInstance.handleRedirectPromise()
-        .then(response => {
-          const account = response?.account || msalInstance.getActiveAccount();
-          if (account) {
-            msalInstance.setActiveAccount(account);
-            loginBtn.textContent = `Hello, ${account.name}`;
-            document.getElementById("welcome-text").textContent = `Welcome, ${account.name} 👋`;
-          }
-        })
-        .catch(console.error);
-    });
-  </script>
+      function handleGoogleResponse(response) {
+        const credential = response.credential;
 
-</body>
+        // TEMP: Auto-redirect after login
+        window.location.href = "/classes.html";
+      }
+
+      window.onload = initGoogle;
+
+      document
+        .getElementById("ms-login-header")
+        .addEventListener("click", () => {
+          google.accounts.id.prompt();
+        });
+    </script>
+  </body>
 </html>

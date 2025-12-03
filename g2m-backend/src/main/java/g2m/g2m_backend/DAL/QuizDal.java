@@ -17,6 +17,7 @@ import g2m.g2m_backend.DAL.javaSQLobjects.Student;
 import jakarta.annotation.PostConstruct;
 import g2m.g2m_backend.DAL.javaSQLobjects.Badge;
 import g2m.g2m_backend.DAL.javaSQLobjects.QuestionData;
+import g2m.g2m_backend.DAL.javaSQLobjects.User;
 
 @Repository
 public class QuizDal {
@@ -59,30 +60,122 @@ public class QuizDal {
 
     //register new user
     //bl: done
-    public boolean insertNewUser(String username, String email, boolean isInstructor, String major, String schoolSubject, String firstName, String lastName) {
+    public boolean insertNewUser(String email, boolean isInstructor, 
+                             String major, String schoolSubject,
+                             String firstName, String lastName) 
+    {
         CallableStatement stmt = null;
+
         try {
-            stmt = myConnection.prepareCall("{CALL InsertNewUser(?, ?, ?, ?, ?, ?, ?)}");
-            stmt.setString(1, username);
-            stmt.setString(2, email);
-            stmt.setBoolean(3, isInstructor);
-            stmt.setString(4, major);
-            stmt.setString(5, schoolSubject);
-            stmt.setString(6, firstName);
-            stmt.setString(7, lastName);
+            stmt = myConnection.prepareCall("{CALL InsertNewUser(?, ?, ?, ?, ?, ?)}");
+
+            stmt.setString(1, email);
+            stmt.setBoolean(2, isInstructor);
+            stmt.setString(3, major);           
+            stmt.setString(4, schoolSubject);   
+            stmt.setString(5, firstName);
+            stmt.setString(6, lastName);
 
             stmt.execute();
             return true;
+
         } catch (SQLException e) {
             System.out.println("Error inserting new user.");
             e.printStackTrace();
             return false;
         } finally {
-            try {
-                if (stmt != null) stmt.close();
-            } catch (SQLException e) { e.printStackTrace(); }
+            try { if (stmt != null) stmt.close(); } catch (SQLException ignore) {}
         }
     }
+
+    //just returns an int so when someone logs in their database id can get passed around
+    public int lookupUserId(String email) {
+        CallableStatement stmt = null;
+
+        try {
+            stmt = myConnection.prepareCall("{CALL LookupUser(?)}");
+            stmt.setString(1, email);
+
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                int id = rs.getInt("userId"); 
+                if (rs.wasNull()) return -1;  // user not found
+                return id;
+            }
+            return -1; 
+
+
+        } catch (SQLException e) {
+            System.out.println("Error looking up user: " + e.getMessage());
+            return -1;
+
+        } finally {
+            try { if (stmt != null) stmt.close(); } catch (SQLException ignore) {}
+        }
+    }
+
+    public int getUserRole(int userId) {
+        CallableStatement stmt = null;
+
+        try {
+            stmt = myConnection.prepareCall("{CALL isInstructorCheck(?)}");
+            stmt.setInt(1, userId);
+
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                int role = rs.getInt("isInstructor"); // 1 for instructor, 0 for student
+                if (rs.wasNull()) return -1;          // user not found
+                return role;
+            }
+
+            return -1; // no rows returned, user not found
+
+        } catch (SQLException e) {
+            System.out.println("Error fetching user role: " + e.getMessage());
+            return -1;
+
+        } finally {
+            try { if (stmt != null) stmt.close(); } catch (SQLException ignore) {}
+        }
+    }
+
+    //i actually dont think im gonna use this after all- but ill keep this just in case! might be helpful down the road
+    public User findUserByEmail(String email) throws SQLException {
+        String sql = "SELECT * FROM UserAccounts WHERE email = ?";
+        PreparedStatement stmt = myConnection.prepareStatement(sql);
+        stmt.setString(1, email);
+        ResultSet rs = stmt.executeQuery();
+
+        if (rs.next()) {
+            return new User(
+                rs.getInt("userId"),
+                rs.getString("email"),
+                rs.getBoolean("isInstructor"),
+                rs.getString("firstName"),
+                rs.getString("lastName")
+            );
+        }
+        return null;
+    }
+
+    public User getOrCreateUser(String email, boolean isInstructor,
+                            String major, String schoolSubject,
+                            String firstName, String lastName) 
+    {
+        try {
+        User existing = findUserByEmail(email);
+        if (existing != null) return existing;
+
+        insertNewUser(email, isInstructor, major, schoolSubject, firstName, lastName);
+        return findUserByEmail(email);
+    } catch (SQLException e) {
+        e.printStackTrace();
+        return null;
+    }
+    }
+
 
     //create class- instructor does this!
     //bl: done

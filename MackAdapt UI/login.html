@@ -1,313 +1,249 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login – MackAdapt</title>
+<head>
+<meta charset="UTF-8">
+<title>MackAdapt – Sign In</title>
 
-    <!-- Vite-compatible CSS path -->
-    <link rel="stylesheet" href="/style.css" />
-
-    <!-- MSAL.js -->
-    <script src="https://alcdn.msauth.net/browser/2.32.2/js/msal-browser.min.js"></script>
-
-    <style>
-      :root {
-        --navy: #002855;
-        --gold: #ffc72c;
-        --white: #ffffff;
-        --bg: #f5f7fb;
-        --ink: #1f2a44;
-        --muted: #6a7591;
-      }
-
-      body.login {
-        background: linear-gradient(180deg, #eef3ff, #f7f9ff);
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-      }
-
-      header {
-        background-color: var(--navy);
-        color: var(--white);
-        padding: 1rem 2rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-      header h1 {
-        font-size: 1.6rem;
-      }
-      header nav ul {
-        list-style: none;
-        display: flex;
-        gap: 1.25rem;
+<style>
+    body {
         margin: 0;
-        padding: 0;
-      }
-      header nav a {
-        color: var(--gold);
-        text-decoration: none;
+        background-color: #f7f7f7;
+        font-family: Arial, sans-serif;
+    }
+
+    /* Top nav */
+    .nav {
+        background-color: #002b5c;
+        color: white;
+        padding: 15px 40px;
+        font-size: 28px;
         font-weight: bold;
-      }
-      header nav a.active {
-        color: var(--white);
-        border-bottom: 2px solid var(--gold);
-      }
+    }
 
-      footer {
-        background: var(--navy);
-        color: var(--white);
-        text-align: center;
-        padding: 1rem;
-      }
-
-      .auth-wrap {
-        flex: 1;
-        display: grid;
-        place-items: center;
-        padding: 24px 16px;
-      }
-      .auth-card {
-        width: 100%;
-        max-width: 440px;
-        background: var(--white);
-        border-radius: 14px;
-        box-shadow: 0 10px 24px rgba(0, 40, 85, 0.12);
-        border: 1px solid rgba(0, 40, 85, 0.08);
-        padding: 22px 20px;
-      }
-
-      .auth-head {
-        text-align: center;
-        margin-bottom: 16px;
-      }
-      .auth-head h2 {
-        margin: 6px 0 4px;
-        color: var(--ink);
-        font-size: 1.6rem;
-      }
-      .auth-head p {
-        margin: 0;
-        color: var(--muted);
-        font-size: 0.95rem;
-      }
-
-      .btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        border-radius: 10px;
-        padding: 12px 14px;
-        cursor: pointer;
-        font-weight: 700;
-        position: relative;
-      }
-      .btn-primary {
-        background: var(--navy);
-        color: var(--gold);
-        border: none;
-      }
-      .btn-ghost {
-        background: #fff;
-        color: var(--ink);
-        border: 1px solid rgba(0, 0, 0, 0.08);
-        width: 100%;
-      }
-
-      .field {
-        display: grid;
-        gap: 6px;
-        margin: 10px 0 12px;
-      }
-      .field label {
-        font-size: 0.9rem;
-        color: var(--ink);
-        font-weight: 600;
-      }
-      .field input {
-        border: 1px solid #d8deea;
-        border-radius: 10px;
-        padding: 12px;
-        font-size: 1rem;
-        outline: none;
-      }
-
-      .divider {
-        display: grid;
-        grid-template-columns: 1fr auto 1fr;
-        align-items: center;
-        gap: 10px;
-        color: var(--muted);
-        font-size: 0.9rem;
-        margin: 14px 0;
-      }
-      .divider::before,
-      .divider::after {
-        content: "";
-        height: 1px;
-        background: #e3e8f5;
-        display: block;
-      }
-
-      .aux {
+    .container {
+        margin-top: 80px;
         display: flex;
-        justify-content: space-between;
+        justify-content: center;
         align-items: center;
-        margin: 6px 0 2px;
-        font-size: 0.9rem;
-      }
-      .aux a {
-        color: var(--ink);
-      }
-      .subtle {
+    }
+
+    .login-card {
+        background: white;
+        padding: 40px;
+        width: 380px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .login-card h2 {
+        color: #002b5c;
+        margin-bottom: 25px;
         text-align: center;
-        margin-top: 10px;
-        color: var(--muted);
-        font-size: 0.9rem;
-      }
+    }
 
-      .btn.is-loading {
-        pointer-events: none;
-        opacity: 0.8;
-      }
-      .btn.is-loading::after {
-        content: "";
-        position: absolute;
-        width: 18px;
-        height: 18px;
-        border: 2px solid rgba(255, 255, 255, 0.4);
-        border-top-color: rgba(255, 255, 255, 1);
-        border-radius: 50%;
-        animation: spin 0.7s linear infinite;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-      }
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
+    input, select {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+        margin-bottom: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+    }
+
+    button {
+        width: 100%;
+        padding: 12px;
+        font-size: 18px;
+        font-weight: bold;
+        background-color: #ffc300;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background-color: #e6b100;
+    }
+
+    .error {
+        color: red;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+    .modal-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.45);
+        display: none;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .modal {
+        background: white;
+        padding: 30px;
+        width: 420px;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+    }
+
+    .modal h3 {
+        color: #002b5c;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    #majorField,
+    #subjectField {
+        display: none;
+    }
+</style>
+
+</head>
+<body>
+
+<div class="nav">MackAdapt</div>
+
+<div class="container">
+    <div class="login-card">
+        <h2>Sign In</h2>
+
+        <div id="errorBox" class="error"></div>
+
+        <input type="email" id="emailInput" placeholder="Enter your email">
+
+        <button id="signInBtn">Sign In</button>
+
+    </div>
+</div>
+
+<!-- popup if user wasn't found in the db -->
+<div id="modalBg" class="modal-bg">
+    <div class="modal">
+        <h3>Create Your Account</h3>
+
+        <input id="regEmail" disabled>
+
+        <input id="regFirstName" placeholder="First Name">
+        <input id="regLastName" placeholder="Last Name">
+
+        <select id="regRole">
+            <option value="">Select Role</option>
+            <option value="student">Student</option>
+            <option value="instructor">Instructor</option>
+        </select>
+
+        <input id="majorField" placeholder="Major (Students Only)">
+        <input id="subjectField" placeholder="Teaching Subject (Instructors Only)">
+
+        <button id="createAccountBtn">Create Account</button>
+
+    </div>
+</div>
+
+<script type="module">
+import { lookupUser } from "./src/api/backend.js";
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("signInBtn").addEventListener("click", handleLogin);
+  document.getElementById("createAccountBtn").addEventListener("click", submitRegistration);
+  document.getElementById("regRole").addEventListener("change", toggleRoleFields);
+});
+
+async function handleLogin() {
+    const email = document.getElementById("emailInput").value.trim();
+    const errorBox = document.getElementById("errorBox");
+
+    if (!email) {
+        errorBox.textContent = "Please enter an email.";
+        return;
+    }
+
+    errorBox.textContent = "";
+
+    try {
+      //calls my backend function that gets an id from  the email they just put in
+        const userId = await lookupUser(email);
+        
+        if (userId > 0) {
+            //this user exists in db so send them to classes page
+            window.location.href = `/classes?userId=${userId}`;
+            return;
         }
-      }
-    </style>
-  </head>
 
-  <body class="login">
-    <header>
-      <h1>MackAdapt</h1>
-      <nav aria-label="Primary">
-        <ul>
-          <li><a href="/index.html">Home</a></li>
-          <li><a href="/classes.html">Classes</a></li>
-          <li><a href="/student-dashboard.html">Student Dashboard</a></li>
-          <li><a href="/login.html" class="active">Login</a></li>
-        </ul>
-      </nav>
-    </header>
-
-    <main class="auth-wrap">
-      <section class="auth-card" aria-labelledby="authTitle">
-        <div class="auth-head">
-          <div aria-hidden="true" style="font-size: 2rem">🔐</div>
-          <h2 id="authTitle">Sign in to MackAdapt</h2>
-          <p>Use your Merrimack Microsoft account or demo login.</p>
-        </div>
-
-        <button id="ms-login" class="btn btn-primary">
-          <span>Sign in with Microsoft</span>
-        </button>
-
-        <div class="divider">or</div>
-
-        <form id="demo-login" novalidate>
-          <div class="field">
-            <label for="email">Email</label>
-            <input
-              id="email"
-              type="email"
-              placeholder="you@merrimack.edu"
-              required
-            />
-          </div>
-          <div class="field">
-            <label for="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              required
-            />
-          </div>
-          <div class="aux">
-            <a href="#" aria-disabled="true">Forgot password?</a>
-            <button class="btn btn-ghost" type="submit">
-              <span>Continue</span>
-            </button>
-          </div>
-        </form>
-
-        <p class="subtle">Need an account? Contact your instructor.</p>
-      </section>
-    </main>
-
-    <footer>
-      <p>&copy; 2025 MackAdapt – Built for Merrimack College</p>
-    </footer>
-
-    <script>
-      window.addEventListener("DOMContentLoaded", async () => {
-      
-        //Ensure Web Crypto is available before initializing MSAL
-        if (!window.crypto?.subtle?.digest) {
-          alert("Browser crypto not ready - cannot start Microsoft login.");
-          return;
+        if (userId === 0) {
+          //weird, shouldnt happen. if it does then idk
+            errorBox.textContent = "Unexpected error retrieving user.";
+            return;
         }
-      
-        // MSAL Configuration
-        const msalConfig = {
-          auth: {
-            clientId: "f1eb948d-5297-47ce-a4c4-419d1f699607",
-            authority: "https://login.microsoftonline.com/57e1236c-0fa3-4739-9edf-fd0721c8744d/",
-            redirectUri: window.location.origin + "/classes.html",
-          },
-          cache: { cacheLocation: "localStorage", storeAuthStateInCookie: false },
-        };
-      
-        const msalInstance = new msal.PublicClientApplication(msalConfig);
-        const loginRequest = { scopes: ["openid", "profile", "email", "User.Read"] };
-      
-        // REQUIRED: Handle the redirect result from Microsoft (Authenticator returns here)
-        await msalInstance.handleRedirectPromise()
-          .then(response => {
-            if (response?.account) {
-              msalInstance.setActiveAccount(response.account);
-              window.location.href = "/classes.html";
-            }
-          })
-          .catch(console.error);
-      
-        // Use Redirect login instead of Popup (better for MFA + Authenticator)
-        document.getElementById("ms-login").addEventListener("click", () => {
-          msalInstance.loginRedirect(loginRequest);
+
+        if (userId === -1) {
+          //user doesnt exist, register them
+            document.getElementById("modalBg").style.display = "flex";
+            document.getElementById("regEmail").value = email;
+            return;
+        }
+    } catch (err) {
+        console.error("Error during login:", err);
+        errorBox.textContent = "Server error during login.";
+    }
+}
+
+function toggleRoleFields() {
+    const role = document.getElementById("regRole").value;
+    document.getElementById("majorField").style.display =
+        role === "student" ? "block" : "none";
+    document.getElementById("subjectField").style.display =
+        role === "instructor" ? "block" : "none";
+}
+
+async function submitRegistration() {
+  //info needed to register user
+    const email = document.getElementById("regEmail").value;
+    const first = document.getElementById("regFirstName").value.trim();
+    const last = document.getElementById("regLastName").value.trim();
+    const role = document.getElementById("regRole").value;
+    const major = document.getElementById("majorField").value.trim();
+    const subject = document.getElementById("subjectField").value.trim();
+
+    if (!first || !last || !role) {
+        alert("Please fill out all required fields.");
+        return;
+    }
+
+    const payload = {
+        email,
+        isInstructor: role === "instructor",
+        major,
+        schoolSubject: subject,
+        firstName: first,
+        lastName: last
+    };
+
+    try {
+        const response = await fetch("/users/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
         });
-      
-        // Demo login fallback
-        document.getElementById("demo-login").addEventListener("submit", async (e) => {
-          e.preventDefault();
-          const email = document.getElementById("email").value.trim();
-          const password = document.getElementById("password").value.trim();
-          if (!email || !password) return alert("Enter email and password.");
-          await new Promise(res => setTimeout(res, 600));
-          window.location.href = "/classes.html";
-        });
-      
-        // Restore existing session if already logged in
-        const accounts = msalInstance.getAllAccounts();
-        if (accounts.length) {
-          msalInstance.setActiveAccount(accounts[0]);
+
+        const newUser = await response.json();
+
+        if (!newUser || !newUser.userId) {
+            alert("Registration failed.");
+            return;
         }
-      });
-      </script>
-      
+
+        window.location.href = `/classes?userId=${newUser.userId}`;
+    } catch (err) {
+        console.error(err);
+        alert("Server error during registration.");
+    }
+}
+</script>
+
+</body>
+</html>
