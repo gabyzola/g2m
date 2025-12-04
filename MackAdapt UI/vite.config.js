@@ -8,7 +8,7 @@ export default defineConfig({
     //cors: false,
     proxy: {
       "/api": {
-        target: "http://cs.merrimack.edu:49161",  
+        target: "http://localhost:49161",  
         changeOrigin: true,
         secure: false
       }
