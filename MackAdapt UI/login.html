@@ -215,37 +215,30 @@
       <p>&copy; 2025 MackAdapt – Built for Merrimack College</p>
     </footer>
 
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script>
-      window.addEventListener("DOMContentLoaded", () => {
-        const GOOGLE_CLIENT_ID = "762914522263-mshmosk8e89upni0c0p3upirltuqt7m6.apps.googleusercontent.com";
-
+      const GOOGLE_CLIENT_ID =
+        "762914522263-mshmosk8e89upni0c0p3upirltuqt7m6.apps.googleusercontent.com";
+    
+      function handleGoogleResponse(response) {
+        const credential = response.credential;
+        window.location.href = "/classes.html"; // redirect after login
+      }
+    
+      window.onload = () => {
         google.accounts.id.initialize({
           client_id: GOOGLE_CLIENT_ID,
-          callback: handleGoogleCredentialResponse,
+          callback: handleGoogleResponse,
+          ux_mode: "popup",                // <──── Fix for FedCM issues
+          use_fedcm_for_prompt: false      // <──── Disable FedCM 
         });
-
-        google.accounts.id.renderButton(document.getElementById("g-signin"), {
-          theme: "filled_blue",
-          size: "large",
-          width: 260,
+      };
+    
+      document
+        .getElementById("ms-login-header")
+        .addEventListener("click", () => {
+          google.accounts.id.prompt();
         });
-
-        google.accounts.id.prompt();
-
-        function handleGoogleCredentialResponse(response) {
-          console.log("Google Credential:", response.credential);
-          window.location.href = "/classes.html";
-        }
-
-        document.getElementById("demo-login").addEventListener("submit", async (e) => {
-          e.preventDefault();
-          const email = document.getElementById("email").value.trim();
-          const password = document.getElementById("password").value.trim();
-          if (!email || !password) return alert("Enter email and password.");
-          await new Promise((res) => setTimeout(res, 600));
-          window.location.href = "/classes.html";
-        });
-      });
     </script>
   </body>
 </html>
