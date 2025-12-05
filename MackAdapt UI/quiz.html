@@ -35,7 +35,7 @@
         <button id="objectiveSubmitBtn" style="margin-top:1rem;">
           Begin Quiz
         </button>
-      </div>
+      </div>  
 
       <div class="card">
         <h2 id="q-stem">Loading question…</h2>
@@ -64,8 +64,8 @@
       const params = new URLSearchParams(window.location.search);
       const classId = params.get("classId");
       const quizId = params.get("quizId");
+      const studentId = params.get("userId");
 
-      const STUDENT_ID = 11;
 
       const objectiveCard = document.getElementById("objective-card");
       const questionCard = document.querySelector(".card"); 
@@ -118,7 +118,7 @@
 
         const objectiveId = selected.value;
 
-        const result = await selectObjectiveForQuiz(quizId, STUDENT_ID, objectiveId);
+        const result = await selectObjectiveForQuiz(quizId, studentId, objectiveId);
 
         if (result.status !== "success") {
           alert("Failed to select objective.");
@@ -133,7 +133,7 @@
 
       //fixed, this is good: just need to store attempt in db so instructor can get results
       async function loadQuestions() {
-        const raw = await getStudentQuestions(STUDENT_ID, quizId);
+        const raw = await getStudentQuestions(studentId, quizId);
 
         if (!raw || raw.length === 0) {
           qStem.textContent = "No questions available.";
