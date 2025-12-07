@@ -61,6 +61,25 @@ export async function lookupUser(email) {
   }
 }
 
+export async function lookupUserBySub(googleSub) {
+  try {
+    const res = await fetch("/api/lookup/sub", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ googleSub })
+    });
+
+    if (!res.ok) throw new Error("Failed to lookup user by sub");
+
+    const resData = await res.json(); // parse JSON
+    return resData;                    // return the whole object {userId: ..., maybe more}
+  } catch (err) {
+    console.error("Error looking up user by sub:", err);
+    return null;
+  }
+}
+
+
 export async function isUserInstructor(userId) {
   try {
     const res = await fetch(`/api/role/${userId}`);

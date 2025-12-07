@@ -5,16 +5,38 @@ import {
   getClassReadings,
   uploadReading,
   addReadingObjective,
-  getClassName
+  getClassName,
+  lookupUserBySub
 } from "./backend.js";
 
 const params = new URLSearchParams(window.location.search);
-const classId = params.get("classId");
-const userId = params.get("userId");  
+const classId = params.get("classId"); // classId still comes from URL
 
-if (!classId || !userId) {
+if (!classId) {
   document.getElementById("main").innerHTML =
-    "<p>Error: Class or user not specified.</p>";
+    "<p>Error: Class not specified.</p>";
+}
+
+// Instead of userId from URL, get logged-in user from sessionStorage
+const googleToken = sessionStorage.getItem("googleToken");
+console.log("[DEBUG] Google token from sessionStorage:", googleToken);
+
+let userId = null;
+let email = null;
+
+if (!googleToken) {
+  document.getElementById("main").innerHTML = "<p>Error: Not logged in.</p>";
+} else {
+  const user = await lookupUserBySub(googleToken);
+  console.log("[DEBUG] User object returned from backend:", user);
+
+  if (!user || user.userId <= 0) {
+    document.getElementById("main").innerHTML =
+      "<p>Error: Failed to identify user.</p>";
+  } else {
+    userId = user.userId;
+    email = user.email;
+  }
 }
 
 async function loadClassData() {

@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <title>MackAdapt – Sign In</title>
 
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+  
 <style>
     body {
         margin: 0;
@@ -112,10 +114,7 @@
         <h2>Sign In</h2>
 
         <div id="errorBox" class="error"></div>
-
-        <input type="email" id="emailInput" placeholder="Enter your email">
-
-        <button id="signInBtn">Sign In</button>
+        <div id="g-signin"></div>
 
     </div>
 </div>
@@ -146,102 +145,115 @@
 
 <script type="module">
 import { lookupUser } from "./src/api/backend.js";
+let currentGoogleSub = null;
 
-document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("signInBtn").addEventListener("click", handleLogin);
-  document.getElementById("createAccountBtn").addEventListener("click", submitRegistration);
+window.addEventListener("DOMContentLoaded", () => {
+    
+    const GOOGLE_CLIENT_ID = "762914522263-mshmosk8e89upni0c0p3upirltuqt7m6.apps.googleusercontent.com";
+
+    google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogleCredentialResponse,
+    });
+
+    google.accounts.id.renderButton(document.getElementById("g-signin"), {
+        theme: "filled_blue",
+        size: "large",
+        width: 260,
+    });
+
+    // google.accounts.id.prompt();
+    document.getElementById("createAccountBtn").addEventListener("click", submitRegistration);
   document.getElementById("regRole").addEventListener("change", toggleRoleFields);
 });
 
-async function handleLogin() {
-    const email = document.getElementById("emailInput").value.trim();
-    const errorBox = document.getElementById("errorBox");
+async function handleGoogleCredentialResponse(response) {
+  try {
+    const jwt = response.credential;
+    const decoded = JSON.parse(atob(jwt.split('.')[1]));
+    const email = decoded.email;
+    const sub = decoded.sub;
 
-    if (!email) {
-        errorBox.textContent = "Please enter an email.";
-        return;
+    if (!email || !sub) throw new Error("Invalid Google credential.");
+    currentGoogleSub = decoded.sub;
+
+    if (!email) throw new Error("Email not found in Google credential.");
+
+    const userId = await lookupUser(email); //returns stuff correctly
+
+    if (userId > 0) {
+        window.sessionStorage.setItem("googleToken", currentGoogleSub);
+      window.location.href = `/classes`;
+      return;
     }
 
-    errorBox.textContent = "";
-
-    try {
-      //calls my backend function that gets an id from  the email they just put in
-        const userId = await lookupUser(email);
-        
-        if (userId > 0) {
-            //this user exists in db so send them to classes page
-            window.location.href = `/classes?userId=${userId}`;
-            return;
-        }
-
-        if (userId === 0) {
-          //weird, shouldnt happen. if it does then idk
-            errorBox.textContent = "Unexpected error retrieving user.";
-            return;
-        }
-
-        if (userId === -1) {
-          //user doesnt exist, register them
-            document.getElementById("modalBg").style.display = "flex";
-            document.getElementById("regEmail").value = email;
-            return;
-        }
-    } catch (err) {
-        console.error("Error during login:", err);
-        errorBox.textContent = "Server error during login.";
+    if (userId === -1) {
+      //show registration modal, this works when my id doesnt exist so we're good there
+      document.getElementById("modalBg").style.display = "flex";
+      document.getElementById("regEmail").value = email;
+      return;
     }
+
+    //unexpected
+    alert("Unexpected error during login.");
+  } catch (err) {
+    console.error("Google login error:", err);
+    alert("Login failed. Please try again.");
+  }
 }
-
 function toggleRoleFields() {
-    const role = document.getElementById("regRole").value;
-    document.getElementById("majorField").style.display =
-        role === "student" ? "block" : "none";
-    document.getElementById("subjectField").style.display =
-        role === "instructor" ? "block" : "none";
+  const role = document.getElementById("regRole").value;
+  document.getElementById("majorField").style.display = role === "student" ? "block" : "none";
+  document.getElementById("subjectField").style.display = role === "instructor" ? "block" : "none";
 }
 
 async function submitRegistration() {
-  //info needed to register user
-    const email = document.getElementById("regEmail").value;
-    const first = document.getElementById("regFirstName").value.trim();
-    const last = document.getElementById("regLastName").value.trim();
-    const role = document.getElementById("regRole").value;
-    const major = document.getElementById("majorField").value.trim();
-    const subject = document.getElementById("subjectField").value.trim();
+  const email = document.getElementById("regEmail").value;
+  const first = document.getElementById("regFirstName").value.trim();
+  const last = document.getElementById("regLastName").value.trim();
+  const role = document.getElementById("regRole").value;
+  const major = document.getElementById("majorField").value.trim();
+  const subject = document.getElementById("subjectField").value.trim();
 
-    if (!first || !last || !role) {
-        alert("Please fill out all required fields.");
-        return;
+  if (!first || !last || !role) {
+    alert("Please fill out all required fields.");
+    return;
+  }
+
+  const payload = {
+    googleSub: currentGoogleSub,
+    email,
+    isInstructor: role === "instructor",
+    major,
+    schoolSubject: subject,
+    firstName: first,
+    lastName: last
+  };
+
+  console.log("Submitting registration payload:", payload);
+
+  try {
+    const response = await fetch("api/users/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const newUser = await response.json();
+
+    if (!newUser || !newUser.userId) {
+      alert("Registration failed.");
+      return;
     }
 
-    const payload = {
-        email,
-        isInstructor: role === "instructor",
-        major,
-        schoolSubject: subject,
-        firstName: first,
-        lastName: last
-    };
+    console.log("[DEBUG] Storing Google Sub in sessionStorage:", currentGoogleSub);
+    window.sessionStorage.setItem("googleToken", currentGoogleSub);
 
-    try {
-        const response = await fetch("/users/register", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        });
-
-        const newUser = await response.json();
-
-        if (!newUser || !newUser.userId) {
-            alert("Registration failed.");
-            return;
-        }
-
-        window.location.href = `/classes?userId=${newUser.userId}`;
-    } catch (err) {
-        console.error(err);
-        alert("Server error during registration.");
-    }
+    window.location.href = `/classes`;
+  } catch (err) {
+    console.error(err);
+    alert("Server error during registration.");
+  }
 }
 </script>
 
