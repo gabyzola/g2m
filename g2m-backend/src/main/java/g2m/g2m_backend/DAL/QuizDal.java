@@ -60,21 +60,27 @@ public class QuizDal {
 
     //register new user
     //bl: done
-    public boolean insertNewUser(String email, boolean isInstructor, 
-                             String major, String schoolSubject,
-                             String firstName, String lastName) 
+    public boolean insertNewUser(
+            String googleSub,
+            String email,
+            boolean isInstructor,
+            String major,
+            String schoolSubject,
+            String firstName,
+            String lastName)
     {
         CallableStatement stmt = null;
 
         try {
-            stmt = myConnection.prepareCall("{CALL InsertNewUser(?, ?, ?, ?, ?, ?)}");
+            stmt = myConnection.prepareCall("{CALL InsertNewUser(?, ?, ?, ?, ?, ?, ?)}");
 
-            stmt.setString(1, email);
-            stmt.setBoolean(2, isInstructor);
-            stmt.setString(3, major);           
-            stmt.setString(4, schoolSubject);   
-            stmt.setString(5, firstName);
-            stmt.setString(6, lastName);
+            stmt.setString(1, googleSub);
+            stmt.setString(2, email);
+            stmt.setBoolean(3, isInstructor);
+            stmt.setString(4, major);
+            stmt.setString(5, schoolSubject);
+            stmt.setString(6, firstName);
+            stmt.setString(7, lastName);
 
             stmt.execute();
             return true;
@@ -83,13 +89,47 @@ public class QuizDal {
             System.out.println("Error inserting new user.");
             e.printStackTrace();
             return false;
+
         } finally {
             try { if (stmt != null) stmt.close(); } catch (SQLException ignore) {}
         }
     }
 
+    public Map<String, Object> lookupUserIdBySub(String googleSub) {
+        CallableStatement stmt = null;
+
+        try {
+            stmt = myConnection.prepareCall("{CALL LookupUserBySub(?)}");
+            stmt.setString(1, googleSub);
+
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                int userId = rs.getInt("userId"); 
+                String email = rs.getString("email"); 
+
+                if (rs.wasNull() || userId == 0 || email == null) {
+                    return Map.of("userId", -1, "email", null);
+                }
+
+                return Map.of("userId", userId, "email", email);
+            }
+
+            // No rows returned
+            return Map.of("userId", -1, "email", null);
+
+        } catch (SQLException e) {
+            System.out.println("Error looking up user: " + e.getMessage());
+            return Map.of("userId", -1, "email", null);
+
+        } finally {
+            try { if (stmt != null) stmt.close(); } catch (SQLException ignore) {}
+        }
+    }
+
+
     //just returns an int so when someone logs in their database id can get passed around
-    public int lookupUserId(String email) {
+    public int lookupUserIdByEmail(String email) {
         CallableStatement stmt = null;
 
         try {
@@ -150,6 +190,7 @@ public class QuizDal {
 
         if (rs.next()) {
             return new User(
+                rs.getString("googleSub"),
                 rs.getInt("userId"),
                 rs.getString("email"),
                 rs.getBoolean("isInstructor"),
@@ -160,16 +201,35 @@ public class QuizDal {
         return null;
     }
 
-    public User getOrCreateUser(String email, boolean isInstructor,
+    public User findUserBySub(String googleSub) throws SQLException {
+        String sql = "SELECT * FROM UserAccounts WHERE googleSub = ?";
+        PreparedStatement stmt = myConnection.prepareStatement(sql);
+        stmt.setString(1, googleSub);
+        ResultSet rs = stmt.executeQuery();
+
+        if (rs.next()) {
+            return new User(
+                rs.getString("googleSub"),
+                rs.getInt("userId"),
+                rs.getString("email"),
+                rs.getBoolean("isInstructor"),
+                rs.getString("firstName"),
+                rs.getString("lastName")
+            );
+        }
+        return null;
+    }
+
+    public User getOrCreateUser(String googleSub, String email, boolean isInstructor,
                             String major, String schoolSubject,
                             String firstName, String lastName) 
     {
         try {
-        User existing = findUserByEmail(email);
+        User existing = findUserBySub(googleSub);
         if (existing != null) return existing;
 
-        insertNewUser(email, isInstructor, major, schoolSubject, firstName, lastName);
-        return findUserByEmail(email);
+        insertNewUser(googleSub, email, isInstructor, major, schoolSubject, firstName, lastName);
+        return findUserBySub(googleSub);
     } catch (SQLException e) {
         e.printStackTrace();
         return null;

@@ -34,21 +34,24 @@ public class QuizController {
     @PostMapping("/users/register")
     public User registerUser(@RequestBody Map<String, Object> data) {
 
+        String googleSub = data.get("googleSub").toString();
         String email = data.get("email").toString();
         boolean isInstructor = Boolean.parseBoolean(data.get("isInstructor").toString());
         String major = data.getOrDefault("major", "").toString();
         String schoolSubject = data.getOrDefault("schoolSubject", "").toString();
         String firstName = data.get("firstName").toString();
         String lastName = data.get("lastName").toString();
+        System.out.println("Payload received: " + data);
 
         return bl.getOrCreateUser(
-                email,
+                googleSub, email,
                 isInstructor,
                 major,
                 schoolSubject,
                 firstName,
                 lastName
         );
+
     }
     
 
@@ -76,7 +79,19 @@ public class QuizController {
 
         return Map.of("userId", userId);
     }
+    
+    @PostMapping("/lookup/sub")
+    public Map<String, Object> lookupUserBySub(@RequestBody Map<String, Object> data) {
+        System.out.println("LOOKUP BY SUB HIT — Incoming body: " + data);
 
+        String googleSub = data.get("googleSub").toString();
+        System.out.println("Extracted googleSub: " + googleSub);
+
+        Map<String, Object> userData = bl.getUserIdBySub(googleSub);
+        System.out.println("Result from getUserIdBySub: " + userData);
+
+        return userData; // returns both userId and email
+    }
 
     //display a list of instructor classes
     //TESTED: Good!
@@ -134,14 +149,14 @@ public class QuizController {
     @GetMapping("/canCreate/{classId}")
     public Map<String, Boolean> canCreateQuiz(
             @PathVariable int classId,
-            @RequestParam int userId) {   //no more hardcoded id
+            @RequestParam int userId) {   //no more hardcoded id wooo!
         boolean canCreate = bl.canCreateQuiz(userId, classId);
         return Map.of("canCreate", canCreate);
     }
 
     @GetMapping("/role/{userId}")
     public Map<String, Object> getUserRole(@PathVariable int userId) {
-        int role = bl.getUserRole(userId); // 1 = instructor, 0 = student, -1 = not found/error
+        int role = bl.getUserRole(userId); //1 = instructor, 0 = student, -1 = not found/error
         return Map.of("isInstructor", role == 1);
     }
 
@@ -323,7 +338,6 @@ public class QuizController {
         @PathVariable int quizId,
         @RequestBody Map<String, Object> requestBody) {
 
-        // === Debug logs for incoming data ===
         System.out.println("=== Incoming POST to selectObjective ===");
         System.out.println("Quiz ID from path: " + quizId);
         System.out.println("Request Body: " + requestBody);

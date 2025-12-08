@@ -1,3 +1,4 @@
+#Cohesive set up
 USE QuizzingDb;
 
 #register new user- instructor and student
@@ -6,6 +7,7 @@ USE QuizzingDb;
 DELIMITER $$
 DROP PROCEDURE IF EXISTS InsertNewUser $$
 CREATE PROCEDURE InsertNewUser (
+	IN myGoogleSub VARCHAR(255),
     IN myEmail VARCHAR(150),
     IN myIsInstructor BOOLEAN,
     IN myMajor VARCHAR(100),        
@@ -15,23 +17,60 @@ CREATE PROCEDURE InsertNewUser (
 )
 BEGIN
     DECLARE newUserId INT;
-
-    INSERT INTO UserAccounts (email, isInstructor, firstName, lastName)
-    VALUES (myEmail, myIsInstructor, myFirstName, myLastName);
-    
+    INSERT INTO UserAccounts (googleSub, email, isInstructor, firstName, lastName)
+    VALUES (myGoogleSub, myEmail, myIsInstructor, myFirstName, myLastName);
     -- Capture the auto-incremented ID from the last insert
     SET newUserId = LAST_INSERT_ID();
-
     IF myIsInstructor = TRUE THEN
         INSERT INTO Instructors (instructorId, schoolSubject, firstName, lastName, email)
         VALUES (newUserId, mySchoolSubject, myFirstName, myLastName, myEmail);
     ELSE
         INSERT INTO Students (studentId, firstName, lastName, badge, totalPoints, major, email)
-        VALUES (newUserId, myFirstName, myLastName, NULL, 10, myMajor, myEmail);
+        VALUES (newUserId, myFirstName, myLastName, NULL, 0, myMajor, myEmail);
     END IF;
 END $$
-
 DELIMITER ;
+
+#select user id from email
+DELIMITER $$
+DROP PROCEDURE IF EXISTS LookupUser $$
+CREATE PROCEDURE LookupUser (IN myEmail VARCHAR(150))
+BEGIN
+    DECLARE foundUserId INT;
+    DECLARE isInstructorFlag BOOLEAN;
+    SELECT userId, isInstructor
+    INTO foundUserId, isInstructorFlag
+    FROM UserAccounts
+    WHERE email = myEmail;
+    IF foundUserId IS NULL THEN
+        SELECT NULL AS userId; -- consistent column name
+    ELSEIF isInstructorFlag = TRUE THEN
+        SELECT instructorId AS userId
+        FROM Instructors
+        WHERE email = myEmail;
+    ELSE
+        SELECT studentId AS userId
+        FROM Students
+        WHERE email = myEmail;
+    END IF;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS LookupUserBySub $$
+CREATE PROCEDURE LookupUserBySub (IN myGoogleSub VARCHAR(255))
+BEGIN
+    SELECT 
+        ua.userId,
+        ua.email,
+        CASE WHEN ua.isInstructor = TRUE THEN i.instructorId ELSE s.studentId END AS mappedId
+    FROM UserAccounts ua
+    LEFT JOIN Instructors i ON i.instructorId = ua.userId
+    LEFT JOIN Students s ON s.studentId = ua.userId
+    WHERE ua.googleSub = myGoogleSub;
+END $$
+DELIMITER ;
+
 
 #create new class- instructor
 #TESTED: GOOD
@@ -145,7 +184,7 @@ create procedure getEnrolleesByClass(
 myClassId int
 )
 BEGIN
-select s.studentId, s.firstName, s.lastName 
+select s.studentId, s.firstName, s.email, s.lastName 
 from ClassEnrollees ce
 join Students s on ce.studentId = s.studentId
 where classId=myClassId;
@@ -178,42 +217,35 @@ DELIMITER ;
 delimiter $$
 drop procedure if exists InsertNewReading;
 create procedure InsertNewReading (
-myInstructorId int,
-myClassId int,
-myReadingName varchar(255),
-myFilePath varchar(500)
+    myInstructorId int,
+    myClassId int,
+    myReadingName varchar(255)
 ) 
 begin
-
-DECLARE newReadingId INT;
- 
-insert into Readings (readingId, readingName, filePath, instructorId, classId)
-    values (newReadingId, myReadingName, myFilePath, myInstructorId, myClassId);
-    
-SET newReadingId = LAST_INSERT_ID();
+    insert into Readings (readingName, instructorId, classId)
+        values (myReadingName, myInstructorId, myClassId);
+    select LAST_INSERT_ID() as readingId;
 end $$
 delimiter ;
+
 
 #insert reading objectives into db table
 #TESTED: GOOD
 #DAL: Done
-delimiter $$
-drop procedure if exists InsertNewReadingObjective;
-create procedure InsertNewReadingObjective (
-myReadingId int,
-myClassId int,
-myObjectiveName varchar(255)
-) 
-begin
+DELIMITER $$
+DROP PROCEDURE IF EXISTS InsertNewReadingObjective $$
+CREATE PROCEDURE InsertNewReadingObjective (
+    IN myReadingId INT,
+    IN myClassId INT,
+    IN myObjectiveName VARCHAR(255)
+)
+BEGIN
+    INSERT INTO ReadingObjectives (readingId, classId, objectiveName)
+    VALUES (myReadingId, myClassId, myObjectiveName);
 
-DECLARE newObjectiveId INT;
- 
-insert into ReadingObjectives (objectiveId, readingId, classId, objectiveName)
-    values (newObjectiveId, myReadingId, myClassId, myObjectiveName);
-    
-SET newObjectiveId = LAST_INSERT_ID();
-end $$
-delimiter ;
+    SELECT LAST_INSERT_ID() AS objectiveId;
+END $$
+DELIMITER ;
 
 #Get readings by class
 #TESTED: GOOD
@@ -225,9 +257,23 @@ myclassId int
 )
 BEGIN
 SELECT 
-        r.readingName, r.filePath
+        r.readingId, r.readingName, r.filePath
     FROM Readings r
     WHERE r.classId = myClassId;
+END$$
+DELIMITER ;
+
+#getReadingObjectives
+DELIMITER $$
+drop procedure if exists getReadingObjectives $$
+create procedure getReadingObjectives(
+myReadingId int
+)
+BEGIN
+SELECT 
+        ro.objectiveId, ro.objectiveName
+    FROM ReadingObjectives ro
+    WHERE ro.readingId = myReadingId;
 END$$
 DELIMITER ;
 
@@ -250,6 +296,41 @@ BEGIN
     SET newQuizId = LAST_INSERT_ID();
 END $$
 DELIMITER ;
+
+
+#create basic quiz
+DELIMITER $$
+DROP PROCEDURE IF EXISTS InsertQuiz$$
+CREATE PROCEDURE InsertQuiz(
+    IN myInstructorId INT,
+    IN myClassId INT
+)
+BEGIN
+    INSERT INTO Quizzes (instructorId, classId)
+    VALUES (myInstructorId, myClassId);
+
+    -- Return the auto-generated quizId
+    SELECT LAST_INSERT_ID() AS quizId;
+END $$
+DELIMITER ;
+
+#updates quiz name
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS updateQuizName $$
+CREATE PROCEDURE updateQuizName (
+    IN p_quizId INT,
+    IN p_quizName VARCHAR(255)
+)
+BEGIN
+    UPDATE Quizzes
+    SET quizName = p_quizName
+    WHERE quizId = p_quizId;
+END $$
+
+DELIMITER ;
+
+
 
 
 #assign readings to quiz
@@ -319,6 +400,7 @@ where questionId = newQuestionId and choiceLabel = myCorrectAnswer;
 end $$
 delimiter ;
 
+
 #display quizzes inside of classes
 #TESTED: GOOD
 #DAL: Done
@@ -329,7 +411,7 @@ myclassId int
 )
 BEGIN
 SELECT 
-        q.quizName
+        q.quizName, q.quizId
     FROM Quizzes q
     WHERE q.classId = myClassId;
 END$$
@@ -432,16 +514,35 @@ DELIMITER ;
 
 #get student's objectives
 DELIMITER $$
-drop procedure if exists getStudentObjectives $$
-create procedure getStudentObjectives(
-myStudentId int
+
+DROP PROCEDURE IF EXISTS getStudentObjectives $$
+CREATE PROCEDURE getStudentObjectives(
+    IN myStudentId INT
 )
 BEGIN
-SELECT s.objectiveId
-FROM StudentObjectives s
-WHERE s.studentId = myStudentId;
-END$$
+    SELECT ro.objectiveName, ro.ObjectiveId
+    FROM StudentObjectives so
+    INNER JOIN ReadingObjectives ro 
+        ON so.objectiveId = ro.objectiveId
+    WHERE so.studentId = myStudentId;
+END $$
+
 DELIMITER ;
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS deleteStudentObjectives $$
+CREATE PROCEDURE deleteStudentObjectives(
+    IN myStudentId INT
+)
+BEGIN
+    DELETE FROM StudentObjectives
+    WHERE studentId = myStudentId;
+END $$
+
+DELIMITER ;
+
+
 
 
 #student gets next question
@@ -641,3 +742,58 @@ begin
 delete from Quizzes where QuizId = myQuizId;
 end $$
 DELIMITER ;
+
+DELIMITER $$
+drop procedure if exists DeleteReading $$
+create procedure DeleteReading (myReadingId int
+)
+begin
+delete from Readings where readingId = myReadingId;
+end $$
+DELIMITER ;
+
+#checks if user can create a quiz
+DELIMITER $$
+drop procedure if exists canCreateQuiz $$
+CREATE PROCEDURE canCreateQuiz(
+    IN myUserId INT,
+    IN myClassId INT
+)
+BEGIN
+    DECLARE isEligible INT DEFAULT 0;
+    
+    SELECT 
+        CASE
+            WHEN EXISTS (SELECT 1 FROM Instructors WHERE instructorId = myUserId)
+                 OR EXISTS (SELECT 1 FROM Classroom WHERE classId = myClassId AND instructorId = myUserId)
+            THEN 1
+            ELSE 0
+        END
+    INTO isEligible;
+    
+    SELECT isEligible AS canCreate;
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+drop procedure if exists isInstructorCheck $$
+CREATE PROCEDURE isInstructorCheck(
+    IN myUserId INT
+)
+BEGIN
+DECLARE instructorFlag BOOLEAN;
+
+    SELECT isInstructor
+    INTO instructorFlag
+    FROM UserAccounts
+    WHERE userId = myUserId;
+
+    SELECT instructorFlag AS isInstructor;
+    
+END$$
+DELIMITER ;
+
+
+
+

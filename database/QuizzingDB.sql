@@ -20,8 +20,7 @@ DROP TABLE IF EXISTS StudentObjectives;
 
 CREATE TABLE UserAccounts (
     userId int auto_increment PRIMARY KEY,              
-    -- googleId VARCHAR(255) unique not null, #verify what this will look like 
-    -- username VARCHAR(100) UNIQUE NOT NULL,
+    googleSub VARCHAR(255) UNIQUE NOT NULL,
     email VARCHAR(150) UNIQUE NOT NULL,  #merrimack email
     isInstructor BOOLEAN DEFAULT FALSE,
     firstName varchar(20),
@@ -171,9 +170,3 @@ CREATE TABLE StudentObjectives (
     FOREIGN KEY (quizId) REFERENCES Quizzes(quizId) ON DELETE CASCADE,
     FOREIGN KEY (objectiveId) REFERENCES ReadingObjectives(objectiveId) ON DELETE CASCADE
 );
-
-
-/*Makes sure that unneccessary learning objectives aren't displayed for a student!!!*/
-SELECT DISTINCT lo.*
-FROM ReadingObjectives lo
-JOIN QuestionObjectives qo ON lo.objectiveId = qo.objectiveId;

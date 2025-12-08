@@ -2,6 +2,7 @@ package g2m.g2m_backend.DAL.javaSQLobjects;
 
 public class User {
 
+    private String googleSub;
     private int userId;
     private String email;
     private boolean isInstructor;
@@ -9,8 +10,9 @@ public class User {
     private String lastName;
 
     // constructor
-    public User(int userId, String email, boolean isInstructor,
+    public User(String googleSub, int userId, String email, boolean isInstructor,
                 String firstName, String lastName) {
+        this.googleSub=googleSub;
         this.userId = userId;
         this.email = email;
         this.isInstructor = isInstructor;
@@ -19,6 +21,7 @@ public class User {
     }
 
     // getters
+    public String getGoogleSub() { return googleSub; }
     public int getUserId() { return userId; }
     public String getEmail() { return email; }
     public boolean getIsInstructor() { return isInstructor; }
@@ -26,6 +29,7 @@ public class User {
     public String getLastName() { return lastName; }
 
     // setters (optional but useful)
+    public void setGoogleSub(String googleSub) { this.googleSub = googleSub; }
     public void setUserId(int userId) { this.userId = userId; }
     public void setEmail(String email) { this.email = email; }
     public void setIsInstructor(boolean isInstructor) { this.isInstructor = isInstructor; }
