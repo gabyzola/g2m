@@ -4,6 +4,9 @@ import java.util.*;
 import g2m.g2m_backend.DAL.javaSQLobjects.QuizQuestion; 
 import org.springframework.stereotype.Service;
 
+//UNUSED FILE...KEEPING JUST IN CASE
+//i trashed this idea
+
 @Service
 public class QuizManager {
     private List<QuizQuestion> allQuizQuestions;  //all of the quiz questions
