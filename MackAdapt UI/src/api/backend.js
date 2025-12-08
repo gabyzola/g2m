@@ -1,12 +1,8 @@
-//comments for gio:
-//this is just responsible for contacting api mappings in springboot, main.js handles the actual buttons and populating fields
-//returns json formatted db items
-
 //register user
 //calls QuizController: registerUser
 
 //create class
-//calls QuizController: createClass
+//tested:
 export async function createClass(classId) {
   try {
     const res = await fetch(`/api/classes/${classId}/create`, {
@@ -24,25 +20,8 @@ export async function createClass(classId) {
   }
 }
 
-
-//calls QuizController: viewInstructorClasses
-export async function getInstructorClasses(instructorId) {
-  try {
-
-    //this calls api endpoint (get instructr classes based on id)
-    const res = await fetch(`/api/instructors/${instructorId}/classes`);
-
-    //failure check
-    if (!res.ok) throw new Error("Failed request");
-
-    //return content in json format
-    return await res.json();
-  } catch (err) {
-    console.error("Error fetching instructor classes:", err);
-    return null;
-  }
-}
-
+//lookup user by email
+//tested: 
 export async function lookupUser(email) {
   try {
     const res = await fetch(`/api/lookup`, { 
@@ -61,6 +40,8 @@ export async function lookupUser(email) {
   }
 }
 
+//lookup user by sub
+//tested:
 export async function lookupUserBySub(googleSub) {
   try {
     const res = await fetch("/api/lookup/sub", {
@@ -68,7 +49,7 @@ export async function lookupUserBySub(googleSub) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ googleSub })
     });
-
+ 
     if (!res.ok) throw new Error("Failed to lookup user by sub");
 
     const resData = await res.json(); // parse JSON
@@ -79,22 +60,26 @@ export async function lookupUserBySub(googleSub) {
   }
 }
 
-
-export async function isUserInstructor(userId) {
+//gets instructor classes
+export async function getInstructorClasses(instructorId) {
   try {
-    const res = await fetch(`/api/role/${userId}`);
-    if (!res.ok) throw new Error("Failed to fetch user role");
 
-    const data = await res.json();
-    return data.isInstructor;
+    //this calls api endpoint (get instructr classes based on id)
+    const res = await fetch(`/api/instructors/${instructorId}/classes`);
+
+    //failure check
+    if (!res.ok) throw new Error("Failed request");
+
+    //return content in json format
+    return await res.json();
   } catch (err) {
-    console.error("Error fetching user role:", err);
-    return false; 
+    console.error("Error fetching instructor classes:", err);
+    return null;
   }
 }
 
-
 //enroll student
+//tested:
 export async function enrollStudent(classId, email) {
   try {
     const res = await fetch(`/api/instructors/classes/enroll`, {
@@ -136,6 +121,64 @@ export async function getStudentClasses(studentId) {
   }
 }
 
+//get class readings
+export async function getClassReadings(classId) {
+  try {
+    const res = await fetch(`/api/classes/${classId}/readings`);
+    if (!res.ok) throw new Error("Failed request");
+    return await res.json();
+  } catch (err) {
+    console.error("Error fetching class readings:", err);
+    return null;
+  }
+}
+
+//determines if user is able to create a quiz
+export async function canCreateQuiz(classId, userId) {
+  try {
+    const res = await fetch(`/api/canCreate/${classId}?userId=${userId}`);
+    if (!res.ok) throw new Error("Failed request");
+
+    const data = await res.json();
+    return data.canCreate;
+  } catch (err) {
+    console.error("Error checking if quiz can be created:", err);
+    return false; 
+  }
+}
+
+//gets whether they are student or isntructor
+export async function isUserInstructor(userId) {
+  try {
+    const res = await fetch(`/api/role/${userId}`);
+    if (!res.ok) throw new Error("Failed to fetch user role");
+
+    const data = await res.json();
+    return data.isInstructor;
+  } catch (err) {
+    console.error("Error fetching user role:", err);
+    return false; 
+  }
+}
+
+//create quiz
+export async function createQuiz(classId) {
+  try {
+    const res = await fetch(`/api/classes/${classId}/quizzcreation`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" }
+    });
+
+    if (!res.ok) throw new Error("Failed to create quiz");
+
+    const data = await res.json();
+    return data.quizId;
+  } catch (err) {
+    console.error("Error creating quiz:", err);
+    return -1;
+  }
+}
+
 //upload rading
 export async function uploadReading(classId, instructorId, readingName) {
   try {
@@ -173,48 +216,32 @@ export async function addReadingObjective(readingId, classId, objectiveName) { /
   }
 }
 
-
-//get class readings
-export async function getClassReadings(classId) {
+//assign badge after quiz is done
+export async function assignBadge(studentId) {
   try {
-    const res = await fetch(`/api/classes/${classId}/readings`);
-    if (!res.ok) throw new Error("Failed request");
-    return await res.json();
-  } catch (err) {
-    console.error("Error fetching class readings:", err);
-    return null;
-  }
-}
-
-export async function canCreateQuiz(classId, userId) {
-  try {
-    const res = await fetch(`/api/canCreate/${classId}?userId=${userId}`);
-    if (!res.ok) throw new Error("Failed request");
-
-    const data = await res.json();
-    return data.canCreate;
-  } catch (err) {
-    console.error("Error checking if quiz can be created:", err);
-    return false; 
-  }
-}
-
-//create quiz
-export async function createQuiz(classId) {
-  try {
-    const res = await fetch(`/api/classes/${classId}/quizzcreation`, {
+    const res = await fetch(`/api/students/${studentId}/badgeAssign`, {
       method: "POST",
       headers: { "Content-Type": "application/json" }
     });
 
-    if (!res.ok) throw new Error("Failed to create quiz");
+    if (!res.ok) throw new Error("Failed to assign badge");
 
-    const data = await res.json();
-    return data.quizId;
+    return await res.json(); 
   } catch (err) {
-    console.error("Error creating quiz:", err);
-    return -1;
+    console.error("Error assigning badge:", err);
+    return false;
   }
+}
+
+//link reading to quiz
+export async function addReadingToQuiz(quizId, readingId) {
+  const response = await fetch(`/api/quiz/${quizId}/addReading`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ readingId }),
+  });
+
+  return response.json();
 }
 
 //add question
@@ -263,18 +290,6 @@ export async function getClassQuizzes(classId) {
   }
 }
 
-//display objectives unique to one reading
-export async function getReadingObjectives(readingId) {
-  try {
-    const res = await fetch(`/api/quizzes/${readingId}/objectives`);
-    if (!res.ok) throw new Error("Failed request");
-    return await res.json();
-  } catch (err) {
-    console.error("Error fetching class enrollees:", err);
-    return null;
-  }
-}
-
 //view objectives by quiz for students to select from
 export async function getObjectivesByQuiz(quizId) {
   try {
@@ -286,6 +301,18 @@ export async function getObjectivesByQuiz(quizId) {
   } catch (err) {
     console.error("Error getting objectives:", err);
     return [];
+  }
+}
+
+//display objectives unique to one reading
+export async function getReadingObjectives(readingId) {
+  try {
+    const res = await fetch(`/api/quizzes/${readingId}/objectives`);
+    if (!res.ok) throw new Error("Failed request");
+    return await res.json();
+  } catch (err) {
+    console.error("Error fetching class enrollees:", err);
+    return null;
   }
 }
 
@@ -311,19 +338,8 @@ export async function selectObjectiveForQuiz(quizId, studentId, objectiveId) {
 }
 
 //view student objectives
-export async function getQuizQuestions(quizId) {
-  try {
-    const res = await fetch(`/api/quizzes/${quizId}/questions`);
 
-    if (!res.ok) throw new Error("Failed to fetch quiz questions");
-
-    return await res.json(); 
-  } catch (err) {
-    console.error("Error fetching quiz questions:", err);
-    return [];
-  }
-}
-
+//get student questions based on chosen objective
 export async function getStudentQuestions(studentId, quizId) {
   try {
     const res = await fetch(
@@ -339,6 +355,19 @@ export async function getStudentQuestions(studentId, quizId) {
   }
 }
 
+//get all quiz questions regardless of objectives
+export async function getQuizQuestions(quizId) {
+  try {
+    const res = await fetch(`/api/quizzes/${quizId}/questions`);
+
+    if (!res.ok) throw new Error("Failed to fetch quiz questions");
+
+    return await res.json(); 
+  } catch (err) {
+    console.error("Error fetching quiz questions:", err);
+    return [];
+  }
+}
 
 //calls quiz controller: viewStudentQuestions
 export async function viewStudentQuestions() {
@@ -354,24 +383,6 @@ export async function viewStudentQuestions() {
       console.error(err);
       alert("Could not load quiz questions.");
     }
-}
-
-
-//assign badge after quiz is done
-export async function assignBadge(studentId) {
-  try {
-    const res = await fetch(`/api/students/${studentId}/badgeAssign`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" }
-    });
-
-    if (!res.ok) throw new Error("Failed to assign badge");
-
-    return await res.json(); 
-  } catch (err) {
-    console.error("Error assigning badge:", err);
-    return false;
-  }
 }
 
 //view student badges
@@ -407,6 +418,7 @@ export async function searchStudents(query) {
   }
 }
 
+//populates ui with class name
 export async function getClassName(classId) {
   try {
     const res = await fetch(`/api/classes/${classId}/name`);
@@ -420,16 +432,6 @@ export async function getClassName(classId) {
   }
 }
 
-export async function addReadingToQuiz(quizId, readingId) {
-  const response = await fetch(`/api/quiz/${quizId}/addReading`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ readingId }),
-  });
-
-  return response.json();
-}
-
 export async function getQuizObjectives(quizId) {
   const response = await fetch(`/api/quizzes/${quizId}/objectives`, {
     method: "GET",
@@ -438,6 +440,8 @@ export async function getQuizObjectives(quizId) {
 
   return response.json();
 }
+
+//PROBLEM: 3 methods have this mapping api/quizzes/${quizId}/objectives
 
 
 

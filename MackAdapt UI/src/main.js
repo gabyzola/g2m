@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  // fetch current user info from backend
+  //fetch current user info from backend based on google sub in storage
   const user = await lookupUserBySub(googleToken);
   console.log("[DEBUG] User object returned from backend:", user);
   if (!user || !user.userId) {
@@ -20,8 +20,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const userId = user.userId;
   const email = user.email;
-  
-
   const classList = document.getElementById("classList");
   classList.innerHTML = "";
 
@@ -60,10 +58,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         alert("Please enter a class Id.");
         return;
       }
-
-      // Prepare payload
       const payload = {
-        classId, // backend can auto-generate or adjust as needed
+        classId, 
         className,
         instructorEmail: email
       };
@@ -79,7 +75,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         const success = await res.json();
         if (success) {
-          window.location.href = "class-enroll.html?classId=${classId}"; // redirect after creation
+          window.location.href = "class-enroll.html?classId=${classId}"; 
         } else {
           alert("Failed to create class");
         }
@@ -100,13 +96,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   classes.forEach(c => {
-    const li = document.createElement("li");
-    const link = document.createElement("a");
+    const card = document.createElement("div");
+    card.classList.add("class-card");
 
-    link.href = `/class-module.html?classId=${c.classId}`;
-    link.textContent = `${c.className} (ID: ${c.classId})`;
+    card.innerHTML = `
+      <h3>${c.className}</h3>
+      <p><strong>Class ID:</strong> ${c.classId}</p>
+      <a href="/class-module.html?classId=${c.classId}" class="card-btn">View Class</a>
+    `;
 
-    li.appendChild(link);
-    classList.appendChild(li);
+    classList.appendChild(card);
   });
+
 });

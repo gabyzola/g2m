@@ -91,6 +91,12 @@ main {
   margin-top: 3rem;
 }
 
+.about-image img {
+  max-width: 1500px;
+  max-height: 1000px;
+  text-align: center;
+}
+
 .quiz-card {
   background-color: var(--white);
   padding: 1.5rem;
@@ -104,6 +110,26 @@ main {
   margin-bottom: 0.5rem;
   font-size: 1.3rem;
 }
+
+.create-class-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: left;
+}
+
+.create-class-btn {
+  padding: 10px 18px;
+  font-size: 16px;
+  background: var(--navy);
+  border-radius: 8px;
+  cursor: pointer;
+  color: white;
+}
+
+.create-class-btn:hover {
+  background: var(--navy);
+}
+
 
 .quiz-card button {
   background-color: var(--navy);

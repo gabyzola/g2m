@@ -12,7 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
+import java.util.ArrayList; 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +31,8 @@ public class QuizController {
         this.ql = ql;
     }
 
+    //to be used in registering a user or returning an existing user
+    //js: 
     @PostMapping("/users/register")
     public User registerUser(@RequestBody Map<String, Object> data) {
 
@@ -54,10 +56,8 @@ public class QuizController {
 
     }
     
-
-    //create class: NEEDS A FIX
-    //frontend:
-    //frontend tested:
+    //for professor to create a new class
+    //js: done
     @PostMapping("/classes/create")
     public boolean createClass(@RequestBody Map<String, Object>data) {
         int classId = Integer.parseInt(data.get("classId").toString());
@@ -67,6 +67,8 @@ public class QuizController {
         return bl.createClass(classId, className, instructorEmail);
     }
 
+    //gets a user from email
+    //js: done
     @PostMapping("/lookup")
     public Map<String, Object> lookupUser(@RequestBody Map<String, Object> data) {
         System.out.println("LOOKUP HIT — Incoming body: " + data);
@@ -80,6 +82,8 @@ public class QuizController {
         return Map.of("userId", userId);
     }
     
+    //lookup user by google sub
+    //js:
     @PostMapping("/lookup/sub")
     public Map<String, Object> lookupUserBySub(@RequestBody Map<String, Object> data) {
         System.out.println("LOOKUP BY SUB HIT — Incoming body: " + data);
@@ -96,16 +100,14 @@ public class QuizController {
     //display a list of instructor classes
     //TESTED: Good!
     //retest: good!
-    //frontend:
-    //frontend tested:
+    //js:
     @GetMapping("/instructors/{instructorId}/classes")
     public List<Map<String, Object>> viewInstructorClasses(@PathVariable int instructorId) {
         return bl.viewInstructorClasses(instructorId);
     }
 
-    // Enroll student: UNTESTED
-    //frontend:
-    //frontend tested:
+    // Enroll student: Tested
+    //js:
     @PostMapping("/instructors/classes/enroll")
     public boolean enrollStudent(@RequestBody Map<String, Object> data) {
         int classId = Integer.parseInt(data.get("classId").toString());
@@ -154,12 +156,12 @@ public class QuizController {
         return Map.of("canCreate", canCreate);
     }
 
+    //gets whether student or instructor
     @GetMapping("/role/{userId}")
     public Map<String, Object> getUserRole(@PathVariable int userId) {
         int role = bl.getUserRole(userId); //1 = instructor, 0 = student, -1 = not found/error
         return Map.of("isInstructor", role == 1);
     }
-
 
     //just returns a new quiz id to put it in the query string
     //frontend: Implemented
@@ -193,9 +195,6 @@ public class QuizController {
         return Map.of("readingId", readingId);
     }
 
-
-
-
     //add objectives to reading: UNTESTED
     //this needs to be manual for now bc time crucnch
     //frontend: 
@@ -218,9 +217,7 @@ public class QuizController {
         }
     }
 
-
-
-    //call this when a student submits quiz
+    //call this when a student submits quiz, checks whether they deserve a new badge
     @PostMapping("/students/{studentId}/badgeAssign")
     public boolean assignBadge(@PathVariable int studentId) {
         return bl.assignBadge(studentId);
@@ -244,14 +241,9 @@ public class QuizController {
         return response;
     }
 
-    //publish quiz (DOES NOT UPDATE QUIZ ID) -> i need to make this in db but i know EXACTLY what i need for that so ill do it soon
-    //NOT implemented
-
     //when an instructor clicks on "Add Question" inside their quiz module, the information they put in for that question gets sent here
-    //that info is made into a QuesitonData obj
     //i send that to bl
-    //UNTESTED
-    //async: done
+    //js: done
     //frontend: Implemented
     //frontend tested:
     @PostMapping("/quizzes/{quizId}/questions")
@@ -282,7 +274,7 @@ public class QuizController {
     }
 
     //updates the quiz name
-    //async: done
+    //js: done
     @PostMapping("/quizzes/{quizId}/name")
     public ResponseEntity<Map<String, Object>> updateQuizName(
             @PathVariable int quizId,
@@ -298,7 +290,6 @@ public class QuizController {
                                 .body(Map.of("status", "error"));
         }
     }
-
 
     //view quizzes for a class
     //TESTED: Good!
@@ -369,7 +360,6 @@ public class QuizController {
         }
     }
 
-
     //display chosen objectives
     //if gio wants to add a section where the student can see what they chose, not urgent
     //TESTED: good!
@@ -416,7 +406,6 @@ public class QuizController {
         return response;
     }
     */
-
 
     //display student badges
     //TESTED: Good!
