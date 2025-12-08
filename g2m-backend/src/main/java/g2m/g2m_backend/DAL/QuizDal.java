@@ -806,12 +806,142 @@ public class QuizDal {
             return false;
         }
     }
-  
+
+    //starts attempt session right after a student picks their objectives
+    public int startAttemptSession(int studentId, int quizId, int objectiveId) {
+        CallableStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            stmt = myConnection.prepareCall("{CALL StartAttemptSession(?, ?, ?)}");
+            stmt.setInt(1, studentId);
+            stmt.setInt(2, quizId);
+            stmt.setInt(3, objectiveId);
+
+            rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt("sessionId");
+            }
+
+            return -1;
+
+        } catch (SQLException e) {
+            System.out.println("Error starting attempt session: " + e.getMessage());
+            return -1;
+
+        } finally {
+            try { if (rs != null) rs.close(); } catch (SQLException ignore) {}
+            try { if (stmt != null) stmt.close(); } catch (SQLException ignore) {}
+        }
+    }
+
+    //saves each student answer
+    public boolean saveStudentAnswer(int sessionId, int questionId, int chosenChoiceId) {
+        CallableStatement stmt = null;
+
+        try {
+            stmt = myConnection.prepareCall("{CALL SaveStudentAnswer(?, ?, ?)}");
+            stmt.setInt(1, sessionId);
+            stmt.setInt(2, questionId);
+            stmt.setInt(3, chosenChoiceId);
+
+            stmt.execute();
+            return true;
+
+        } catch (SQLException e) {
+            System.out.println("Error saving student answer: " + e.getMessage());
+            return false;
+
+        } finally {
+            try { if (stmt != null) stmt.close(); } catch (SQLException ignore) {}
+        }
+    }
+
+    //ends attempt session and finalizes the score
+    public boolean finalizeAttemptSession(int sessionId) {
+        CallableStatement stmt = null;
+
+        try {
+            stmt = myConnection.prepareCall("{CALL FinalizeAttemptSession(?)}");
+            stmt.setInt(1, sessionId);
+
+            stmt.execute();
+            return true;
+
+        } catch (SQLException e) {
+            System.out.println("Error finalizing attempt session: " + e.getMessage());
+            return false;
+
+        } finally {
+            try { if (stmt != null) stmt.close(); } catch (SQLException ignore) {}
+        }
+    }
+
+    //gets full results (this is gonna return a LOT)
+    public Map<String, Object> getSessionResults(int sessionId) {
+        CallableStatement stmt = null;
+        Map<String, Object> result = new HashMap<>();
+
+        try {
+            stmt = myConnection.prepareCall("{CALL GetSessionResults(?)}");
+            stmt.setInt(1, sessionId);
+
+            boolean hasResults = stmt.execute();
+
+            // First result set: AttemptSessions row
+            if (hasResults) {
+                ResultSet rs = stmt.getResultSet();
+                if (rs.next()) {
+                    Map<String, Object> session = new HashMap<>();
+                    session.put("sessionId", rs.getInt("sessionId"));
+                    session.put("studentId", rs.getInt("studentId"));
+                    session.put("quizId", rs.getInt("quizId"));
+                    session.put("objectiveId", rs.getInt("objectiveId"));
+                    session.put("score", rs.getInt("score"));
+                    session.put("percentage", rs.getBigDecimal("percentage"));
+                    result.put("session", session);
+                }
+            }
+
+            // Move to second result set: AttemptAnswers
+            if (stmt.getMoreResults()) {
+                ResultSet rs2 = stmt.getResultSet();
+                List<Map<String, Object>> answers = new ArrayList<>();
+
+                while (rs2.next()) {
+                    Map<String, Object> row = new HashMap<>();
+                    row.put("questionId", rs2.getInt("questionId"));
+                    row.put("chosenChoiceId", rs2.getInt("chosenChoiceId"));
+                    row.put("chosenLetter", rs2.getString("chosenLetter"));
+                    row.put("correctLetter", rs2.getString("correctLetter"));
+                    row.put("isCorrect", rs2.getBoolean("isCorrect"));
+                    row.put("pointsEarned", rs2.getInt("pointsEarned"));
+                    row.put("questionText", rs2.getString("questionText"));
+
+                    answers.add(row);
+                }
+
+                result.put("answers", answers);
+            }
+
+            return result;
+
+        } catch (SQLException e) {
+            System.out.println("Error getting session results: " + e.getMessage());
+            return Map.of();
+
+        } finally {
+            try { if (stmt != null) stmt.close(); } catch (SQLException ignore) {}
+        }
+    }
+
     /*DELETIONS */
     public boolean deleteQuestion(int questionId) { return executeSimpleDelete("{CALL DeleteQuestion(?)}", questionId); }
     public boolean deleteQuiz(int quizId) { return executeSimpleDelete("{CALL DeleteQuiz(?)}", quizId); }
     public boolean deleteClass(int classId) { return executeSimpleDelete("{CALL DeleteClass(?)}", classId); }
     public boolean deleteUser(int userId) { return executeSimpleDelete("{CALL DeleteUser(?)}", userId); }
+    public boolean deleteStudentObjective(int userId) { return executeSimpleDelete("{CALL DeleteStudentObjectives(?)}", userId); }
     public boolean deleteClassEnrollee(int classId, int studentId) {
         return executeDoubleDelete("{CALL DeleteClassEnrollee(?, ?)}", classId, studentId);
     }

@@ -214,7 +214,7 @@ public class BusinessLogic {
             grouped.putIfAbsent(qid, new QuizQuestion());
             QuizQuestion q = grouped.get(qid);
 
-            q.setQuestionId(qid);
+            q.setQuestionId(qid); 
             q.setQuestionText((String) row.get("questionText"));
             q.setObjectiveId(((Number) row.get("objectiveId")).intValue());
             q.setLearningObjective((String) row.get("learningObjective"));
@@ -284,6 +284,92 @@ public class BusinessLogic {
     //api: done
     public boolean removeEnrollee(int classId, int studentId) {
         return dal.deleteClassEnrollee(classId, studentId);
+    }
+
+    public boolean resetObjectives(int userId) {
+        return dal.deleteStudentObjective(userId);
+    }
+
+    //begin attempt session
+    //api: to add
+    public int startAttemptSession(int studentId, int quizId, int objectiveId) {
+        try {
+            int sessionId = dal.startAttemptSession(studentId, quizId, objectiveId);
+
+            if (sessionId <= 0) {
+                System.out.println("Failed to create attempt session.");
+            } else {
+                System.out.println("Created attempt session: " + sessionId);
+            }
+
+            return sessionId;
+
+        } catch (Exception e) {
+            System.out.println("Error starting attempt session.");
+            e.printStackTrace();
+            return -1;
+        }
+    }
+
+    //save a single answer during the quiz
+    //api: to add
+    public boolean saveStudentAnswer(int sessionId, int questionId, int chosenChoiceId) {
+        try {
+            boolean success = dal.saveStudentAnswer(sessionId, questionId, chosenChoiceId);
+
+            if (!success) {
+                System.out.println("Failed to save answer for questionId: " + questionId);
+            }
+
+            return success;
+
+        } catch (Exception e) {
+            System.out.println("Error saving student answer.");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    //ends quiz attempt
+    // api: to add
+    public boolean finalizeAttemptSession(int sessionId) {
+        try {
+            boolean success = dal.finalizeAttemptSession(sessionId);
+
+            if (success) {
+                System.out.println("Session finalized: " + sessionId);
+            } else {
+                System.out.println("Failed to finalize session: " + sessionId);
+            }
+
+            return success;
+
+        } catch (Exception e) {
+            System.out.println("Error finalizing attempt session.");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    //gets results for attempt 
+    //api: to add
+    public Map<String, Object> getSessionResults(int sessionId) {
+        try {
+            Map<String, Object> results = dal.getSessionResults(sessionId);
+
+            if (results == null || results.isEmpty()) {
+                System.out.println("No results found for sessionId: " + sessionId);
+            } else {
+                System.out.println("Loaded results for sessionId: " + sessionId);
+            }
+
+            return results;
+
+        } catch (Exception e) {
+            System.out.println("Error retrieving session results.");
+            e.printStackTrace();
+            return Map.of();
+        }
     }
 
     /*misc*/

@@ -167,8 +167,10 @@ public class QuizController {
     //frontend: Implemented
     //frontend tested:
    @PostMapping("/classes/{classId}/quizzcreation")
-    public ResponseEntity<Map<String, Integer>> createQuiz(@PathVariable int classId) {
-        int userId = 4; //hardcoded for now
+    public ResponseEntity<Map<String, Integer>> createQuiz(
+            @PathVariable int classId,
+            @RequestParam int userId  // read userId from query string
+    ) {
         int newQuizId = bl.createQuiz(userId, classId);
 
         if (newQuizId > 0) {
@@ -178,6 +180,7 @@ public class QuizController {
                                 .body(Map.of("quizId", -1));
         }
     }
+
     
 
     //upload reading: UNTESTED
@@ -435,7 +438,62 @@ public class QuizController {
     ) {
         return bl.removeEnrollee(classId, studentId);
     }
-    
+
+    @DeleteMapping("/remove/objectives/{studentId}")
+    public boolean resetObjective(
+            @PathVariable int studentId
+    ) {
+        return bl.resetObjectives(studentId);
+    }
+
+    //begins attempt
+    @PostMapping("/attempt/start")
+    public Map<String, Object> startAttemptSession(@RequestBody Map<String, Object> body) {
+        int studentId, quizId, objectiveId;
+        try {
+            studentId = Integer.parseInt(body.get("studentId").toString());
+            quizId = Integer.parseInt(body.get("quizId").toString());
+            objectiveId = Integer.parseInt(body.get("objectiveId").toString());
+        } catch (Exception e) {
+            System.out.println("Failed to parse IDs: " + e.getMessage());
+            return Map.of("sessionId", -1);
+        }
+
+        int sessionId = bl.startAttemptSession(studentId, quizId, objectiveId);
+        System.out.println("Starting attempt session with studentId=" + studentId + ", quizId=" + quizId + ", objectiveId=" + objectiveId);
+        System.out.println("Created sessionId=" + sessionId);
+
+        return Map.of("sessionId", sessionId);
+    }
+
+    // Save individual answers
+    @PostMapping("/attempt/answer")
+    public boolean saveStudentAnswer(@RequestBody Map<String, Object> body) {
+        int sessionId, questionId, chosenChoiceId;
+        try {
+            sessionId = Integer.parseInt(body.get("sessionId").toString());
+            questionId = Integer.parseInt(body.get("questionId").toString());
+            chosenChoiceId = Integer.parseInt(body.get("chosenChoiceId").toString());
+        } catch (Exception e) {
+            System.out.println("Failed to parse IDs: " + e.getMessage());
+            return false;
+        }
+
+        return bl.saveStudentAnswer(sessionId, questionId, chosenChoiceId);
+    }
+
+    // Ends attempt
+    @PostMapping("/attempt/finish/{sessionId}")
+    public boolean finalizeAttempt(@PathVariable int sessionId) {
+        return bl.finalizeAttemptSession(sessionId);
+    }
+
+    // Get session results
+    @GetMapping("/attempt/{sessionId}/results")
+    public Map<String, Object> getAttemptResults(@PathVariable int sessionId) {
+        return bl.getSessionResults(sessionId);
+    }
+
     // Search students: Ready to connect
     //TESTED: Good
     //frontend:
@@ -456,3 +514,4 @@ public class QuizController {
         return resp;
     }
 }
+ 

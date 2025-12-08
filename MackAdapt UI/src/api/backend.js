@@ -441,11 +441,71 @@ export async function getQuizObjectives(quizId) {
   return response.json();
 }
 
-//PROBLEM: 3 methods have this mapping api/quizzes/${quizId}/objectives
+// Begin session
+export async function startAttemptSession(studentId, quizId, objectiveId) {
+  try {
+    const res = await fetch(`/api/attempt/start`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ studentId, quizId, objectiveId }),
+    });
 
+    if (!res.ok) throw new Error("Failed to start attempt session");
 
+    const data = await res.json(); // { sessionId: 123 }
+    return data.sessionId;          // return just the sessionId
+  } catch (err) {
+    console.error("Error starting attempt session:", err);
+    return -1;
+  }
+}
 
+// Save each answer
+export async function saveStudentAnswer(sessionId, questionId, chosenChoiceId) {
+  try {
+    const res = await fetch(`/api/attempt/answer`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionId, questionId, chosenChoiceId }),
+    });
 
+    if (!res.ok) throw new Error("Failed to save student answer");
 
+    const data = await res.json(); // { success: true/false } or boolean
+    return data.success ?? data;    // ensures boolean
+  } catch (err) {
+    console.error("Error saving student answer:", err);
+    return false;
+  }
+}
 
+// End session
+export async function finalizeAttemptSession(sessionId) {
+  try {
+    const res = await fetch(`/api/attempt/finish/${sessionId}`, {
+      method: "POST",
+    });
 
+    if (!res.ok) throw new Error("Failed to finalize attempt session");
+
+    const data = await res.json(); // { success: true/false } or boolean
+    return data.success ?? data;    // ensures boolean
+  } catch (err) {
+    console.error("Error finalizing attempt session:", err);
+    return false;
+  }
+}
+
+// Get attempt results
+export async function getAttemptResults(sessionId) {
+  try {
+    const res = await fetch(`/api/attempt/${sessionId}/results`);
+
+    if (!res.ok) throw new Error("Failed to fetch attempt results");
+
+    return await res.json(); // returns result object
+  } catch (err) {
+    console.error("Error fetching attempt results:", err);
+    return {};
+  }
+}
