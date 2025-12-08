@@ -100,6 +100,16 @@ async function loadClassData() {
         window.location.href = `class-enroll.html?classId=${classId}&userId=${userId}`;
       });
 
+      //view results button
+      const resultsBtn = document.createElement("button");
+      resultsBtn.textContent = "View Results";
+      resultsBtn.style.marginBottom = "1rem";
+      quizzesContainer.prepend(resultsBtn);
+
+      resultsBtn.addEventListener("click", () => {
+        window.location.href = `results.html?classId=${classId}&userId=${userId}`;
+      });
+
       //add a reading button
       const readingBtn = document.createElement("button");
       readingBtn.textContent = "Add Reading";
