@@ -1,3 +1,4 @@
+/*DUMMY DATA*/
 USE QuizzingDB;   
 
 INSERT INTO Badges (badgeName, description, pointThreshold)
@@ -15,7 +16,6 @@ select * from Instructors;
 select * from Classroom;
 select * from ClassEnrollees;
 select * from Quizzes;
-select * from LearningObjectives;
 select * from Questions;
 select * from QuestionChoices;
 select * from QuestionObjectives;
@@ -28,20 +28,20 @@ select * from QuizReadings;
 
 /*TC 1: Insert a bunch of users: All set!*/
 -- Method: InsertNewUser
-CALL InsertNewUser("burnetta@merrimack.edu", FALSE, "Computer Science", NULL, "Ashley", "Burnett"); -- student, 1
-CALL InsertNewUser("gilmorel@merrimack.edu", FALSE, "Computer Science", NULL, "Lorelai", "Gilmore"); -- student 2
-CALL InsertNewUser("potterh@merrimack.edu", FALSE, "Computer Science", NULL, "Harry", "Potter"); -- student 3
-CALL InsertNewUser("grangerh@merrimack.edu", TRUE, "Computer Science", NULL, "Hermione", "Granger"); -- professor 4
-CALL InsertNewUser("phillipsa@merrimack.edu", TRUE, "Computer Science", NULL, "Abigail", "Phillips"); -- professor 5
-CALL InsertNewUser("mulones@merrimack.edu", FALSE, "Computer Science", NULL, "Sam", "Mulone"); -- student 6
-CALL InsertNewUser("wilsond@merrimack.edu", FALSE, "Computer Science", NULL, "David", "Wilson"); -- student 7
-CALL InsertNewUser("washingtong@merrimack.edu", TRUE, "Computer Science", NULL, "George", "Washington"); -- professor 8
-CALL InsertNewUser("lincolna@merrimack.edu", FALSE, "Computer Science", NULL, "Abraham", "Lincoln"); -- student 9
-CALL InsertNewUser("kennedyj@merrimack.edu", FALSE, "Computer Science", NULL, "John", "Kennedy"); -- student 10
-CALL InsertNewUser("olonaa@merrimack.edu", FALSE, "Computer Science", NULL, "Alyssa", "Olona"); -- student 11
-CALL InsertNewUser("danesl@merrimack.edu", FALSE, "Computer Science", NULL, "Lucas", "Danes"); -- student 12
-CALL InsertNewUser("weasleyw@merrimack.edu", FALSE, "Computer Science", NULL, "Ron", "Weasley"); -- student 13
-CALL InsertNewUser("sample", FALSE, "sample", NULL, "sample", "sample"); -- student 13
+CALL InsertNewUser("12345","burnetta@merrimack.edu", FALSE, "Computer Science", NULL, "Ashley", "Burnett"); -- student, 1
+CALL InsertNewUser("23456", "gilmorel@merrimack.edu", FALSE, "Computer Science", NULL, "Lorelai", "Gilmore"); -- student 2
+CALL InsertNewUser("34567", "potterh@merrimack.edu", FALSE, "Computer Science", NULL, "Harry", "Potter"); -- student 3
+CALL InsertNewUser("4567", "grangerh@merrimack.edu", TRUE, "Computer Science", NULL, "Hermione", "Granger"); -- professor 4
+CALL InsertNewUser("56789","phillipsa@merrimack.edu", TRUE, "Computer Science", NULL, "Abigail", "Phillips"); -- professor 5
+CALL InsertNewUser("67899", "mulones@merrimack.edu", FALSE, "Computer Science", NULL, "Sam", "Mulone"); -- student 6
+CALL InsertNewUser("98765", "wilsond@merrimack.edu", FALSE, "Computer Science", NULL, "David", "Wilson"); -- student 7
+CALL InsertNewUser("91234", "washingtong@merrimack.edu", TRUE, "Computer Science", NULL, "George", "Washington"); -- professor 8
+CALL InsertNewUser("54321", "lincolna@merrimack.edu", FALSE, "Computer Science", NULL, "Abraham", "Lincoln"); -- student 9
+CALL InsertNewUser("6543", "kennedyj@merrimack.edu", FALSE, "Computer Science", NULL, "John", "Kennedy"); -- student 10
+CALL InsertNewUser("8765", "olonaa@merrimack.edu", FALSE, "Computer Science", NULL, "Alyssa", "Olona"); -- student 11
+CALL InsertNewUser("09090", "danesl@merrimack.edu", FALSE, "Computer Science", NULL, "Lucas", "Danes"); -- student 12
+CALL InsertNewUser("121212", "weasleyw@merrimack.edu", FALSE, "Computer Science", NULL, "Ron", "Weasley"); -- student 13
+CALL InsertNewUser("23232323", "sample", FALSE, "sample", NULL, "sample", "sample"); -- student 13
 
 /*TC 1.1: Insert a bunch of classes: All set!*/
 -- Method: InsertNewClass
@@ -83,9 +83,14 @@ call getEnrolleesByClass(105); -- should be lorelai and sam
 call getEnrolleesByClass(103); -- alyssa and luke
 call getEnrolleesByClass(101); -- sam and david
 
+call getEnrolleesByClass(121);
+
  -- Method: getStudentsByClass (All set!)
  call getStudentsClasses(3); -- soc and geometry
  call getStudentsClasses(6); -- 101,105
+ 
+call getStudentsClasses(13);
+call getStudentsClasses(14);
  
  -- Method: getInstructorClasses (All set!)
 call getInstructorClasses(8); -- GW: 104, 106, 109
@@ -93,18 +98,18 @@ call getInstructorClasses(5); -- AP: 101, 105
 call getInstructorClasses(4); -- HG: 102, 103, 107, 108
 
 -- Method: InsertNewReading (All set!)
-call InsertNewReading(4, 107, "Prussian History", "Documents/prussia.pdf");
-call InsertNewReading(5, 101, "Cells", "Documents/cells.pdf");
-call InsertNewReading(8, 104, "Inequality", "Documents/inequality.pdf");
-call InsertNewReading(4, 107, "Prussian History", "Documents/prussia.pdf");
-call InsertNewReading(5, 101, "Intro to Molecules", "Documents/introtomolecules.pdf");
-call InsertNewReading(5, 105, "Objects In Java", "Documents/Objectsinjava.pdf");
-call InsertNewReading(8, 106, "Derivatives", "Documents/derivatives.pdf");
+call InsertNewReading(4, 107, "Prussian History");
+call InsertNewReading(5, 101, "Cells");
+call InsertNewReading(8, 104, "Inequality");
+call InsertNewReading(4, 107, "Prussian History");
+call InsertNewReading(5, 101, "Intro to Molecules");
+call InsertNewReading(5, 105, "Objects In Java");
+call InsertNewReading(8, 106, "Derivatives");
 
 -- Method: getReadingByClass (All set!)
 call getReadingsByClass(107);
 call getReadingsByClass(101);
-call getReadingsByClass(104);
+call getReadingsByClass(106);
 
 -- Methods insertReadingObjectives (All set!)
 -- Reminder: dummy info for now, later will be ai genered
@@ -113,15 +118,30 @@ call InsertNewReadingObjective(1, 107, "Military"); -- Prussian History
 call InsertNewReadingObjective(1, 107, "Politics"); -- Prussian History
 call InsertNewReadingObjective(1, 107, "Geography"); -- Prussian History
 
+call InsertNewReadingObjective(2, 101, "Mitochondria"); -- chem
+call InsertNewReadingObjective(2, 101, "Cytoplasm"); -- chem
+
+call InsertNewReadingObjective(5, 101, "Compounds"); -- chem
+call InsertNewReadingObjective(5, 101, "Molecules"); -- chem
+call InsertNewReadingObjective(5, 101, "Elements"); -- chem
+call InsertNewReadingObjective(5, 101, "Reactions"); -- chem
+
 call InsertNewReadingObjective(6, 105, "Syntax"); -- Java 
 call InsertNewReadingObjective(6, 105, "Programming"); -- Java
 call InsertNewReadingObjective(6, 105, "Java Objects"); -- Java
 call InsertNewReadingObjective(6, 105, "Error Handling"); -- Java
 call InsertNewReadingObjective(6, 105, "Classes"); -- Java
 
+call InsertNewReadingObjective(7, 106, "Velocity"); -- calc
+call InsertNewReadingObjective(7, 106, "Notation"); -- calc
+call InsertNewReadingObjective(7, 106, "Graphs"); -- calc
+call InsertNewReadingObjective(7, 106, "Newton"); -- calc
+call InsertNewReadingObjective(7, 106, "Integrals"); -- calc
+
  -- Method: InsertNewQuiz (All set!)
 call InsertNewQuiz("Fall Of Prussia", 4, 107, @newQuizId);
 call InsertNewQuiz("Java Objects", 5, 105, @newQuizId);
+call InsertNewQuiz("Introduction to Java", 5, 105, @newQuizId);
 
 -- Method: InsertQuizReading
 call InsertQuizReading(1, 1); -- Quiz 1, Prussia reading
@@ -130,8 +150,11 @@ call InsertQuizReading(2, 6); -- Quiz 2, Java Reading
 -- Method GetQuizObjectives
 call getQuizObjectives(2); -- Java
 call getQuizObjectives(1); -- Prussia
+call getQuizObjectives(11);
 
--- Method: InsertNewQuestion (ERROR)
+call getQuizObjectives(6);
+
+-- Method: InsertNewQuestion (fixed)
 -- Prussia Quiz
 call InsertNewQuestion(1, "Question 1", "easy", "Choice: A", "Choice B", "Choice C", "Choice D", "A",  1, 1);
 call InsertNewQuestion(2, "Question 2", "medium", "Choice: A", "Choice B", "Choice C", "Choice D", "A",  1, 1);
@@ -150,23 +173,23 @@ call InsertNewQuestion(5, "Question 5", "easy", "Choice: A", "Choice B", "Choice
 call GetQuizQuestions(1);
 call GetQuizQuestions(2);
 
+call GetQuizQuestions(6);
+
+call getReadingObjectives(1);
+
 -- Method: getQuizzesByClass
 call getQuizzesByClass(105);
 
--- Method: SelectStudentObjective
-call SelectStudentObjective(11, 1, "Military");
-call SelectStudentObjective(11, 1, "Geography");
+-- Method: SelectStudentObjective student id quiz id objective id
+call SelectStudentObjective(11, 1, 1);
+call SelectStudentObjective(11, 1, 4);
+
+#call SelectStudentObjective(1, 6, 34);
 
 call getStudentObjectives(11);
+call getStudentObjectives(1);
+call getStudentObjectives(7);
 select * from StudentObjectives;
-
-
-
--- Method: GetNextQuestion
-
--- Method: SubmitAnswer
-
--- Method: GetQuizScore
 
 #display quiz info as a whole
 select q.quizName, qu.questionText, qc.choiceLabel, qc.choiceText
@@ -180,7 +203,7 @@ select qu.questionText, qc.choiceLabel, qc.choiceText
 from Quizzes q
 join Questions qu on q.quizId = qu.quizId
 join QuestionChoices qc on qu.questionId = qc.questionId
-where q.quizId = 2;
+where q.quizId = 8;
 
 #display options per question -> double check this when you make it into a proc
 select qc.choiceLabel, qc.choiceText
@@ -199,3 +222,23 @@ where qu.questionId = 1;
  call assignBadge(14);
  
  call getStudentBadges(14);
+
+#test: pass
+call canCreateQuiz(7, 101);
+
+call deleteClassEnrollee(104, 13);
+
+call DeleteReading(4);
+
+call DeleteQuiz(4);
+
+call DeleteStudentObjectives(1);
+
+#test: pass
+call LookupUser("grangerh@merrimack.edu");
+call LookupUserBySub("109648142961992634293");
+
+#pass
+call LookupUserBySub("8765");
+
+call isInstructorCheck(15);

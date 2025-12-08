@@ -1,12 +1,8 @@
-//comments for gio:
-//this is just responsible for contacting api mappings in springboot, main.js handles the actual buttons and populating fields
-//returns json formatted db items
-
 //register user
 //calls QuizController: registerUser
 
 //create class
-//calls QuizController: createClass
+//tested:
 export async function createClass(classId) {
   try {
     const res = await fetch(`/api/classes/${classId}/create`, {
@@ -24,8 +20,47 @@ export async function createClass(classId) {
   }
 }
 
+//lookup user by email
+//tested: 
+export async function lookupUser(email) {
+  try {
+    const res = await fetch(`/api/lookup`, { 
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email })
+    });
 
-//calls QuizController: viewInstructorClasses
+    if (!res.ok) throw new Error("Failed to lookup user");
+
+    const resData = await res.json();   //parse JSON, absolutelt needed or error
+    return resData.userId;              //return just the userId number, extremely mportant
+  } catch (err) {
+    console.error("Error looking up user:", err);
+    return -1;
+  }
+}
+
+//lookup user by sub
+//tested:
+export async function lookupUserBySub(googleSub) {
+  try {
+    const res = await fetch("/api/lookup/sub", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ googleSub })
+    });
+ 
+    if (!res.ok) throw new Error("Failed to lookup user by sub");
+
+    const resData = await res.json(); // parse JSON
+    return resData;                    // return the whole object {userId: ..., maybe more}
+  } catch (err) {
+    console.error("Error looking up user by sub:", err);
+    return null;
+  }
+}
+
+//gets instructor classes
 export async function getInstructorClasses(instructorId) {
   try {
 
@@ -44,6 +79,7 @@ export async function getInstructorClasses(instructorId) {
 }
 
 //enroll student
+//tested:
 export async function enrollStudent(classId, email) {
   try {
     const res = await fetch(`/api/instructors/classes/enroll`, {
@@ -75,8 +111,6 @@ export async function getClassEnrollees(classId) {
 export async function getStudentClasses(studentId) {
   try {
     const res = await fetch(`/api/students/${studentId}/classes`);
-
-    //failure check
     if (!res.ok) throw new Error("Failed request");
 
     //return content in json format
@@ -84,6 +118,64 @@ export async function getStudentClasses(studentId) {
   } catch (err) {
     console.error("Error fetching student classes:", err);
     return null;
+  }
+}
+
+//get class readings
+export async function getClassReadings(classId) {
+  try {
+    const res = await fetch(`/api/classes/${classId}/readings`);
+    if (!res.ok) throw new Error("Failed request");
+    return await res.json();
+  } catch (err) {
+    console.error("Error fetching class readings:", err);
+    return null;
+  }
+}
+
+//determines if user is able to create a quiz
+export async function canCreateQuiz(classId, userId) {
+  try {
+    const res = await fetch(`/api/canCreate/${classId}?userId=${userId}`);
+    if (!res.ok) throw new Error("Failed request");
+
+    const data = await res.json();
+    return data.canCreate;
+  } catch (err) {
+    console.error("Error checking if quiz can be created:", err);
+    return false; 
+  }
+}
+
+//gets whether they are student or isntructor
+export async function isUserInstructor(userId) {
+  try {
+    const res = await fetch(`/api/role/${userId}`);
+    if (!res.ok) throw new Error("Failed to fetch user role");
+
+    const data = await res.json();
+    return data.isInstructor;
+  } catch (err) {
+    console.error("Error fetching user role:", err);
+    return false; 
+  }
+}
+
+//create quiz
+export async function createQuiz(classId) {
+  try {
+    const res = await fetch(`/api/classes/${classId}/quizzcreation`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" }
+    });
+
+    if (!res.ok) throw new Error("Failed to create quiz");
+
+    const data = await res.json();
+    return data.quizId;
+  } catch (err) {
+    console.error("Error creating quiz:", err);
+    return -1;
   }
 }
 
@@ -124,50 +216,32 @@ export async function addReadingObjective(readingId, classId, objectiveName) { /
   }
 }
 
-
-//get class readings
-export async function getClassReadings(classId) {
+//assign badge after quiz is done
+export async function assignBadge(studentId) {
   try {
-    const res = await fetch(`/api/classes/${classId}/readings`);
-    if (!res.ok) throw new Error("Failed request");
-    return await res.json();
-  } catch (err) {
-    console.error("Error fetching class readings:", err);
-    return null;
-  }
-}
-
-//can create quiz check
-export async function canCreateQuiz(classId) {
-  try {
-    const res = await fetch(`/api/canCreate/${classId}`);
-    
-    if (!res.ok) throw new Error("Failed request");
-
-    const data = await res.json();
-    return data.canCreate;
-  } catch (err) {
-    console.error("Error checking if quiz can be created:", err);
-    return false; 
-  }
-}
-
-//create quiz
-export async function createQuiz(classId) {
-  try {
-    const res = await fetch(`/api/classes/${classId}/quizzcreation`, {
+    const res = await fetch(`/api/students/${studentId}/badgeAssign`, {
       method: "POST",
       headers: { "Content-Type": "application/json" }
     });
 
-    if (!res.ok) throw new Error("Failed to create quiz");
+    if (!res.ok) throw new Error("Failed to assign badge");
 
-    const data = await res.json();
-    return data.quizId;
+    return await res.json(); 
   } catch (err) {
-    console.error("Error creating quiz:", err);
-    return -1;
+    console.error("Error assigning badge:", err);
+    return false;
   }
+}
+
+//link reading to quiz
+export async function addReadingToQuiz(quizId, readingId) {
+  const response = await fetch(`/api/quiz/${quizId}/addReading`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ readingId }),
+  });
+
+  return response.json();
 }
 
 //add question
@@ -216,18 +290,6 @@ export async function getClassQuizzes(classId) {
   }
 }
 
-//display objectives unique to one reading
-export async function getReadingObjectives(readingId) {
-  try {
-    const res = await fetch(`/api/quizzes/${readingId}/objectives`);
-    if (!res.ok) throw new Error("Failed request");
-    return await res.json();
-  } catch (err) {
-    console.error("Error fetching class enrollees:", err);
-    return null;
-  }
-}
-
 //view objectives by quiz for students to select from
 export async function getObjectivesByQuiz(quizId) {
   try {
@@ -239,6 +301,18 @@ export async function getObjectivesByQuiz(quizId) {
   } catch (err) {
     console.error("Error getting objectives:", err);
     return [];
+  }
+}
+
+//display objectives unique to one reading
+export async function getReadingObjectives(readingId) {
+  try {
+    const res = await fetch(`/api/quizzes/${readingId}/objectives`);
+    if (!res.ok) throw new Error("Failed request");
+    return await res.json();
+  } catch (err) {
+    console.error("Error fetching class enrollees:", err);
+    return null;
   }
 }
 
@@ -264,19 +338,8 @@ export async function selectObjectiveForQuiz(quizId, studentId, objectiveId) {
 }
 
 //view student objectives
-export async function getQuizQuestions(quizId) {
-  try {
-    const res = await fetch(`/api/quizzes/${quizId}/questions`);
 
-    if (!res.ok) throw new Error("Failed to fetch quiz questions");
-
-    return await res.json(); 
-  } catch (err) {
-    console.error("Error fetching quiz questions:", err);
-    return [];
-  }
-}
-
+//get student questions based on chosen objective
 export async function getStudentQuestions(studentId, quizId) {
   try {
     const res = await fetch(
@@ -292,6 +355,19 @@ export async function getStudentQuestions(studentId, quizId) {
   }
 }
 
+//get all quiz questions regardless of objectives
+export async function getQuizQuestions(quizId) {
+  try {
+    const res = await fetch(`/api/quizzes/${quizId}/questions`);
+
+    if (!res.ok) throw new Error("Failed to fetch quiz questions");
+
+    return await res.json(); 
+  } catch (err) {
+    console.error("Error fetching quiz questions:", err);
+    return [];
+  }
+}
 
 //calls quiz controller: viewStudentQuestions
 export async function viewStudentQuestions() {
@@ -307,24 +383,6 @@ export async function viewStudentQuestions() {
       console.error(err);
       alert("Could not load quiz questions.");
     }
-}
-
-
-//assign badge after quiz is done
-export async function assignBadge(studentId) {
-  try {
-    const res = await fetch(`/api/students/${studentId}/badgeAssign`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" }
-    });
-
-    if (!res.ok) throw new Error("Failed to assign badge");
-
-    return await res.json(); 
-  } catch (err) {
-    console.error("Error assigning badge:", err);
-    return false;
-  }
 }
 
 //view student badges
@@ -360,6 +418,7 @@ export async function searchStudents(query) {
   }
 }
 
+//populates ui with class name
 export async function getClassName(classId) {
   try {
     const res = await fetch(`/api/classes/${classId}/name`);
@@ -373,16 +432,6 @@ export async function getClassName(classId) {
   }
 }
 
-export async function addReadingToQuiz(quizId, readingId) {
-  const response = await fetch(`/api/quiz/${quizId}/addReading`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ readingId }),
-  });
-
-  return response.json();
-}
-
 export async function getQuizObjectives(quizId) {
   const response = await fetch(`/api/quizzes/${quizId}/objectives`, {
     method: "GET",
@@ -392,9 +441,71 @@ export async function getQuizObjectives(quizId) {
   return response.json();
 }
 
+// Begin session
+export async function startAttemptSession(studentId, quizId, objectiveId) {
+  try {
+    const res = await fetch(`/api/attempt/start`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ studentId, quizId, objectiveId }),
+    });
 
+    if (!res.ok) throw new Error("Failed to start attempt session");
 
+    const data = await res.json(); // { sessionId: 123 }
+    return data.sessionId;          // return just the sessionId
+  } catch (err) {
+    console.error("Error starting attempt session:", err);
+    return -1;
+  }
+}
 
+// Save each answer
+export async function saveStudentAnswer(sessionId, questionId, chosenChoiceId) {
+  try {
+    const res = await fetch(`/api/attempt/answer`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionId, questionId, chosenChoiceId }),
+    });
 
+    if (!res.ok) throw new Error("Failed to save student answer");
 
+    const data = await res.json(); // { success: true/false } or boolean
+    return data.success ?? data;    // ensures boolean
+  } catch (err) {
+    console.error("Error saving student answer:", err);
+    return false;
+  }
+}
 
+// End session
+export async function finalizeAttemptSession(sessionId) {
+  try {
+    const res = await fetch(`/api/attempt/finish/${sessionId}`, {
+      method: "POST",
+    });
+
+    if (!res.ok) throw new Error("Failed to finalize attempt session");
+
+    const data = await res.json(); // { success: true/false } or boolean
+    return data.success ?? data;    // ensures boolean
+  } catch (err) {
+    console.error("Error finalizing attempt session:", err);
+    return false;
+  }
+}
+
+// Get attempt results
+export async function getAttemptResults(sessionId) {
+  try {
+    const res = await fetch(`/api/attempt/${sessionId}/results`);
+
+    if (!res.ok) throw new Error("Failed to fetch attempt results");
+
+    return await res.json(); // returns result object
+  } catch (err) {
+    console.error("Error fetching attempt results:", err);
+    return {};
+  }
+}

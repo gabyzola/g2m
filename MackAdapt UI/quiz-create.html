@@ -82,6 +82,7 @@
     const query = new URLSearchParams(window.location.search);
     const quizId = query.get("quizId");
     const classId = query.get("classId");
+    const userId = query.get("userId");
 
     const readingSelect = document.getElementById("readingSelect");
     const objectiveSelect = document.querySelector("#objective");
@@ -222,8 +223,10 @@
       alert("Please select a reading first.");
       return;
     }
+    console.log("Linking reading:", { quizId, readingId });
 
     const result = await addReadingToQuiz(quizId, readingId);
+    console.log(result);
 
     if (result && result.success) {
       alert("Reading linked to quiz!");
@@ -272,7 +275,7 @@
       }
 
       alert("Quiz saved successfully!");
-      window.location.href = `class-module.html?classId=${classId}`;
+      window.location.href = `class-module.html?classId=${classId}&userId=${userId}`;
     });
   </script>
   </body>

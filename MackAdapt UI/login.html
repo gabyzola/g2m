@@ -1,251 +1,261 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login – MackAdapt</title>
+<head>
+<meta charset="UTF-8">
+<title>MackAdapt – Sign In</title>
 
-    <!-- Vite-compatible CSS path -->
-    <link rel="stylesheet" href="/style.css" />
-
-    <!-- Google Identity Services -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-
-    <style>
-      :root {
-        --navy: #002855;
-        --gold: #ffc72c;
-        --white: #ffffff;
-        --bg: #f5f7fb;
-        --ink: #1f2a44;
-        --muted: #6a7591;
-      }
-
-      body.login {
-        background: linear-gradient(180deg, #eef3ff, #f7f9ff);
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-      }
-
-      header {
-        background-color: var(--navy);
-        color: var(--white);
-        padding: 1rem 2rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-      header h1 {
-        font-size: 1.6rem;
-      }
-      header nav ul {
-        list-style: none;
-        display: flex;
-        gap: 1.25rem;
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+  
+<style>
+    body {
         margin: 0;
-        padding: 0;
-      }
-      header nav a {
-        color: var(--gold);
-        text-decoration: none;
+        background-color: #f7f7f7;
+        font-family: Arial, sans-serif;
+    }
+
+    /* Top nav */
+    .nav {
+        background-color: #002b5c;
+        color: white;
+        padding: 15px 40px;
+        font-size: 28px;
         font-weight: bold;
-      }
-      header nav a.active {
-        color: var(--white);
-        border-bottom: 2px solid var(--gold);
-      }
+    }
 
-      footer {
-        background: var(--navy);
-        color: var(--white);
-        text-align: center;
-        padding: 1rem;
-      }
-
-      .auth-wrap {
-        flex: 1;
-        display: grid;
-        place-items: center;
-        padding: 24px 16px;
-      }
-      .auth-card {
-        width: 100%;
-        max-width: 440px;
-        background: var(--white);
-        border-radius: 14px;
-        box-shadow: 0 10px 24px rgba(0, 40, 85, 0.12);
-        border: 1px solid rgba(0, 40, 85, 0.08);
-        padding: 22px 20px;
-      }
-
-      .auth-head {
-        text-align: center;
-        margin-bottom: 16px;
-      }
-      .auth-head h2 {
-        margin: 6px 0 4px;
-        color: var(--ink);
-        font-size: 1.6rem;
-      }
-      .auth-head p {
-        margin: 0;
-        color: var(--muted);
-        font-size: 0.95rem;
-      }
-
-      .btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        border-radius: 10px;
-        padding: 12px 14px;
-        cursor: pointer;
-        font-weight: 700;
-        position: relative;
-      }
-      .btn-ghost {
-        background: #fff;
-        color: var(--ink);
-        border: 1px solid rgba(0, 0, 0, 0.08);
-        width: 100%;
-      }
-
-      .field {
-        display: grid;
-        gap: 6px;
-        margin: 10px 0 12px;
-      }
-      .field label {
-        font-size: 0.9rem;
-        color: var(--ink);
-        font-weight: 600;
-      }
-      .field input {
-        border: 1px solid #d8deea;
-        border-radius: 10px;
-        padding: 12px;
-        font-size: 1rem;
-        outline: none;
-      }
-
-      .divider {
-        display: grid;
-        grid-template-columns: 1fr auto 1fr;
-        align-items: center;
-        gap: 10px;
-        color: var(--muted);
-        font-size: 0.9rem;
-        margin: 14px 0;
-      }
-      .divider::before,
-      .divider::after {
-        content: "";
-        height: 1px;
-        background: #e3e8f5;
-        display: block;
-      }
-
-      .aux {
+    .container {
+        margin-top: 80px;
         display: flex;
-        justify-content: space-between;
+        justify-content: center;
         align-items: center;
-        margin: 6px 0 2px;
-        font-size: 0.9rem;
-      }
-      .aux a {
-        color: var(--ink);
-      }
-      .subtle {
+    }
+
+    .login-card {
+        background: white;
+        padding: 40px;
+        width: 380px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .login-card h2 {
+        color: #002b5c;
+        margin-bottom: 25px;
         text-align: center;
-        margin-top: 10px;
-        color: var(--muted);
-        font-size: 0.9rem;
-      }
-    </style>
-  </head>
+    }
 
-  <body class="login">
-    <header>
-      <h1>MackAdapt</h1>
-      <nav aria-label="Primary">
-        <ul>
-          <li><a href="/index.html">Home</a></li>
-          <li><a href="/classes.html">Classes</a></li>
-          <li><a href="/student-dashboard.html">Student Dashboard</a></li>
-          <li><a href="/login.html" class="active">Login</a></li>
-        </ul>
-      </nav>
-    </header>
+    input, select {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+        margin-bottom: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+    }
 
-    <main class="auth-wrap">
-      <section class="auth-card" aria-labelledby="authTitle">
-        <div class="auth-head">
-          <div aria-hidden="true" style="font-size: 2rem">🔐</div>
-          <h2 id="authTitle">Sign in to MackAdapt</h2>
-          <p>Use your Google account or demo login.</p>
-        </div>
+    button {
+        width: 100%;
+        padding: 12px;
+        font-size: 18px;
+        font-weight: bold;
+        background-color: #ffc300;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+    }
 
-        <!-- Google OAuth Button -->
+    button:hover {
+        background-color: #e6b100;
+    }
+
+    .error {
+        color: red;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+    .modal-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.45);
+        display: none;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .modal {
+        background: white;
+        padding: 30px;
+        width: 420px;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+    }
+
+    .modal h3 {
+        color: #002b5c;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    #majorField,
+    #subjectField {
+        display: none;
+    }
+</style>
+
+</head>
+<body>
+
+<div class="nav">MackAdapt</div>
+
+<div class="container">
+    <div class="login-card">
+        <h2>Sign In</h2>
+
+        <div id="errorBox" class="error"></div>
         <div id="g-signin"></div>
 
-        <div class="divider">or</div>
+    </div>
+</div>
 
-        <form id="demo-login" novalidate>
-          <div class="field">
-            <label for="email">Email</label>
-            <input id="email" type="email" placeholder="you@example.com" required />
-          </div>
-          <div class="field">
-            <label for="password">Password</label>
-            <input id="password" type="password" placeholder="••••••••" required />
-          </div>
-          <div class="aux">
-            <a href="#" aria-disabled="true">Forgot password?</a>
-            <button class="btn btn-ghost" type="submit"><span>Continue</span></button>
-          </div>
-        </form>
+<!-- popup if user wasn't found in the db -->
+<div id="modalBg" class="modal-bg">
+    <div class="modal">
+        <h3>Create Your Account</h3>
 
-        <p class="subtle">Need an account? Contact your instructor.</p>
-      </section>
-    </main>
+        <input id="regEmail" disabled>
 
-    <footer>
-      <p>&copy; 2025 MackAdapt – Built for Merrimack College</p>
-    </footer>
+        <input id="regFirstName" placeholder="First Name">
+        <input id="regLastName" placeholder="Last Name">
 
-    <script>
-      window.addEventListener("DOMContentLoaded", () => {
-        const GOOGLE_CLIENT_ID = "762914522263-mshmosk8e89upni0c0p3upirltuqt7m6.apps.googleusercontent.com";
+        <select id="regRole">
+            <option value="">Select Role</option>
+            <option value="student">Student</option>
+            <option value="instructor">Instructor</option>
+        </select>
 
-        google.accounts.id.initialize({
-          client_id: GOOGLE_CLIENT_ID,
-          callback: handleGoogleCredentialResponse,
-        });
+        <input id="majorField" placeholder="Major (Students Only)">
+        <input id="subjectField" placeholder="Teaching Subject (Instructors Only)">
 
-        google.accounts.id.renderButton(document.getElementById("g-signin"), {
-          theme: "filled_blue",
-          size: "large",
-          width: 260,
-        });
+        <button id="createAccountBtn">Create Account</button>
 
-        google.accounts.id.prompt();
+    </div>
+</div>
 
-        function handleGoogleCredentialResponse(response) {
-          console.log("Google Credential:", response.credential);
-          window.location.href = "/classes.html";
-        }
+<script type="module">
+import { lookupUser } from "./src/api/backend.js";
+let currentGoogleSub = null;
 
-        document.getElementById("demo-login").addEventListener("submit", async (e) => {
-          e.preventDefault();
-          const email = document.getElementById("email").value.trim();
-          const password = document.getElementById("password").value.trim();
-          if (!email || !password) return alert("Enter email and password.");
-          await new Promise((res) => setTimeout(res, 600));
-          window.location.href = "/classes.html";
-        });
-      });
-    </script>
-  </body>
+window.addEventListener("DOMContentLoaded", () => {
+    
+    const GOOGLE_CLIENT_ID = "762914522263-mshmosk8e89upni0c0p3upirltuqt7m6.apps.googleusercontent.com";
+
+    google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogleCredentialResponse,
+    });
+
+    google.accounts.id.renderButton(document.getElementById("g-signin"), {
+        theme: "filled_blue",
+        size: "large",
+        width: 260,
+    });
+
+    // google.accounts.id.prompt();
+    document.getElementById("createAccountBtn").addEventListener("click", submitRegistration);
+  document.getElementById("regRole").addEventListener("change", toggleRoleFields);
+});
+
+async function handleGoogleCredentialResponse(response) {
+  try {
+    const jwt = response.credential;
+    const decoded = JSON.parse(atob(jwt.split('.')[1]));
+    const email = decoded.email;
+    const sub = decoded.sub;
+
+    if (!email || !sub) throw new Error("Invalid Google credential.");
+    currentGoogleSub = decoded.sub;
+
+    if (!email) throw new Error("Email not found in Google credential.");
+
+    const userId = await lookupUser(email); //returns stuff correctly
+
+    if (userId > 0) {
+        window.sessionStorage.setItem("googleToken", currentGoogleSub);
+      window.location.href = `/classes`;
+      return;
+    }
+
+    if (userId === -1) {
+      //show registration modal, this works when my id doesnt exist so we're good there
+      document.getElementById("modalBg").style.display = "flex";
+      document.getElementById("regEmail").value = email;
+      return;
+    }
+
+    //unexpected
+    alert("Unexpected error during login.");
+  } catch (err) {
+    console.error("Google login error:", err);
+    alert("Login failed. Please try again.");
+  }
+}
+function toggleRoleFields() {
+  const role = document.getElementById("regRole").value;
+  document.getElementById("majorField").style.display = role === "student" ? "block" : "none";
+  document.getElementById("subjectField").style.display = role === "instructor" ? "block" : "none";
+}
+
+async function submitRegistration() {
+  const email = document.getElementById("regEmail").value;
+  const first = document.getElementById("regFirstName").value.trim();
+  const last = document.getElementById("regLastName").value.trim();
+  const role = document.getElementById("regRole").value;
+  const major = document.getElementById("majorField").value.trim();
+  const subject = document.getElementById("subjectField").value.trim();
+
+  if (!first || !last || !role) {
+    alert("Please fill out all required fields.");
+    return;
+  }
+
+  const payload = {
+    googleSub: currentGoogleSub,
+    email,
+    isInstructor: role === "instructor",
+    major,
+    schoolSubject: subject,
+    firstName: first,
+    lastName: last
+  };
+
+  console.log("Submitting registration payload:", payload);
+
+  try {
+    const response = await fetch("api/users/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const newUser = await response.json();
+
+    if (!newUser || !newUser.userId) {
+      alert("Registration failed.");
+      return;
+    }
+
+    console.log("[DEBUG] Storing Google Sub in sessionStorage:", currentGoogleSub);
+    window.sessionStorage.setItem("googleToken", currentGoogleSub);
+
+    window.location.href = `/classes`;
+  } catch (err) {
+    console.error(err);
+    alert("Server error during registration.");
+  }
+}
+</script>
+
+</body>
 </html>

@@ -3,10 +3,12 @@ import g2m.g2m_backend.DAL.javaSQLobjects.Student;
 import g2m.g2m_backend.DAL.javaSQLobjects.Badge;
 import g2m.g2m_backend.DAL.javaSQLobjects.QuestionData;
 import g2m.g2m_backend.DAL.javaSQLobjects.QuizQuestion;
+import g2m.g2m_backend.DAL.javaSQLobjects.User;
 import g2m.g2m_backend.DAL.QuizDal;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -19,11 +21,31 @@ public class BusinessLogic {
         this.dal = dal;
     }
 
-    //register a new user
+    //either gets the user or creates a new user if they dont exist in db
     //api: done
-    public boolean registerUser(String username, String email, boolean isInstructor,
-                                String major, String schoolSubject, String firstName, String lastName) {
-        return dal.insertNewUser(username, email, isInstructor, major, schoolSubject, firstName, lastName);
+    public User getOrCreateUser(String googleSub, String email, boolean isInstructor,
+                                String major, String schoolSubject,
+                                String firstName, String lastName) 
+    {
+        return dal.getOrCreateUser(googleSub, email, isInstructor, major, schoolSubject, firstName, lastName);
+    }
+
+    //looks up the user id based on email: helpful for mapping
+    //api: done
+    public int getUserIdByEmail(String email) {
+        return dal.lookupUserIdByEmail(email);
+    }
+
+    //looks up the user id based on googleSub: crucial for the entire app
+    //api: done
+    public Map<String, Object> getUserIdBySub(String googleSub) {
+        return dal.lookupUserIdBySub(googleSub);
+    }
+
+    //determines student or instructor
+    //api: done
+    public int getUserRole(int userId) {
+        return dal.getUserRole(userId);
     }
 
     //create new class
@@ -56,8 +78,8 @@ public class BusinessLogic {
         return dal.getStudentsClasses(studentId);
     }
 
-    //add reading to a class module
-    //partly a placeholder rn, not really the best implementation
+    //add reading (topic) to a class module
+    //STRETCH GOAL: drop in pdf from files
     //api: done
     public int uploadReading(int instructorId, int classId, String readingName) {
         try {
@@ -70,7 +92,7 @@ public class BusinessLogic {
     }
 
     //add reading objective + profs will enter it manually for now
-    //stretch goal: ml gets them from the reading
+    //STRETCH GOAL: ml gets them from the reading
     //api: done
     public int insertNewReadingObjective(int readingId, int classId, String objectiveName) {
         if (objectiveName == null || objectiveName.isEmpty()) {
@@ -79,38 +101,32 @@ public class BusinessLogic {
         return dal.insertNewReadingObjective(readingId, classId, objectiveName);
     }
 
-    //just link reading to quiz without returning their objectives
+    //just link reading to quiz (so quiz can get objectives)
     //api: done
     public boolean addReadingToQuiz(int quizId, int readingId) {
         return dal.insertQuizReading(quizId, readingId);
     }
 
-    //link a reading to a quiz AND return the corresponding objectives
-    public List<Map<String, Object>> addReadingToQuizReturn(int quizId, int readingId) {
-        boolean success = dal.insertQuizReading(quizId, readingId);
-        if (success) {
-            return null;
-        }
-        else {
-            return dal.getObjectivesByQuiz(quizId);
-        }
-    }
-
-    //creates quiz- really just the name
+    //creates quiz -> just stifcks it in db, there are a lot of tiny methods here
+    //api: done
     public int createQuiz(int instructorId, int classId) {
         return dal.insertQuiz(instructorId, classId);
     }
 
-    //updates quiz name
+    //updates quiz name -> just the id is in the db right now
+    //api: done
     public boolean updateQuizName(int quizId, String newName) {
         return dal.updateQuizName(quizId, newName);
     }
 
-
+    //gets readings for a class (to display in sidebar)
+    //api: done
     public List<Map<String, Object>> getClassReadings(int classId) {
         return dal.getClassReadings(classId);
     }
 
+    //gets reading objectives -> to populate when a prof is making a quiz
+    //api: done
     public List<Map<String, Object>> viewReadingObjectives(int readingId) {
         return dal.getReadingObjectives(readingId);
     }
@@ -174,6 +190,7 @@ public class BusinessLogic {
     }
 
     //calculate and group quiz questions for specific student
+    //api: done
     public List<QuizQuestion> getStudentQuizQuestions(int studentId, int quizId) {
         List<Map<String, Object>> allRows = dal.getQuizQuestions(quizId);
         System.out.println("All quiz rows: " + allRows.size());
@@ -197,7 +214,7 @@ public class BusinessLogic {
             grouped.putIfAbsent(qid, new QuizQuestion());
             QuizQuestion q = grouped.get(qid);
 
-            q.setQuestionId(qid);
+            q.setQuestionId(qid); 
             q.setQuestionText((String) row.get("questionText"));
             q.setObjectiveId(((Number) row.get("objectiveId")).intValue());
             q.setLearningObjective((String) row.get("learningObjective"));
@@ -233,32 +250,23 @@ public class BusinessLogic {
     }
 
 
-    //checks if user can create a quiz
+    //checks if user can create a quiz -> similar to get user role
+    //api: done
     public boolean canCreateQuiz(int userId, int classId) {
         return dal.canCreateQuiz(userId, classId);
     }
 
+    //populates class name field
+    //api: done
     public String getClassName(int classId) {
         return dal.getClassName(classId);
     }
 
-
-    //get questions and choices
-
-     //submit answer
-
-    //get quiz score
-
     //assign badge check
+    //api: 
     public boolean assignBadge(int studentId) {
         return dal.assignBadge(studentId);
     }
-
-    // helper to check if choice is correct- will use this soon, its nowehre yet
-    private boolean isCorrectChoice(QuizQuestion.Choice choice, QuizQuestion question) {
-        return choice.getChoiceId() == question.getCorrectChoiceId();
-    }
-
 
     //display student's badges
     //api: done
@@ -273,11 +281,124 @@ public class BusinessLogic {
     }
 
     //delete class enrollee
+    //api: done
     public boolean removeEnrollee(int classId, int studentId) {
         return dal.deleteClassEnrollee(classId, studentId);
     }
 
+    public boolean resetObjectives(int userId) {
+        return dal.deleteStudentObjective(userId);
+    }
+
+    //begin attempt session
+    //api: to add
+    public int startAttemptSession(int studentId, int quizId, int objectiveId) {
+        try {
+            int sessionId = dal.startAttemptSession(studentId, quizId, objectiveId);
+
+            if (sessionId <= 0) {
+                System.out.println("Failed to create attempt session.");
+            } else {
+                System.out.println("Created attempt session: " + sessionId);
+            }
+
+            return sessionId;
+
+        } catch (Exception e) {
+            System.out.println("Error starting attempt session.");
+            e.printStackTrace();
+            return -1;
+        }
+    }
+
+    //save a single answer during the quiz
+    //api: to add
+    public boolean saveStudentAnswer(int sessionId, int questionId, int chosenChoiceId) {
+        try {
+            boolean success = dal.saveStudentAnswer(sessionId, questionId, chosenChoiceId);
+
+            if (!success) {
+                System.out.println("Failed to save answer for questionId: " + questionId);
+            }
+
+            return success;
+
+        } catch (Exception e) {
+            System.out.println("Error saving student answer.");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    //ends quiz attempt
+    // api: to add
+    public boolean finalizeAttemptSession(int sessionId) {
+        try {
+            boolean success = dal.finalizeAttemptSession(sessionId);
+
+            if (success) {
+                System.out.println("Session finalized: " + sessionId);
+            } else {
+                System.out.println("Failed to finalize session: " + sessionId);
+            }
+
+            return success;
+
+        } catch (Exception e) {
+            System.out.println("Error finalizing attempt session.");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    //gets results for attempt 
+    //api: to add
+    public Map<String, Object> getSessionResults(int sessionId) {
+        try {
+            Map<String, Object> results = dal.getSessionResults(sessionId);
+
+            if (results == null || results.isEmpty()) {
+                System.out.println("No results found for sessionId: " + sessionId);
+            } else {
+                System.out.println("Loaded results for sessionId: " + sessionId);
+            }
+
+            return results;
+
+        } catch (Exception e) {
+            System.out.println("Error retrieving session results.");
+            e.printStackTrace();
+            return Map.of();
+        }
+    }
+
     /*misc*/
+
+    //unused procedures (for now?)
+    public User findUserByEmail(String email) {
+        try {
+            return dal.findUserByEmail(email);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    // helper to check if choice is correct- will use this soon, its nowehre yet
+    private boolean isCorrectChoice(QuizQuestion.Choice choice, QuizQuestion question) {
+        return choice.getChoiceId() == question.getCorrectChoiceId();
+    }
+
+    //link a reading to a quiz AND return the corresponding objectives
+    public List<Map<String, Object>> addReadingToQuizReturn(int quizId, int readingId) {
+        boolean success = dal.insertQuizReading(quizId, readingId);
+        if (success) {
+            return null;
+        }
+        else {
+            return dal.getObjectivesByQuiz(quizId);
+        }
+    }
 
     //search for a student by email, name, or ID
     public ArrayList<HashMap<String, Object>> searchStudent(String filterType, String query) {
@@ -292,6 +413,13 @@ public class BusinessLogic {
                 System.out.println("Invalid search type. Use: email, name, or id.");
                 return new ArrayList<>();
         }
+    }
+
+    public boolean createUser(String googleSub, String email, boolean isInstructor,
+                              String major, String schoolSubject,
+                              String firstName, String lastName) 
+    {
+        return dal.insertNewUser(googleSub, email, isInstructor, major, schoolSubject, firstName, lastName);
     }
 
     public static void printStudents(ArrayList<Student> students) {

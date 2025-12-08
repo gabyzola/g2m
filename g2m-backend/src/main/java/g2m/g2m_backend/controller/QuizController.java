@@ -5,13 +5,14 @@ import g2m.g2m_backend.business.QuizManager;
 import g2m.g2m_backend.DAL.javaSQLobjects.Badge;
 import g2m.g2m_backend.DAL.javaSQLobjects.QuestionData;
 import g2m.g2m_backend.DAL.javaSQLobjects.Student;
+import g2m.g2m_backend.DAL.javaSQLobjects.User;
 import g2m.g2m_backend.DAL.javaSQLobjects.QuizQuestion;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
+import java.util.ArrayList; 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,26 +30,34 @@ public class QuizController {
         this.bl = bl;
         this.ql = ql;
     }
- 
-    // Register a new user: UNTESTED
-    //frontend:
-    //frontend tested:
+
+    //to be used in registering a user or returning an existing user
+    //js: 
     @PostMapping("/users/register")
-    public boolean registerUser(@RequestBody Map<String, Object> data) {
-        String username = (String) data.get("username");
-        String email = (String) data.get("email");
+    public User registerUser(@RequestBody Map<String, Object> data) {
+
+        String googleSub = data.get("googleSub").toString();
+        String email = data.get("email").toString();
         boolean isInstructor = Boolean.parseBoolean(data.get("isInstructor").toString());
-        String major = (String) data.get("major");
-        String subject = (String) data.get("schoolSubject");
-        String firstName = (String) data.get("firstName");
-        String lastName = (String) data.get("lastName");
+        String major = data.getOrDefault("major", "").toString();
+        String schoolSubject = data.getOrDefault("schoolSubject", "").toString();
+        String firstName = data.get("firstName").toString();
+        String lastName = data.get("lastName").toString();
+        System.out.println("Payload received: " + data);
 
-        return bl.registerUser(username, email, isInstructor, major, subject, firstName, lastName);
+        return bl.getOrCreateUser(
+                googleSub, email,
+                isInstructor,
+                major,
+                schoolSubject,
+                firstName,
+                lastName
+        );
+
     }
-
-    //create class: NEEDS A FIX
-    //frontend:
-    //frontend tested:
+    
+    //for professor to create a new class
+    //js: done
     @PostMapping("/classes/create")
     public boolean createClass(@RequestBody Map<String, Object>data) {
         int classId = Integer.parseInt(data.get("classId").toString());
@@ -58,19 +67,47 @@ public class QuizController {
         return bl.createClass(classId, className, instructorEmail);
     }
 
+    //gets a user from email
+    //js: done
+    @PostMapping("/lookup")
+    public Map<String, Object> lookupUser(@RequestBody Map<String, Object> data) {
+        System.out.println("LOOKUP HIT — Incoming body: " + data);
+
+        String email = data.get("email").toString();
+        System.out.println("Extracted email: " + email);
+
+        int userId = bl.getUserIdByEmail(email);
+        System.out.println("Result from getUserIdByEmail: " + userId);
+
+        return Map.of("userId", userId);
+    }
+    
+    //lookup user by google sub
+    //js:
+    @PostMapping("/lookup/sub")
+    public Map<String, Object> lookupUserBySub(@RequestBody Map<String, Object> data) {
+        System.out.println("LOOKUP BY SUB HIT — Incoming body: " + data);
+
+        String googleSub = data.get("googleSub").toString();
+        System.out.println("Extracted googleSub: " + googleSub);
+
+        Map<String, Object> userData = bl.getUserIdBySub(googleSub);
+        System.out.println("Result from getUserIdBySub: " + userData);
+
+        return userData; // returns both userId and email
+    }
+
     //display a list of instructor classes
     //TESTED: Good!
     //retest: good!
-    //frontend:
-    //frontend tested:
+    //js:
     @GetMapping("/instructors/{instructorId}/classes")
     public List<Map<String, Object>> viewInstructorClasses(@PathVariable int instructorId) {
         return bl.viewInstructorClasses(instructorId);
     }
 
-    // Enroll student: UNTESTED
-    //frontend:
-    //frontend tested:
+    // Enroll student: Tested
+    //js:
     @PostMapping("/instructors/classes/enroll")
     public boolean enrollStudent(@RequestBody Map<String, Object> data) {
         int classId = Integer.parseInt(data.get("classId").toString());
@@ -112,18 +149,28 @@ public class QuizController {
     //frontend: Implemented
     //frontend tested:
     @GetMapping("/canCreate/{classId}")
-    public Map<String, Boolean> canCreateQuiz(@PathVariable int classId) {
-        int userId = 4; //hardcoded for testing, try 1 if you want to test a student
+    public Map<String, Boolean> canCreateQuiz(
+            @PathVariable int classId,
+            @RequestParam int userId) {   //no more hardcoded id wooo!
         boolean canCreate = bl.canCreateQuiz(userId, classId);
         return Map.of("canCreate", canCreate);
+    }
+
+    //gets whether student or instructor
+    @GetMapping("/role/{userId}")
+    public Map<String, Object> getUserRole(@PathVariable int userId) {
+        int role = bl.getUserRole(userId); //1 = instructor, 0 = student, -1 = not found/error
+        return Map.of("isInstructor", role == 1);
     }
 
     //just returns a new quiz id to put it in the query string
     //frontend: Implemented
     //frontend tested:
    @PostMapping("/classes/{classId}/quizzcreation")
-    public ResponseEntity<Map<String, Integer>> createQuiz(@PathVariable int classId) {
-        int userId = 4; //hardcoded for now
+    public ResponseEntity<Map<String, Integer>> createQuiz(
+            @PathVariable int classId,
+            @RequestParam int userId  // read userId from query string
+    ) {
         int newQuizId = bl.createQuiz(userId, classId);
 
         if (newQuizId > 0) {
@@ -133,6 +180,7 @@ public class QuizController {
                                 .body(Map.of("quizId", -1));
         }
     }
+
     
 
     //upload reading: UNTESTED
@@ -149,9 +197,6 @@ public class QuizController {
 
         return Map.of("readingId", readingId);
     }
-
-
-
 
     //add objectives to reading: UNTESTED
     //this needs to be manual for now bc time crucnch
@@ -175,9 +220,7 @@ public class QuizController {
         }
     }
 
-
-
-    //call this when a student submits quiz
+    //call this when a student submits quiz, checks whether they deserve a new badge
     @PostMapping("/students/{studentId}/badgeAssign")
     public boolean assignBadge(@PathVariable int studentId) {
         return bl.assignBadge(studentId);
@@ -201,14 +244,9 @@ public class QuizController {
         return response;
     }
 
-    //publish quiz (DOES NOT UPDATE QUIZ ID) -> i need to make this in db but i know EXACTLY what i need for that so ill do it soon
-    //NOT implemented
-
     //when an instructor clicks on "Add Question" inside their quiz module, the information they put in for that question gets sent here
-    //that info is made into a QuesitonData obj
     //i send that to bl
-    //UNTESTED
-    //async: done
+    //js: done
     //frontend: Implemented
     //frontend tested:
     @PostMapping("/quizzes/{quizId}/questions")
@@ -239,7 +277,7 @@ public class QuizController {
     }
 
     //updates the quiz name
-    //async: done
+    //js: done
     @PostMapping("/quizzes/{quizId}/name")
     public ResponseEntity<Map<String, Object>> updateQuizName(
             @PathVariable int quizId,
@@ -255,7 +293,6 @@ public class QuizController {
                                 .body(Map.of("status", "error"));
         }
     }
-
 
     //view quizzes for a class
     //TESTED: Good!
@@ -295,7 +332,6 @@ public class QuizController {
         @PathVariable int quizId,
         @RequestBody Map<String, Object> requestBody) {
 
-        // === Debug logs for incoming data ===
         System.out.println("=== Incoming POST to selectObjective ===");
         System.out.println("Quiz ID from path: " + quizId);
         System.out.println("Request Body: " + requestBody);
@@ -326,7 +362,6 @@ public class QuizController {
                                 .body(Map.of("status", "error", "message", "BL returned false"));
         }
     }
-
 
     //display chosen objectives
     //if gio wants to add a section where the student can see what they chose, not urgent
@@ -375,7 +410,6 @@ public class QuizController {
     }
     */
 
-
     //display student badges
     //TESTED: Good!
     //retest: good!
@@ -404,7 +438,62 @@ public class QuizController {
     ) {
         return bl.removeEnrollee(classId, studentId);
     }
-    
+
+    @DeleteMapping("/remove/objectives/{studentId}")
+    public boolean resetObjective(
+            @PathVariable int studentId
+    ) {
+        return bl.resetObjectives(studentId);
+    }
+
+    //begins attempt
+    @PostMapping("/attempt/start")
+    public Map<String, Object> startAttemptSession(@RequestBody Map<String, Object> body) {
+        int studentId, quizId, objectiveId;
+        try {
+            studentId = Integer.parseInt(body.get("studentId").toString());
+            quizId = Integer.parseInt(body.get("quizId").toString());
+            objectiveId = Integer.parseInt(body.get("objectiveId").toString());
+        } catch (Exception e) {
+            System.out.println("Failed to parse IDs: " + e.getMessage());
+            return Map.of("sessionId", -1);
+        }
+
+        int sessionId = bl.startAttemptSession(studentId, quizId, objectiveId);
+        System.out.println("Starting attempt session with studentId=" + studentId + ", quizId=" + quizId + ", objectiveId=" + objectiveId);
+        System.out.println("Created sessionId=" + sessionId);
+
+        return Map.of("sessionId", sessionId);
+    }
+
+    // Save individual answers
+    @PostMapping("/attempt/answer")
+    public boolean saveStudentAnswer(@RequestBody Map<String, Object> body) {
+        int sessionId, questionId, chosenChoiceId;
+        try {
+            sessionId = Integer.parseInt(body.get("sessionId").toString());
+            questionId = Integer.parseInt(body.get("questionId").toString());
+            chosenChoiceId = Integer.parseInt(body.get("chosenChoiceId").toString());
+        } catch (Exception e) {
+            System.out.println("Failed to parse IDs: " + e.getMessage());
+            return false;
+        }
+
+        return bl.saveStudentAnswer(sessionId, questionId, chosenChoiceId);
+    }
+
+    // Ends attempt
+    @PostMapping("/attempt/finish/{sessionId}")
+    public boolean finalizeAttempt(@PathVariable int sessionId) {
+        return bl.finalizeAttemptSession(sessionId);
+    }
+
+    // Get session results
+    @GetMapping("/attempt/{sessionId}/results")
+    public Map<String, Object> getAttemptResults(@PathVariable int sessionId) {
+        return bl.getSessionResults(sessionId);
+    }
+
     // Search students: Ready to connect
     //TESTED: Good
     //frontend:
@@ -425,3 +514,4 @@ public class QuizController {
         return resp;
     }
 }
+ 

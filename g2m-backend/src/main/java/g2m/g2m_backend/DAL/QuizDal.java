@@ -17,6 +17,7 @@ import g2m.g2m_backend.DAL.javaSQLobjects.Student;
 import jakarta.annotation.PostConstruct;
 import g2m.g2m_backend.DAL.javaSQLobjects.Badge;
 import g2m.g2m_backend.DAL.javaSQLobjects.QuestionData;
+import g2m.g2m_backend.DAL.javaSQLobjects.User;
 
 @Repository
 public class QuizDal {
@@ -42,7 +43,7 @@ public class QuizDal {
     }
 
     //getMySQLConnection
-    //establishes connection to the database-- this is a local instance right now!
+    //establishes connection to the database-- springboot automatically injects these from application.properties
     private Connection getMySQLConnection(String url, String user, String password) {
     try {
         Class.forName("com.mysql.cj.jdbc.Driver");
@@ -59,11 +60,21 @@ public class QuizDal {
 
     //register new user
     //bl: done
-    public boolean insertNewUser(String username, String email, boolean isInstructor, String major, String schoolSubject, String firstName, String lastName) {
+    public boolean insertNewUser(
+            String googleSub,
+            String email,
+            boolean isInstructor,
+            String major,
+            String schoolSubject,
+            String firstName,
+            String lastName)
+    {
         CallableStatement stmt = null;
+
         try {
             stmt = myConnection.prepareCall("{CALL InsertNewUser(?, ?, ?, ?, ?, ?, ?)}");
-            stmt.setString(1, username);
+
+            stmt.setString(1, googleSub);
             stmt.setString(2, email);
             stmt.setBoolean(3, isInstructor);
             stmt.setString(4, major);
@@ -73,14 +84,141 @@ public class QuizDal {
 
             stmt.execute();
             return true;
+
         } catch (SQLException e) {
             System.out.println("Error inserting new user.");
             e.printStackTrace();
             return false;
+
         } finally {
+            try { if (stmt != null) stmt.close(); } catch (SQLException ignore) {}
+        }
+    }
+
+    //gets user id based on google sub, i do this when anew page loads EVERY TIME or else people's database info will NOT show up
+    //bl: done
+    public Map<String, Object> lookupUserIdBySub(String googleSub) {
+        CallableStatement stmt = null;
+
+        try {
+            stmt = myConnection.prepareCall("{CALL LookupUserBySub(?)}");
+            stmt.setString(1, googleSub);
+
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                int userId = rs.getInt("userId"); 
+                String email = rs.getString("email"); 
+
+                if (rs.wasNull() || userId == 0 || email == null) {
+                    return Map.of("userId", -1, "email", null);
+                }
+
+                return Map.of("userId", userId, "email", email);
+            }
+            return Map.of("userId", -1, "email", null);
+
+        } catch (SQLException e) {
+            System.out.println("Error looking up user: " + e.getMessage());
+            return Map.of("userId", -1, "email", null);
+
+        } finally {
+            try { if (stmt != null) stmt.close(); } catch (SQLException ignore) {}
+        }
+    }
+
+    //just returns an int-- this was from the original log in method. keeping this for futuure use
+    //bl: done
+    public int lookupUserIdByEmail(String email) {
+        CallableStatement stmt = null;
+
+        try {
+            stmt = myConnection.prepareCall("{CALL LookupUser(?)}");
+            stmt.setString(1, email);
+
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                int id = rs.getInt("userId"); 
+                if (rs.wasNull()) return -1;  // user not found
+                return id;
+            }
+            return -1; 
+
+
+        } catch (SQLException e) {
+            System.out.println("Error looking up user: " + e.getMessage());
+            return -1;
+
+        } finally {
+            try { if (stmt != null) stmt.close(); } catch (SQLException ignore) {}
+        }
+    }
+
+    //determines student or instructor to get the right privs
+    //bl:done
+    public int getUserRole(int userId) {
+        CallableStatement stmt = null;
+
+        try {
+            stmt = myConnection.prepareCall("{CALL isInstructorCheck(?)}");
+            stmt.setInt(1, userId);
+
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                int role = rs.getInt("isInstructor"); // 1 for instructor, 0 for student
+                if (rs.wasNull()) return -1;          // user not found
+                return role;
+            }
+
+            return -1; // no rows returned, user not found
+
+        } catch (SQLException e) {
+            System.out.println("Error fetching user role: " + e.getMessage());
+            return -1;
+
+        } finally {
+            try { if (stmt != null) stmt.close(); } catch (SQLException ignore) {}
+        }
+    }
+
+    //finds a user object based on the google sub
+    //bl: not used there, used in this file!
+    public User findUserBySub(String googleSub) throws SQLException {
+        String sql = "SELECT * FROM UserAccounts WHERE googleSub = ?";
+        PreparedStatement stmt = myConnection.prepareStatement(sql);
+        stmt.setString(1, googleSub);
+        ResultSet rs = stmt.executeQuery();
+
+        if (rs.next()) {
+            return new User(
+                rs.getString("googleSub"),
+                rs.getInt("userId"),
+                rs.getString("email"),
+                rs.getBoolean("isInstructor"),
+                rs.getString("firstName"),
+                rs.getString("lastName")
+            );
+        }
+        return null;
+    }
+
+    //registration process to get an existing user by sub or create one with new sub
+    //bl:done
+    public User getOrCreateUser(String googleSub, String email, boolean isInstructor,
+                            String major, String schoolSubject,
+                            String firstName, String lastName) 
+        {
             try {
-                if (stmt != null) stmt.close();
-            } catch (SQLException e) { e.printStackTrace(); }
+            User existing = findUserBySub(googleSub);
+            if (existing != null) return existing;
+
+            insertNewUser(googleSub, email, isInstructor, major, schoolSubject, firstName, lastName);
+            return findUserBySub(googleSub);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
@@ -166,7 +304,7 @@ public class QuizDal {
         }
     }
 
-    //lists class enrollees
+    //lists class enrollees (in the sidear in UI OR in manage enrollees file)
     //bl:done
     public List<Map<String, Object>> searchForEnrolleesByClass(int classId) {
         List<Map<String, Object>> results = new ArrayList<>();
@@ -240,7 +378,8 @@ public class QuizDal {
         }
     }
 
-
+    //puts a reading objective under a certain reading. this is a must for the adaptive quizzing!
+    //bl:done
     public int insertNewReadingObjective(int readingId, int classId, String objectiveName) {
         CallableStatement stmt = null;
 
@@ -271,8 +410,8 @@ public class QuizDal {
         }
     }
 
-
-    //get all the readings in a class
+    //get all the readings in a class (for creating quiz OR in classroom sidebar)
+    //bl: done
     public List<Map<String, Object>> getClassReadings(int classId) {
         List<Map<String, Object>> results = new ArrayList<>();
         try (CallableStatement cs = myConnection.prepareCall("{CALL getReadingsByClass(?)}")) {
@@ -291,33 +430,8 @@ public class QuizDal {
         return results;
     }
 
-    //create quiz- instructor priv
-    //creates a quiz module- sets quiz name and automatically passes classId and instructorId
+    //just sticks new quiz in db-- all the info will get added later
     //bl: done
-    public int insertNewQuiz(String quizName, int instructorId, int classId) {
-        CallableStatement stmt = null;
-        try {
-            stmt = myConnection.prepareCall("{CALL InsertNewQuiz(?, ?, ?, ?)}");
-            stmt.setString(1, quizName);
-            stmt.setInt(2, instructorId);
-            stmt.setInt(3, classId);
-            stmt.registerOutParameter(4, java.sql.Types.INTEGER);
-
-            stmt.execute();
-
-            int newQuizId = stmt.getInt(4);
-            System.out.println("New quiz inserted with ID: " + newQuizId);
-            return newQuizId;
-
-        } catch (SQLException e) {
-            System.out.println("Error inserting new quiz.");
-            e.printStackTrace();
-            return -1;
-        } finally {
-            try { if (stmt != null) stmt.close(); } catch (SQLException e) { e.printStackTrace(); }
-        }
-    }
-
     public int insertQuiz(int instructorId, int classId) {
         CallableStatement stmt = null;
         ResultSet rs = null;
@@ -349,11 +463,7 @@ public class QuizDal {
         }
     }
 
-
-
-    //assign reading to quiz
-    //during quiz creation there will be a button where the prof can link a reading
-    //when they link a reading, the relevant objectives will populate
+    //assign reading to quiz, during quiz creation there will be a button where the prof can link a reading, when they link a reading, the relevant objectives will populate
     //bl: done
     public boolean insertQuizReading(int quizId, int readingId) {
         CallableStatement stmt = null;
@@ -372,9 +482,7 @@ public class QuizDal {
         }
     }
 
-
-    //insert new question + their objectives
-    //actually inserts the question, its choices, its assigned objective, and marks the correct choice
+    //insert new question + their objectives actually inserts the question, its choices, its assigned objective, and marks the correct choice
     //bl: done
     public boolean insertNewQuestion(QuestionData qData, int questionNumber) {
         CallableStatement stmt = null;
@@ -462,6 +570,8 @@ public class QuizDal {
         return results;
     }
 
+    //get objectives by reading, when an instrucxtor chooses a reading for the quiz to be based on
+    //bl: done
     public List<Map<String, Object>> getReadingObjectives(int readingId) {
         List<Map<String, Object>> results = new ArrayList<>();
         try (CallableStatement cs = myConnection.prepareCall("{CALL getReadingObjectives(?)}")) {
@@ -479,8 +589,7 @@ public class QuizDal {
         return results;
     }
 
-    //display ALL quiz questions
-    // Fetches all quiz questions as raw data without wrapping into QuizQuestion
+    //display ALL quiz questions, regardless of chosen objectives
     //bl: done
     public List<Map<String, Object>> getQuizQuestions(int quizId) {
         List<Map<String, Object>> results = new ArrayList<>();
@@ -513,8 +622,7 @@ public class QuizDal {
         return results;
     }
 
-
-    //student selects objective before taking the quiz
+    //student selects objective before taking the quiz, they must do this if they want an adaptive quiz!
     //bl: done
     public boolean chooseLearningObjective(int studentId, int quizId, int objectiveId) {
         CallableStatement stmt = null;
@@ -537,7 +645,7 @@ public class QuizDal {
         }
     }
 
-    //get student objectives
+    //get student objectives idk if this is actually needed in the ui, but i already coded it
     //bl: done
    public List<Map<String, Object>> getStudentObjectives(int studentId) {
     List<Map<String, Object>> results = new ArrayList<>();
@@ -562,27 +670,8 @@ public class QuizDal {
         return results;
     }
 
-
-
-    //get next question (or first question)
-    public Map<String, Object> getNextQuestion(int quizId, int studentId) {
-        Map<String, Object> result = new HashMap<>();
-        try (CallableStatement cs = myConnection.prepareCall("{CALL GetNextQuestion(?, ?)}")) {
-            cs.setInt(1, quizId);
-            cs.setInt(2, studentId);
-            ResultSet rs = cs.executeQuery();
-            if (rs.next()) {
-                result.put("questionId", rs.getInt("questionId"));
-                result.put("questionText", rs.getString("questionText"));
-                result.put("choiceId", rs.getInt("choiceId"));
-                result.put("choiceLabel", rs.getString("choiceLabel"));
-                result.put("choiceText", rs.getString("choiceText"));
-            }
-        } catch (SQLException e) { e.printStackTrace(); }
-        return result;
-    }
-
     //submit answer-- student gets feedback after each question
+    //bl:
     public Map<String, Object> submitAnswer(int studentId, int quizId, int questionId, int choiceId) {
         Map<String, Object> result = new HashMap<>();
         try (CallableStatement cs = myConnection.prepareCall("{CALL SubmitAnswer(?, ?, ?, ?)}")) {
@@ -600,6 +689,7 @@ public class QuizDal {
     }
 
     //get quiz score after last question is answered
+    //bl:
     public Map<String, Object> getQuizScore(int studentId, int quizId) {
         Map<String, Object> result = new HashMap<>();
         try (CallableStatement cs = myConnection.prepareCall("{CALL GetQuizScore(?, ?)}")) {
@@ -616,6 +706,7 @@ public class QuizDal {
     }
 
     //assign badge
+    //bl:
     public boolean assignBadge(int studentId) {
         CallableStatement stmt = null;
         try {
@@ -634,8 +725,9 @@ public class QuizDal {
             } catch (SQLException e) { e.printStackTrace(); }
         }
     }
-
+ 
     //display all the students badges
+    //bl: done
     public List<Map<String, Object>> getStudentBadges(int studentId) {
         List<Map<String, Object>> results = new ArrayList<>();
         try (CallableStatement cs = myConnection.prepareCall("{CALL getStudentBadges(?)}")) {
@@ -653,6 +745,7 @@ public class QuizDal {
     }
 
     //display all badges that can be earned
+    //bl:done
     public ArrayList<Badge> getAllBadges() {
         Statement myStatement;
         try {
@@ -674,6 +767,8 @@ public class QuizDal {
         }
     }
 
+    //returns class name for ui population
+    //bl:done
     public String getClassName(int classId) {
         Statement myStatement;
         try {
@@ -694,6 +789,8 @@ public class QuizDal {
         }
     }
 
+    //takes existing quiz from insert quiz and updates th4e name
+    //bl:done
     public boolean updateQuizName(int quizId, String quizName) {
         String sql = "{CALL updateQuizName(?, ?)}";
         try (CallableStatement stmt = myConnection.prepareCall(sql)) {
@@ -710,12 +807,141 @@ public class QuizDal {
         }
     }
 
-    
+    //starts attempt session right after a student picks their objectives
+    public int startAttemptSession(int studentId, int quizId, int objectiveId) {
+        CallableStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            stmt = myConnection.prepareCall("{CALL StartAttemptSession(?, ?, ?)}");
+            stmt.setInt(1, studentId);
+            stmt.setInt(2, quizId);
+            stmt.setInt(3, objectiveId);
+
+            rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt("sessionId");
+            }
+
+            return -1;
+
+        } catch (SQLException e) {
+            System.out.println("Error starting attempt session: " + e.getMessage());
+            return -1;
+
+        } finally {
+            try { if (rs != null) rs.close(); } catch (SQLException ignore) {}
+            try { if (stmt != null) stmt.close(); } catch (SQLException ignore) {}
+        }
+    }
+
+    //saves each student answer
+    public boolean saveStudentAnswer(int sessionId, int questionId, int chosenChoiceId) {
+        CallableStatement stmt = null;
+
+        try {
+            stmt = myConnection.prepareCall("{CALL SaveStudentAnswer(?, ?, ?)}");
+            stmt.setInt(1, sessionId);
+            stmt.setInt(2, questionId);
+            stmt.setInt(3, chosenChoiceId);
+
+            stmt.execute();
+            return true;
+
+        } catch (SQLException e) {
+            System.out.println("Error saving student answer: " + e.getMessage());
+            return false;
+
+        } finally {
+            try { if (stmt != null) stmt.close(); } catch (SQLException ignore) {}
+        }
+    }
+
+    //ends attempt session and finalizes the score
+    public boolean finalizeAttemptSession(int sessionId) {
+        CallableStatement stmt = null;
+
+        try {
+            stmt = myConnection.prepareCall("{CALL FinalizeAttemptSession(?)}");
+            stmt.setInt(1, sessionId);
+
+            stmt.execute();
+            return true;
+
+        } catch (SQLException e) {
+            System.out.println("Error finalizing attempt session: " + e.getMessage());
+            return false;
+
+        } finally {
+            try { if (stmt != null) stmt.close(); } catch (SQLException ignore) {}
+        }
+    }
+
+    //gets full results (this is gonna return a LOT)
+    public Map<String, Object> getSessionResults(int sessionId) {
+        CallableStatement stmt = null;
+        Map<String, Object> result = new HashMap<>();
+
+        try {
+            stmt = myConnection.prepareCall("{CALL GetSessionResults(?)}");
+            stmt.setInt(1, sessionId);
+
+            boolean hasResults = stmt.execute();
+
+            // First result set: AttemptSessions row
+            if (hasResults) {
+                ResultSet rs = stmt.getResultSet();
+                if (rs.next()) {
+                    Map<String, Object> session = new HashMap<>();
+                    session.put("sessionId", rs.getInt("sessionId"));
+                    session.put("studentId", rs.getInt("studentId"));
+                    session.put("quizId", rs.getInt("quizId"));
+                    session.put("objectiveId", rs.getInt("objectiveId"));
+                    session.put("score", rs.getInt("score"));
+                    session.put("percentage", rs.getBigDecimal("percentage"));
+                    result.put("session", session);
+                }
+            }
+
+            // Move to second result set: AttemptAnswers
+            if (stmt.getMoreResults()) {
+                ResultSet rs2 = stmt.getResultSet();
+                List<Map<String, Object>> answers = new ArrayList<>();
+
+                while (rs2.next()) {
+                    Map<String, Object> row = new HashMap<>();
+                    row.put("questionId", rs2.getInt("questionId"));
+                    row.put("chosenChoiceId", rs2.getInt("chosenChoiceId"));
+                    row.put("chosenLetter", rs2.getString("chosenLetter"));
+                    row.put("correctLetter", rs2.getString("correctLetter"));
+                    row.put("isCorrect", rs2.getBoolean("isCorrect"));
+                    row.put("pointsEarned", rs2.getInt("pointsEarned"));
+                    row.put("questionText", rs2.getString("questionText"));
+
+                    answers.add(row);
+                }
+
+                result.put("answers", answers);
+            }
+
+            return result;
+
+        } catch (SQLException e) {
+            System.out.println("Error getting session results: " + e.getMessage());
+            return Map.of();
+
+        } finally {
+            try { if (stmt != null) stmt.close(); } catch (SQLException ignore) {}
+        }
+    }
+
     /*DELETIONS */
     public boolean deleteQuestion(int questionId) { return executeSimpleDelete("{CALL DeleteQuestion(?)}", questionId); }
     public boolean deleteQuiz(int quizId) { return executeSimpleDelete("{CALL DeleteQuiz(?)}", quizId); }
     public boolean deleteClass(int classId) { return executeSimpleDelete("{CALL DeleteClass(?)}", classId); }
     public boolean deleteUser(int userId) { return executeSimpleDelete("{CALL DeleteUser(?)}", userId); }
+    public boolean deleteStudentObjective(int userId) { return executeSimpleDelete("{CALL DeleteStudentObjectives(?)}", userId); }
     public boolean deleteClassEnrollee(int classId, int studentId) {
         return executeDoubleDelete("{CALL DeleteClassEnrollee(?, ?)}", classId, studentId);
     }
@@ -746,6 +972,51 @@ public class QuizDal {
 
     
     /*misc. testing procs */
+
+    //get next question (or first question)
+    public Map<String, Object> getNextQuestion(int quizId, int studentId) {
+        Map<String, Object> result = new HashMap<>();
+        try (CallableStatement cs = myConnection.prepareCall("{CALL GetNextQuestion(?, ?)}")) {
+            cs.setInt(1, quizId);
+            cs.setInt(2, studentId);
+            ResultSet rs = cs.executeQuery();
+            if (rs.next()) {
+                result.put("questionId", rs.getInt("questionId"));
+                result.put("questionText", rs.getString("questionText"));
+                result.put("choiceId", rs.getInt("choiceId"));
+                result.put("choiceLabel", rs.getString("choiceLabel"));
+                result.put("choiceText", rs.getString("choiceText"));
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return result;
+    }
+
+    //create quiz- instructor priv
+    //creates a quiz module- sets quiz name and automatically passes classId and instructorId
+    //bl: done
+    public int insertNewQuiz(String quizName, int instructorId, int classId) {
+        CallableStatement stmt = null;
+        try {
+            stmt = myConnection.prepareCall("{CALL InsertNewQuiz(?, ?, ?, ?)}");
+            stmt.setString(1, quizName);
+            stmt.setInt(2, instructorId);
+            stmt.setInt(3, classId);
+            stmt.registerOutParameter(4, java.sql.Types.INTEGER);
+
+            stmt.execute();
+
+            int newQuizId = stmt.getInt(4);
+            System.out.println("New quiz inserted with ID: " + newQuizId);
+            return newQuizId;
+
+        } catch (SQLException e) {
+            System.out.println("Error inserting new quiz.");
+            e.printStackTrace();
+            return -1;
+        } finally {
+            try { if (stmt != null) stmt.close(); } catch (SQLException e) { e.printStackTrace(); }
+        }
+    }
     //getAllStudents
 
     public ArrayList<Student> getAllStudents() {
@@ -817,6 +1088,26 @@ public class QuizDal {
         return canCreate;
     }
 
+    // misc/ unused 
+    //i actually dont think im gonna use this after all- but ill keep this just in case! might be helpful down the road
+    public User findUserByEmail(String email) throws SQLException {
+        String sql = "SELECT * FROM UserAccounts WHERE email = ?";
+        PreparedStatement stmt = myConnection.prepareStatement(sql);
+        stmt.setString(1, email);
+        ResultSet rs = stmt.executeQuery();
+
+        if (rs.next()) {
+            return new User(
+                rs.getString("googleSub"),
+                rs.getInt("userId"),
+                rs.getString("email"),
+                rs.getBoolean("isInstructor"),
+                rs.getString("firstName"),
+                rs.getString("lastName")
+            );
+        }
+        return null;
+    }
 
     public ArrayList<HashMap<String, Object>> searchForStudentByEmail(String emailQuery) {
         ArrayList<HashMap<String, Object>> students = new ArrayList<>();
@@ -911,12 +1202,3 @@ public class QuizDal {
     }
 
 }
-
-    
-           
-
-
-
-    
-           
-

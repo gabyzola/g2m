@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instructor - Student Quiz Results</title>
+<link rel="stylesheet" href="style.css"/>
+<style>
+    :root {
+        --navy: #002855;
+        --gold: #FFC72C;
+        --light-bg: #f4f4f4;
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        background-color: var(--light-bg);
+        margin: 0;
+        padding: 0;
+    }
+
+    header {
+        background-color: var(--navy);
+        color: white;
+        padding: 1rem 2rem;
+        text-align: center;
+    }
+
+    main {
+        max-width: 900px;
+        margin: 2rem auto;
+        padding: 1rem 2rem;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    tbody tr.correct {
+    background-color: #d4edda;
+    }
+
+    tbody tr.incorrect {
+        background-color: #f8d7da;
+    }
+
+    label {
+        font-weight: bold;
+        margin-right: 0.5rem;
+    }
+
+    select {
+        padding: 0.5rem;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        margin-bottom: 1rem;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+
+    th, td {
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        text-align: left;
+    }
+
+    th {
+        background-color: var(--navy);
+        color: white;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    .score {
+        font-weight: bold;
+        color: var(--gold);
+        margin-top: 1rem;
+        text-align: right;
+    }
+
+    .hidden {
+        display: none;
+    }
+</style>
+</head>
+<body>
+<header>
+    <h1>MackAdapt</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="classes.html" class="active" aria-current="page">Classes</a></li>
+        <li><a href="student-dashboard.html">Student Dashboard</a></li>
+        <li><a href="login.html">Login</a></li>
+      </ul>
+    </nav>
+  </header>
+
+<main>
+    <div>
+        <label for="studentSelect">Select Student:</label>
+        <select id="studentSelect">
+            <option value="">-- Choose a student --</option>
+        </select>
+    </div>
+
+    <div id="resultsContainer" class="hidden">
+        <h2>Latest Attempt Results</h2>
+        <!-- <div class="score" id="scoreLine"></div> -->
+        <table id="resultsTable">
+            <thead>
+                <tr>
+                    <th>Question ID</th>
+                    <th>Question Text</th>
+                    <th>Chosen Letter</th>
+                    <th>Correct Letter</th>
+                    <th>Points Earned</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</main>
+
+<script type="module">
+    import { getClassEnrollees, getAttemptResults } from "./src/api/backend.js";
+
+const params = new URLSearchParams(window.location.search);
+const classId = params.get("classId"); // classId still comes from url
+
+//dropdowns
+const studentSelect = document.getElementById('studentSelect');
+const resultsContainer = document.getElementById('resultsContainer');
+const resultsTableBody = document.querySelector('#resultsTable tbody');
+// const scoreLine = document.getElementById('scoreLine');
+
+async function renderAttemptResults(studentId) {
+    const attempt = await getAttemptResults(studentId); 
+    if (!attempt) {
+        resultsContainer.classList.add('hidden');
+        return;
+    }
+
+    resultsContainer.classList.remove('hidden');
+    resultsTableBody.innerHTML = '';
+
+    //injects the student's results from the get attempt sesults
+    const answers = attempt.answers ?? [];
+    answers.forEach(ans => {
+        const tr = document.createElement('tr');
+        tr.className = ans.pointsEarned > 0 ? 'correct' : 'incorrect'; 
+        tr.innerHTML = `
+            <td>${ans.questionId}</td>
+            <td>${ans.questionText}</td>
+            <td>${ans.chosenLetter}</td>
+            <td>${ans.correctLetter ?? '-'}</td>
+            <td>${ans.pointsEarned}</td>
+        `;
+        resultsTableBody.appendChild(tr);
+    });
+
+
+    // scoreLine.textContent = `Score: ${attempt.score} / ${answers.length} (${attempt.percentage ?? 0}%)`;
+}
+
+async function init() {
+    //for dropdown
+    const enrollees = await getClassEnrollees(classId);
+
+    enrollees.forEach(student => {
+        const option = document.createElement('option');
+        option.value = student.studentId;
+        option.textContent = `${student.firstName} ${student.lastName}`;
+        studentSelect.appendChild(option);
+    });
+
+    studentSelect.addEventListener('change', async () => {
+        const studentId = studentSelect.value;
+        if (!studentId) return;
+
+        await renderAttemptResults(studentId);
+    });
+}
+
+init();
+</script>
+</body>
+</html>
