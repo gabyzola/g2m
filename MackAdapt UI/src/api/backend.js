@@ -42,23 +42,41 @@ export async function lookupUser(email) {
 
 //lookup user by sub
 //tested:
-export async function lookupUserBySub(googleSub) {
+export async function lookupUser(email) {
   try {
-    const res = await fetch("/api/lookup/sub", {
+    console.log("[DEBUG] lookupUser called with email:", email);
+
+    const res = await fetch(`/api/lookup`, { 
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ googleSub })
+      body: JSON.stringify({ email })
     });
- 
-    if (!res.ok) throw new Error("Failed to lookup user by sub");
 
-    const resData = await res.json(); // parse JSON
-    return resData;                    // return the whole object {userId: ..., maybe more}
+    console.log("[DEBUG] fetch completed. Status:", res.status, "StatusText:", res.statusText);
+
+    if (!res.ok) {
+      // Try to get server error message
+      let text;
+      try { text = await res.text(); } catch {}
+      console.error("[DEBUG] Server returned non-OK response:", text);
+      throw new Error(`Failed to lookup user, status ${res.status}`);
+    }
+
+    const resData = await res.json();
+    console.log("[DEBUG] Response JSON:", resData);
+
+    if (typeof resData.userId === "undefined") {
+      console.error("[DEBUG] userId missing in response!");
+      return -1;
+    }
+
+    return resData.userId;
   } catch (err) {
-    console.error("Error looking up user by sub:", err);
-    return null;
+    console.error("[DEBUG] Error looking up user:", err);
+    return -1;
   }
 }
+
 
 //gets instructor classes
 export async function getInstructorClasses(instructorId) {
