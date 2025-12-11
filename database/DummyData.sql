@@ -2,7 +2,7 @@
 USE QuizzingDB;   
 
 INSERT INTO Badges (badgeName, description, pointThreshold)
-VALUES
+VALUES 
 ('Rookie', 'Earned by completing your first quiz.', 1),
 ('Steady Learner', 'Reach 100 total points.', 100),
 ('Knowledge Collector', 'Reach 500 total points.', 500),

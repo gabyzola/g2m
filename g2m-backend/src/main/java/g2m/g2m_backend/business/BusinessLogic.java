@@ -1,16 +1,20 @@
 package g2m.g2m_backend.business;
-import g2m.g2m_backend.DAL.javaSQLobjects.Student;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
+import g2m.g2m_backend.DAL.QuizDal;
 import g2m.g2m_backend.DAL.javaSQLobjects.Badge;
 import g2m.g2m_backend.DAL.javaSQLobjects.QuestionData;
 import g2m.g2m_backend.DAL.javaSQLobjects.QuizQuestion;
+import g2m.g2m_backend.DAL.javaSQLobjects.Student;
 import g2m.g2m_backend.DAL.javaSQLobjects.User;
-import g2m.g2m_backend.DAL.QuizDal;
-import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-
-import java.sql.SQLException;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class BusinessLogic {
@@ -192,23 +196,27 @@ public class BusinessLogic {
     //calculate and group quiz questions for specific student
     //api: done
     public List<QuizQuestion> getStudentQuizQuestions(int studentId, int quizId) {
+
+        //get all questions from a quiz and store them in a map
         List<Map<String, Object>> allRows = dal.getQuizQuestions(quizId);
         System.out.println("All quiz rows: " + allRows.size());
+        
+        //gets the students objectives from the database
         List<Map<String, Object>> studentObjectivesRaw = dal.getStudentObjectives(studentId);
+
+        //take only the ids for future comparison
         List<Integer> studentObjectiveIds = studentObjectivesRaw.stream()
-                .map(o -> ((Number) o.get("objectiveId")).intValue())  // ensure type safety
+                .map(o -> ((Number) o.get("objectiveId")).intValue())  //type safety fix
                 .collect(Collectors.toList());
         System.out.println("Student objectives: " + studentObjectiveIds);
 
-        List<Map<String, Object>> filtered = allRows.stream()
-                .filter(row -> studentObjectiveIds.contains(((Number) row.get("objectiveId")).intValue()))
-                .collect(Collectors.toList());
+        //filters all questions to match the student's objectives
+        List<Map<String, Object>> filtered = allRows.stream().filter(row -> studentObjectiveIds.contains(((Number) row.get("objectiveId")).intValue())).collect(Collectors.toList());
         System.out.println("Filtered questions: " + filtered.size());
         Collections.shuffle(filtered);
-
-
         Map<Integer, QuizQuestion> grouped = new HashMap<>();
 
+        //for every filtered question, set the information in a QuizQuestion object
         for (Map<String, Object> row : filtered) {
             int qid = ((Number) row.get("questionId")).intValue();
             grouped.putIfAbsent(qid, new QuizQuestion());
@@ -244,6 +252,7 @@ public class BusinessLogic {
             choices.add(choice);
         }
 
+        //return the result to the frontend
         List<QuizQuestion> result = new ArrayList<>(grouped.values());
         System.out.println("Returning " + result.size() + " questions.");
         return result;
@@ -264,9 +273,10 @@ public class BusinessLogic {
 
     //assign badge check
     //api: 
-    public boolean assignBadge(int studentId) {
+    public String assignBadge(int studentId) {
         return dal.assignBadge(studentId);
     }
+
 
     //display student's badges
     //api: done
@@ -371,6 +381,11 @@ public class BusinessLogic {
             return Map.of();
         }
     }
+
+    public Integer getLatestSessionForStudent(int studentId) {
+        return dal.getLatestSessionId(studentId);
+    }
+
 
     /*misc*/
 

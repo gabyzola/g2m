@@ -24,21 +24,39 @@ export async function createClass(classId) {
 //tested: 
 export async function lookupUser(email) {
   try {
+    console.log("[DEBUG] lookupUser called with email:", email);
+
     const res = await fetch(`/api/lookup`, { 
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email })
     });
 
-    if (!res.ok) throw new Error("Failed to lookup user");
+    console.log("[DEBUG] fetch completed. Status:", res.status, "StatusText:", res.statusText);
 
-    const resData = await res.json();   //parse JSON, absolutelt needed or error
-    return resData.userId;              //return just the userId number, extremely mportant
+    if (!res.ok) {
+      // Try to get server error message
+      let text;
+      try { text = await res.text(); } catch {}
+      console.error("[DEBUG] Server returned non-OK response:", text);
+      throw new Error(`Failed to lookup user, status ${res.status}`);
+    }
+
+    const resData = await res.json();
+    console.log("[DEBUG] Response JSON:", resData);
+
+    if (typeof resData.userId === "undefined") {
+      console.error("[DEBUG] userId missing in response!");
+      return -1;
+    }
+
+    return resData.userId;
   } catch (err) {
-    console.error("Error looking up user:", err);
+    console.error("[DEBUG] Error looking up user:", err);
     return -1;
   }
 }
+
 
 //lookup user by sub
 //tested:
@@ -213,23 +231,6 @@ export async function addReadingObjective(readingId, classId, objectiveName) { /
   } catch (err) {
     console.error("Error adding reading objective:", err);
     return null;
-  }
-}
-
-//assign badge after quiz is done
-export async function assignBadge(studentId) {
-  try {
-    const res = await fetch(`/api/students/${studentId}/badgeAssign`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" }
-    });
-
-    if (!res.ok) throw new Error("Failed to assign badge");
-
-    return await res.json(); 
-  } catch (err) {
-    console.error("Error assigning badge:", err);
-    return false;
   }
 }
 
@@ -509,3 +510,32 @@ export async function getAttemptResults(sessionId) {
     return {};
   }
 }
+
+// Get the latest sessionId for a student
+export async function getLatestSessionId(studentId) {
+  try {
+    const res = await fetch(`/api/attempt/latest/${studentId}`);
+    if (!res.ok) throw new Error("Failed request");
+
+    const sessionId = await res.json();
+    return sessionId; 
+  } catch (err) {
+    console.error("Error fetching latest sessionId:", err);
+    return null;
+  }
+}
+
+export async function assignBadge(studentId) {
+  try {
+    const res = await fetch(`/api/students/${studentId}/badgeAssign`, {
+      method: "POST"
+    });
+    if (!res.ok) throw new Error("Failed badge assign");
+    return await res.text();  // returns badge name or "" / null
+  } catch (err) {
+    console.error("Error assigning badge:", err);
+    return null;
+  }
+}
+
+

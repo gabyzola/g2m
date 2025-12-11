@@ -1,21 +1,28 @@
 package g2m.g2m_backend.controller;
 
-import g2m.g2m_backend.business.BusinessLogic;
-import g2m.g2m_backend.business.QuizManager;
-import g2m.g2m_backend.DAL.javaSQLobjects.Badge;
-import g2m.g2m_backend.DAL.javaSQLobjects.QuestionData;
-import g2m.g2m_backend.DAL.javaSQLobjects.Student;
-import g2m.g2m_backend.DAL.javaSQLobjects.User;
-import g2m.g2m_backend.DAL.javaSQLobjects.QuizQuestion;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.ArrayList; 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import g2m.g2m_backend.DAL.javaSQLobjects.Badge;
+import g2m.g2m_backend.DAL.javaSQLobjects.QuestionData;
+import g2m.g2m_backend.DAL.javaSQLobjects.QuizQuestion;
+import g2m.g2m_backend.DAL.javaSQLobjects.User;
+import g2m.g2m_backend.business.BusinessLogic;
+import g2m.g2m_backend.business.QuizManager;
 
 
 @RestController
@@ -222,9 +229,10 @@ public class QuizController {
 
     //call this when a student submits quiz, checks whether they deserve a new badge
     @PostMapping("/students/{studentId}/badgeAssign")
-    public boolean assignBadge(@PathVariable int studentId) {
+    public String assignBadge(@PathVariable int studentId) {
         return bl.assignBadge(studentId);
     }
+
 
     //instructor links readig to quiz during quiz creation: UNTESTED
     //this basically gets the reading id from the reading they're linking
@@ -492,6 +500,12 @@ public class QuizController {
     @GetMapping("/attempt/{sessionId}/results")
     public Map<String, Object> getAttemptResults(@PathVariable int sessionId) {
         return bl.getSessionResults(sessionId);
+    }
+
+    // Get the latest attempt sessionId for a student
+    @GetMapping("/attempt/latest/{studentId}")
+    public Integer getLatestSessionId(@PathVariable int studentId) {
+        return bl.getLatestSessionForStudent(studentId);
     }
 
     // Search students: Ready to connect

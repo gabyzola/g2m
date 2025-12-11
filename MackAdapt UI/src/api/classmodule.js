@@ -75,60 +75,59 @@ async function loadClassData() {
   try {
     const canCreate = await canCreateQuiz(classId, userId);
 
+    // inside loadClassData(), where you check canCreate:
+    const toolbar = document.getElementById("quiz-toolbar");
+
     if (canCreate) {
-      //create a quiz button
+      toolbar.style.display = "flex";   // show toolbar only for instructors
+
+      // CREATE QUIZ
       const btn = document.createElement("button");
       btn.textContent = "Create Quiz";
-      btn.style.marginBottom = "1rem";
-      quizzesContainer.prepend(btn);
+      btn.classList.add("action-btn");
+      toolbar.appendChild(btn);
 
       btn.addEventListener("click", async () => {
         const res = await fetch(`/api/classes/${classId}/quizzcreation?userId=${userId}`, {
           method: "POST"
-        }); 
+        });
         const data = await res.json();
         window.location.href = `quiz-create.html?quizId=${data.quizId}&classId=${classId}&userId=${userId}`;
-      }); //FIX: make sure user id isnt in url again
+      });
 
-      //manage the enrollees button
+      // MANAGE ENROLLEES
       const enrollBtn = document.createElement("button");
       enrollBtn.textContent = "Manage Enrollees";
-      enrollBtn.style.marginBottom = "1rem";
-      quizzesContainer.prepend(enrollBtn);
+      enrollBtn.classList.add("action-btn");
+      toolbar.appendChild(enrollBtn);
 
       enrollBtn.addEventListener("click", () => {
         window.location.href = `class-enroll.html?classId=${classId}&userId=${userId}`;
       });
 
-      //view results button
+      // VIEW RESULTS
       const resultsBtn = document.createElement("button");
       resultsBtn.textContent = "View Results";
-      resultsBtn.style.marginBottom = "1rem";
-      quizzesContainer.prepend(resultsBtn);
+      resultsBtn.classList.add("action-btn");
+      toolbar.appendChild(resultsBtn);
 
       resultsBtn.addEventListener("click", () => {
         window.location.href = `results.html?classId=${classId}&userId=${userId}`;
       });
 
-      //add a reading button
+      // ADD READING
       const readingBtn = document.createElement("button");
       readingBtn.textContent = "Add Reading";
-      readingBtn.style.marginBottom = "1rem";
-      quizzesContainer.prepend(readingBtn);
+      readingBtn.classList.add("action-btn");
+      toolbar.appendChild(readingBtn);
 
-      const readingModal = document.getElementById("readingModal");
-      const objectivesContainer = document.getElementById("objectivesContainer");
-      const addObjectiveBtn = document.getElementById("addObjectiveBtn");
-      const cancelReadingBtn = document.getElementById("cancelReadingBtn");
-      const saveReadingBtn = document.getElementById("saveReadingBtn");
-      const readingNameInput = document.getElementById("readingNameInput");
-
+      // (Your existing reading modal code stays EXACTLY the same)
       readingBtn.addEventListener("click", () => {
         readingNameInput.value = "";
         objectivesContainer.innerHTML = `
           <label>
-            Objective:
-            <input type="text" name="objective" style="width:100%; margin-top:.25rem; margin-bottom:.25rem;">
+              Objective:
+              <input type="text" name="objective" style="width:100%; margin-top:.25rem; margin-bottom:.25rem;">
           </label>
         `;
         readingModal.style.display = "flex";
