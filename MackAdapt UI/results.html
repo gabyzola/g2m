@@ -89,6 +89,7 @@
 </style>
 </head>
 <body>
+    <!-- our normal header -->
 <header>
     <h1>MackAdapt</h1>
     <nav>
@@ -101,6 +102,7 @@
     </nav>
   </header>
 
+  <!-- dropdown for choosing a student to see their results -->
 <main>
     <div>
         <label for="studentSelect">Select Student:</label>
@@ -111,7 +113,6 @@
 
     <div id="resultsContainer" class="hidden">
         <h2>Latest Attempt Results</h2>
-        <!-- <div class="score" id="scoreLine"></div> -->
         <table id="resultsTable">
             <thead>
                 <tr>
@@ -125,70 +126,104 @@
             <tbody>
             </tbody>
         </table>
+        <button id="downloadBtn" class="hidden">Download Results</button>
     </div>
 </main>
 
 <script type="module">
-    import { getClassEnrollees, getAttemptResults } from "./src/api/backend.js";
+    import { getClassEnrollees, getAttemptResults, getLatestSessionId } from "./src/api/backend.js";
 
-const params = new URLSearchParams(window.location.search);
-const classId = params.get("classId"); // classId still comes from url
+    const params = new URLSearchParams(window.location.search);
+    const classId = params.get("classId");
 
-//dropdowns
-const studentSelect = document.getElementById('studentSelect');
-const resultsContainer = document.getElementById('resultsContainer');
-const resultsTableBody = document.querySelector('#resultsTable tbody');
-// const scoreLine = document.getElementById('scoreLine');
+    const studentSelect = document.getElementById('studentSelect');
+    const resultsContainer = document.getElementById('resultsContainer');
+    const resultsTableBody = document.querySelector('#resultsTable tbody');
+    const downloadBtn = document.getElementById('downloadBtn');
 
-async function renderAttemptResults(studentId) {
-    const attempt = await getAttemptResults(studentId); 
-    if (!attempt) {
-        resultsContainer.classList.add('hidden');
-        return;
+
+    async function renderAttemptResults(studentId) {
+        //gets students latest session id, must be called bc we need session id to get results, not student id
+        const sessionId = await getLatestSessionId(studentId);
+
+        if (!sessionId) {
+            //student has never completed a quiz
+            resultsContainer.classList.add('hidden');
+            downloadBtn.classList.add('hidden');
+            resultsTableBody.innerHTML = '';
+            return;
+        }
+
+        //fetch attempt results using sessionId
+        const attempt = await getAttemptResults(sessionId);
+
+        if (!attempt) {
+            resultsContainer.classList.add('hidden');
+            downloadBtn.classList.add('hidden');
+            return;
+        }
+
+        resultsContainer.classList.remove('hidden');
+        downloadBtn.classList.remove('hidden');
+        downloadBtn.onclick = () => downloadCSV(attempt);
+        resultsTableBody.innerHTML = '';
+
+        const answers = attempt.answers ?? [];
+
+        answers.forEach(ans => {
+            const tr = document.createElement('tr');
+            tr.className = ans.pointsEarned > 0 ? 'correct' : 'incorrect';
+            tr.innerHTML = `
+                <td>${ans.questionId}</td>
+                <td>${ans.questionText}</td>
+                <td>${ans.chosenLetter}</td>
+                <td>${ans.correctLetter ?? '-'}</td>
+                <td>${ans.pointsEarned}</td>
+            `;
+            resultsTableBody.appendChild(tr);
+        });
     }
 
-    resultsContainer.classList.remove('hidden');
-    resultsTableBody.innerHTML = '';
+    function downloadCSV(attempt) {
+        const answers = attempt.answers ?? [];
+        let csvContent = "Question ID,Question Text,Chosen Letter,Correct Letter,Points Earned\n";
 
-    //injects the student's results from the get attempt sesults
-    const answers = attempt.answers ?? [];
-    answers.forEach(ans => {
-        const tr = document.createElement('tr');
-        tr.className = ans.pointsEarned > 0 ? 'correct' : 'incorrect'; 
-        tr.innerHTML = `
-            <td>${ans.questionId}</td>
-            <td>${ans.questionText}</td>
-            <td>${ans.chosenLetter}</td>
-            <td>${ans.correctLetter ?? '-'}</td>
-            <td>${ans.pointsEarned}</td>
-        `;
-        resultsTableBody.appendChild(tr);
-    });
+        answers.forEach(ans => {
+            csvContent += `${ans.questionId},"${ans.questionText}",${ans.chosenLetter},${ans.correctLetter ?? "-"},${ans.pointsEarned}\n`;
+        });
 
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
 
-    // scoreLine.textContent = `Score: ${attempt.score} / ${answers.length} (${attempt.percentage ?? 0}%)`;
-}
+        const filename = `attempt_results_session_${attempt.sessionId}.csv`;
+        link.download = filename;
 
-async function init() {
-    //for dropdown
-    const enrollees = await getClassEnrollees(classId);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
 
-    enrollees.forEach(student => {
-        const option = document.createElement('option');
-        option.value = student.studentId;
-        option.textContent = `${student.firstName} ${student.lastName}`;
-        studentSelect.appendChild(option);
-    });
+    async function init() {
+        const enrollees = await getClassEnrollees(classId);
 
-    studentSelect.addEventListener('change', async () => {
-        const studentId = studentSelect.value;
-        if (!studentId) return;
+        enrollees.forEach(student => {
+            const option = document.createElement('option');
+            option.value = student.studentId;
+            option.textContent = `${student.firstName} ${student.lastName}`;
+            studentSelect.appendChild(option);
+        });
 
-        await renderAttemptResults(studentId);
-    });
-}
+        studentSelect.addEventListener('change', async () => {
+            const studentId = studentSelect.value;
+            if (!studentId) return;
 
-init();
+            await renderAttemptResults(studentId);
+        });
+    }
+
+    init();
 </script>
+
 </body>
 </html>

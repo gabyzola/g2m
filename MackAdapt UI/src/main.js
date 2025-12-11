@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   //check what the id is instructor or user
   const instructor = await isUserInstructor(userId);
   console.log("[DEBUG] is instructor?", instructor);
-
+  
   let classes = [];
   const heading = document.getElementById("classesHeading");
 

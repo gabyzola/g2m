@@ -273,9 +273,10 @@ public class BusinessLogic {
 
     //assign badge check
     //api: 
-    public boolean assignBadge(int studentId) {
+    public String assignBadge(int studentId) {
         return dal.assignBadge(studentId);
     }
+
 
     //display student's badges
     //api: done
@@ -380,6 +381,11 @@ public class BusinessLogic {
             return Map.of();
         }
     }
+
+    public Integer getLatestSessionForStudent(int studentId) {
+        return dal.getLatestSessionId(studentId);
+    }
+
 
     /*misc*/
 

@@ -10,7 +10,7 @@
   padding: 0;
   box-sizing: border-box;
 }
-
+ 
 body {
   font-family: 'Segoe UI', sans-serif;
   background-color: var(--light-gray);
@@ -130,6 +130,54 @@ main {
   background: var(--navy);
 }
 
+.action-btn {
+  padding: 10px 18px;
+  font-size: 15px;
+  background: var(--navy);
+  color: white;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.action-btn:hover {
+  background: #001c3d; /* Slightly darker navy */
+}
+
+.action-btn:active {
+  transform: scale(0.97);
+}
+
+.quiz-toolbar {
+    display: flex;
+    gap: 0.75rem;
+    margin: 1rem 0 1.5rem 0;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    padding: 10px 18px;
+    background: var(--navy);
+    color: white;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.action-btn:hover {
+    background: #001c3d;
+}
+
+.action-btn:active {
+    transform: scale(0.96);
+}
 
 .quiz-card button {
   background-color: var(--navy);

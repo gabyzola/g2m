@@ -234,23 +234,6 @@ export async function addReadingObjective(readingId, classId, objectiveName) { /
   }
 }
 
-//assign badge after quiz is done
-export async function assignBadge(studentId) {
-  try {
-    const res = await fetch(`/api/students/${studentId}/badgeAssign`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" }
-    });
-
-    if (!res.ok) throw new Error("Failed to assign badge");
-
-    return await res.json(); 
-  } catch (err) {
-    console.error("Error assigning badge:", err);
-    return false;
-  }
-}
-
 //link reading to quiz
 export async function addReadingToQuiz(quizId, readingId) {
   const response = await fetch(`/api/quiz/${quizId}/addReading`, {
@@ -527,3 +510,32 @@ export async function getAttemptResults(sessionId) {
     return {};
   }
 }
+
+// Get the latest sessionId for a student
+export async function getLatestSessionId(studentId) {
+  try {
+    const res = await fetch(`/api/attempt/latest/${studentId}`);
+    if (!res.ok) throw new Error("Failed request");
+
+    const sessionId = await res.json();
+    return sessionId; 
+  } catch (err) {
+    console.error("Error fetching latest sessionId:", err);
+    return null;
+  }
+}
+
+export async function assignBadge(studentId) {
+  try {
+    const res = await fetch(`/api/students/${studentId}/badgeAssign`, {
+      method: "POST"
+    });
+    if (!res.ok) throw new Error("Failed badge assign");
+    return await res.text();  // returns badge name or "" / null
+  } catch (err) {
+    console.error("Error assigning badge:", err);
+    return null;
+  }
+}
+
+
