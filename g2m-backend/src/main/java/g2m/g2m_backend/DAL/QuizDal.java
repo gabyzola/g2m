@@ -1,11 +1,11 @@
 package g2m.g2m_backend.DAL;
+import java.sql.CallableStatement;
 import java.sql.Connection;
-import java.sql.Statement;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.PreparedStatement;
-import java.sql.CallableStatement;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,11 +13,12 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
-import g2m.g2m_backend.DAL.javaSQLobjects.Student;
-import jakarta.annotation.PostConstruct;
+
 import g2m.g2m_backend.DAL.javaSQLobjects.Badge;
 import g2m.g2m_backend.DAL.javaSQLobjects.QuestionData;
+import g2m.g2m_backend.DAL.javaSQLobjects.Student;
 import g2m.g2m_backend.DAL.javaSQLobjects.User;
+import jakarta.annotation.PostConstruct;
 
 @Repository
 public class QuizDal {
@@ -707,24 +708,27 @@ public class QuizDal {
 
     //assign badge
     //bl:
-    public boolean assignBadge(int studentId) {
+    public String assignBadge(int studentId) {
         CallableStatement stmt = null;
         try {
             stmt = myConnection.prepareCall("{CALL assignBadge(?)}");
             stmt.setInt(1, studentId);
 
-            stmt.execute();
-            return true;
+            boolean hasResult = stmt.execute();
+
+            if (hasResult) {
+                ResultSet rs = stmt.getResultSet();
+                if (rs.next()) {
+                    return rs.getString("newBadge"); // may be null
+                }
+            }
+            return null;
         } catch (SQLException e) {
-            System.out.println("Error assigning badge.");
             e.printStackTrace();
-            return false;
-        } finally {
-            try {
-                if (stmt != null) stmt.close();
-            } catch (SQLException e) { e.printStackTrace(); }
+            return null;
         }
     }
+
  
     //display all the students badges
     //bl: done
@@ -935,6 +939,7 @@ public class QuizDal {
             try { if (stmt != null) stmt.close(); } catch (SQLException ignore) {}
         }
     }
+
 
     /*DELETIONS */
     public boolean deleteQuestion(int questionId) { return executeSimpleDelete("{CALL DeleteQuestion(?)}", questionId); }
@@ -1188,6 +1193,24 @@ public class QuizDal {
             e.printStackTrace();
         }
         return students;
+    }
+
+    public Integer getLatestSessionId(int studentId) {
+        Integer sessionId = null;
+
+        try (CallableStatement cs = myConnection.prepareCall("{CALL GetLatestSessionId(?)}")) {
+            cs.setInt(1, studentId);
+
+            ResultSet rs = cs.executeQuery();
+            if (rs.next()) {
+                sessionId = rs.getInt("sessionId");
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return sessionId; 
     }
 
 

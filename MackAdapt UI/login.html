@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>MackAdapt – Sign In</title>
+<link rel="stylesheet" href="style.css" />
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
   
@@ -107,17 +108,27 @@
 </head>
 <body>
 
-<div class="nav">MackAdapt</div>
+  <header>
+    <h1>MackAdapt</h1>
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="classes.html" class="active">Classes</a></li>
+            <li><a href="student-dashboard.html">Student Dashboard</a></li>
+            <li><a href="/login.html">Login</a></li>
+        </ul>
+    </nav>
+  </header>
 
-<div class="container">
-    <div class="login-card">
-        <h2>Sign In</h2>
+  <div class="container">
+      <div class="login-card">
+          <h2>Sign In</h2>
 
-        <div id="errorBox" class="error"></div>
-        <div id="g-signin"></div>
+          <div id="errorBox" class="error"></div>
+          <div id="g-signin"></div>
 
-    </div>
-</div>
+      </div>
+  </div>
 
 <!-- popup if user wasn't found in the db -->
 <div id="modalBg" class="modal-bg">
@@ -193,7 +204,7 @@ async function handleGoogleCredentialResponse(response) {
       document.getElementById("regEmail").value = email;
       return;
     }
-
+ 
     //unexpected
     alert("Unexpected error during login.");
   } catch (err) {
