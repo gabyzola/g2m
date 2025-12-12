@@ -121,7 +121,6 @@ async function loadClassData() {
       readingBtn.classList.add("action-btn");
       toolbar.appendChild(readingBtn);
 
-      // (Your existing reading modal code stays EXACTLY the same)
       readingBtn.addEventListener("click", () => {
         readingNameInput.value = "";
         objectivesContainer.innerHTML = `

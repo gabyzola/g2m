@@ -2,7 +2,6 @@ DROP DATABASE IF EXISTS QuizzingDB;
 CREATE DATABASE QuizzingDB;
 USE QuizzingDB;
 
-DROP TABLE IF EXISTS Attempts; #tracks student attemps
 DROP TABLE IF EXISTS Questions; #stores questions (input from professor)
 DROP TABLE IF EXISTS ReadingObjectives; #stores learning objectives (input from student or professor)
 DROP TABLE IF EXISTS Reading;
@@ -21,7 +20,7 @@ DROP TABLE IF EXISTS StudentObjectives;
 CREATE TABLE UserAccounts (
     userId int auto_increment PRIMARY KEY,              
     googleSub VARCHAR(255) UNIQUE NOT NULL,
-    email VARCHAR(150) UNIQUE NOT NULL,  #merrimack email
+    email VARCHAR(150) UNIQUE NOT NULL, 
     isInstructor BOOLEAN DEFAULT FALSE,
     firstName varchar(20),
 	lastName varchar(50)
@@ -96,18 +95,6 @@ ALTER TABLE Questions
 ADD CONSTRAINT fk_correct_choice
 FOREIGN KEY (correct_choice_id) REFERENCES QuestionChoices(choiceId) ON DELETE CASCADE;
 
-
-CREATE TABLE Attempts (
-    attemptId SERIAL PRIMARY KEY,
-    studentId INT REFERENCES Students(studentId),
-    quizId INT REFERENCES Quizzes(quizId),
-    questionId INT REFERENCES Questions(questionId),
-    chosenChoiceId INT REFERENCES QuestionChoices(choiceId),
-    isCorrect BOOLEAN,
-    pointsEarned INT DEFAULT 0,
-    attemptTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
 CREATE TABLE Badges (
   badgeId INT AUTO_INCREMENT PRIMARY KEY,
   badgeName VARCHAR(100) UNIQUE NOT NULL,
@@ -129,7 +116,6 @@ CREATE TABLE Readings (
     classId INT,
     readingName VARCHAR(255) NOT NULL,
     filePath VARCHAR(500), 
-    -- uploadDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (instructorId) REFERENCES Instructors(instructorId) ON DELETE CASCADE,
     FOREIGN KEY (classId) REFERENCES Classroom(classId) ON DELETE SET NULL
 );
@@ -139,8 +125,6 @@ CREATE TABLE ReadingObjectives (
     readingId INT NOT NULL,
     classId int not null,
     objectiveName VARCHAR(255) NOT NULL,
-    -- confidenceScore DECIMAL(5,2),-- commented out for now...this is likely necessary as I implement machine learning s 
-    -- isApproved BOOLEAN DEFAULT FALSE, 
     FOREIGN KEY (readingId) REFERENCES Readings(readingId) ON DELETE CASCADE,
     FOREIGN KEY (classId) REFERENCES Classroom(classId) ON DELETE CASCADE
 );
@@ -169,4 +153,32 @@ CREATE TABLE StudentObjectives (
     FOREIGN KEY (studentId) REFERENCES Students(studentId) ON DELETE CASCADE,
     FOREIGN KEY (quizId) REFERENCES Quizzes(quizId) ON DELETE CASCADE,
     FOREIGN KEY (objectiveId) REFERENCES ReadingObjectives(objectiveId) ON DELETE CASCADE
+);
+
+CREATE TABLE AttemptSessions (
+    sessionId INT AUTO_INCREMENT PRIMARY KEY,
+    studentId INT NOT NULL,
+    quizId INT NOT NULL,
+    objectiveId INT, -- the student's chosen objective
+    score INT DEFAULT 0,  
+    percentage DECIMAL(5,2),
+
+    FOREIGN KEY (studentId) REFERENCES Students(studentId) ON DELETE CASCADE,
+    FOREIGN KEY (quizId) REFERENCES Quizzes(quizId) ON DELETE CASCADE,
+    FOREIGN KEY (objectiveId) REFERENCES ReadingObjectives(objectiveId) ON DELETE SET NULL
+);
+
+CREATE TABLE AttemptAnswers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    sessionId INT NOT NULL,
+    questionId INT NOT NULL,
+    chosenChoiceId INT NOT NULL,
+    chosenLetter CHAR(1),
+    correctLetter CHAR(1),
+    isCorrect BOOLEAN,
+    pointsEarned INT DEFAULT 0,
+
+    FOREIGN KEY (sessionId) REFERENCES AttemptSessions(sessionId) ON DELETE CASCADE,
+    FOREIGN KEY (questionId) REFERENCES Questions(questionId) ON DELETE CASCADE,
+    FOREIGN KEY (chosenChoiceId) REFERENCES QuestionChoices(choiceId) ON DELETE CASCADE
 );

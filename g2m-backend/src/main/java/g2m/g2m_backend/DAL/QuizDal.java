@@ -671,26 +671,8 @@ public class QuizDal {
         return results;
     }
 
-    //submit answer-- student gets feedback after each question
-    //bl:
-    public Map<String, Object> submitAnswer(int studentId, int quizId, int questionId, int choiceId) {
-        Map<String, Object> result = new HashMap<>();
-        try (CallableStatement cs = myConnection.prepareCall("{CALL SubmitAnswer(?, ?, ?, ?)}")) {
-            cs.setInt(1, studentId);
-            cs.setInt(2, quizId);
-            cs.setInt(3, questionId);
-            cs.setInt(4, choiceId);
-            ResultSet rs = cs.executeQuery();
-            if (rs.next()) {
-                result.put("isCorrect", rs.getBoolean("isCorrect"));
-                result.put("correctChoiceId", rs.getInt("correctChoiceId"));
-            }
-        } catch (SQLException e) { e.printStackTrace(); }
-        return result;
-    }
-
     //get quiz score after last question is answered
-    //bl:
+    //bl: done
     public Map<String, Object> getQuizScore(int studentId, int quizId) {
         Map<String, Object> result = new HashMap<>();
         try (CallableStatement cs = myConnection.prepareCall("{CALL GetQuizScore(?, ?)}")) {
@@ -707,7 +689,7 @@ public class QuizDal {
     }
 
     //assign badge
-    //bl:
+    //bl: done
     public String assignBadge(int studentId) {
         CallableStatement stmt = null;
         try {
@@ -812,6 +794,7 @@ public class QuizDal {
     }
 
     //starts attempt session right after a student picks their objectives
+    //bl: done
     public int startAttemptSession(int studentId, int quizId, int objectiveId) {
         CallableStatement stmt = null;
         ResultSet rs = null;
@@ -841,6 +824,7 @@ public class QuizDal {
     }
 
     //saves each student answer
+    //bl :done
     public boolean saveStudentAnswer(int sessionId, int questionId, int chosenChoiceId) {
         CallableStatement stmt = null;
 
@@ -863,6 +847,7 @@ public class QuizDal {
     }
 
     //ends attempt session and finalizes the score
+    //bl :done
     public boolean finalizeAttemptSession(int sessionId) {
         CallableStatement stmt = null;
 
@@ -883,6 +868,7 @@ public class QuizDal {
     }
 
     //gets full results (this is gonna return a LOT)
+    //bl: dome
     public Map<String, Object> getSessionResults(int sessionId) {
         CallableStatement stmt = null;
         Map<String, Object> result = new HashMap<>();
@@ -892,8 +878,6 @@ public class QuizDal {
             stmt.setInt(1, sessionId);
 
             boolean hasResults = stmt.execute();
-
-            // First result set: AttemptSessions row
             if (hasResults) {
                 ResultSet rs = stmt.getResultSet();
                 if (rs.next()) {
@@ -907,8 +891,6 @@ public class QuizDal {
                     result.put("session", session);
                 }
             }
-
-            // Move to second result set: AttemptAnswers
             if (stmt.getMoreResults()) {
                 ResultSet rs2 = stmt.getResultSet();
                 List<Map<String, Object>> answers = new ArrayList<>();

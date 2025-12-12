@@ -19,7 +19,7 @@ BEGIN
     DECLARE newUserId INT;
     INSERT INTO UserAccounts (googleSub, email, isInstructor, firstName, lastName)
     VALUES (myGoogleSub, myEmail, myIsInstructor, myFirstName, myLastName);
-    -- Capture the auto-incremented ID from the last insert
+    -- gets the auto-incremented ID from the last insert
     SET newUserId = LAST_INSERT_ID();
     IF myIsInstructor = TRUE THEN
         INSERT INTO Instructors (instructorId, schoolSubject, firstName, lastName, email)
@@ -56,6 +56,7 @@ BEGIN
 END $$
 DELIMITER ;
 
+#gets id and email from the sub (called at the beginning of each page load)
 DELIMITER $$
 DROP PROCEDURE IF EXISTS LookupUserBySub $$
 CREATE PROCEDURE LookupUserBySub (IN myGoogleSub VARCHAR(255))
@@ -87,14 +88,12 @@ BEGIN
     DECLARE instructorFirstName VARCHAR(20);
     DECLARE instructorLastName VARCHAR(50);
 
-    -- Look up instructor details using the email
     SELECT instructorId, firstName, lastName
     INTO instructorIdFound, instructorFirstName, instructorLastName
     FROM Instructors
     WHERE email = myEmail
     LIMIT 1;
-
-    -- Handle the case where no instructor is found
+    -- if no instructor
     IF instructorIdFound IS NULL THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Instructor with the provided email was not found.';
@@ -104,7 +103,6 @@ BEGIN
         VALUES (myClassId, myClassName, instructorFirstName, instructorLastName, instructorIdFound);
     END IF;
 END $$
-
 DELIMITER ;
 
 #display instructor's classes
@@ -138,18 +136,15 @@ CREATE PROCEDURE EnrollStudent (
 BEGIN
     DECLARE vUserId INT;
     DECLARE vStudentId INT;
-
-    -- Look up the userId by email
+    -- look up the userId by email
     SELECT userId INTO vUserId
     FROM UserAccounts
     WHERE email = myEmail;
-
-    -- If no user found, throw an error
+    -- if no user found put an error
     IF vUserId IS NULL THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'No user found with this email.';
     END IF;
-
     -- Ensure the user is a student
     SELECT studentId INTO vStudentId
     FROM Students
@@ -159,8 +154,6 @@ BEGIN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'User exists but is not a student.';
     END IF;
-
-    -- Check if already enrolled
     IF EXISTS (
         SELECT 1 FROM ClassEnrollees
         WHERE classId = myClassId AND studentId = vStudentId
@@ -168,7 +161,6 @@ BEGIN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Student is already enrolled in this class.';
     ELSE
-        -- Insert enrollment
         INSERT INTO ClassEnrollees (classId, studentId)
         VALUES (myClassId, vStudentId);
     END IF;
@@ -228,7 +220,6 @@ begin
 end $$
 delimiter ;
 
-
 #insert reading objectives into db table
 #TESTED: GOOD
 #DAL: Done
@@ -242,7 +233,6 @@ CREATE PROCEDURE InsertNewReadingObjective (
 BEGIN
     INSERT INTO ReadingObjectives (readingId, classId, objectiveName)
     VALUES (myReadingId, myClassId, myObjectiveName);
-
     SELECT LAST_INSERT_ID() AS objectiveId;
 END $$
 DELIMITER ;
@@ -277,7 +267,6 @@ SELECT
 END$$
 DELIMITER ;
 
-
 #create new quiz- just inserts basic quiz info
 #TESTED: GOOD
 #Dal: Done
@@ -292,11 +281,9 @@ CREATE PROCEDURE InsertNewQuiz(
 BEGIN
     INSERT INTO Quizzes (quizName, instructorId, classId)
     VALUES (myQuizName, myInstructorId, myClassId);
-    
     SET newQuizId = LAST_INSERT_ID();
 END $$
 DELIMITER ;
-
 
 #create basic quiz
 DELIMITER $$
@@ -308,15 +295,13 @@ CREATE PROCEDURE InsertQuiz(
 BEGIN
     INSERT INTO Quizzes (instructorId, classId)
     VALUES (myInstructorId, myClassId);
-
     -- Return the auto-generated quizId
     SELECT LAST_INSERT_ID() AS quizId;
 END $$
 DELIMITER ;
 
-#updates quiz name
+#updates quiz name (blank quiz is created first)
 DELIMITER $$
-
 DROP PROCEDURE IF EXISTS updateQuizName $$
 CREATE PROCEDURE updateQuizName (
     IN p_quizId INT,
@@ -327,11 +312,7 @@ BEGIN
     SET quizName = p_quizName
     WHERE quizId = p_quizId;
 END $$
-
 DELIMITER ;
-
-
-
 
 #assign readings to quiz
 #TESTED: GOOD
@@ -365,41 +346,31 @@ myCorrectAnswer CHAR(1),
 myObjectiveId int, 
 myQuizId int)
 BEGIN
-
 declare newQuestionId int;
 declare correctChoiceId int;
-
-
 insert into Questions (questionNumber, questionText, difficulty, quizId)
 values (myQuestionNumber, myQuestionText, myDifficulty, myQuizId);
-        
 set newQuestionId = LAST_INSERT_ID();
-        
 -- professor will now add choices
 insert into QuestionChoices (questionId, choiceLabel, choiceText)
 values (newQuestionId, 'A', myChoiceA),
 	   (newQuestionId, 'B', myChoiceB),
 	   (newQuestionId, 'C', myChoiceC),
 	   (newQuestionId, 'D', myChoiceD);
-               
 		   -- Find correct choice_id
 select choiceId into correctChoiceId
 from QuestionChoices
 where questionId = newQuestionId and choiceLabel = myCorrectAnswer;
-		   
 	-- assign correct choice to the question id
 	update Questions
 	set correct_choice_id = correctChoiceId
 	WHERE questionId = newQuestionId;
-	
 	-- assign objective to question
 	-- THIS MIGHT NEED TO BE OBJECTIVE NAME INSTEAD
 	insert into QuestionObjectives (questionId, objectiveId)
 	values (newQuestionId, myObjectiveId);
-
 end $$
 delimiter ;
-
 
 #display quizzes inside of classes
 #TESTED: GOOD
@@ -449,7 +420,6 @@ BEGIN
 END $$
 DELIMITER ;
 
-
 #display relavant objectives based on quiz
 #TESTED: GOOD
 #DAL: Done
@@ -484,17 +454,14 @@ BEGIN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Learning Objective not found.';
     END IF;
-
     -- count how many objectives the student has already chosen for this quiz
     SELECT COUNT(*) INTO numSelected
     FROM StudentObjectives
     WHERE studentId = myStudentId AND quizId = myQuizId;
-
     IF numSelected >= 3 THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'You may only select up to 3 learning objectives for this quiz.';
     END IF;
-
     -- prevent duplicate selection
     IF EXISTS (-- prevent duplicate selection
         SELECT 1 FROM StudentObjectives
@@ -514,7 +481,6 @@ DELIMITER ;
 
 #get student's objectives
 DELIMITER $$
-
 DROP PROCEDURE IF EXISTS getStudentObjectives $$
 CREATE PROCEDURE getStudentObjectives(
     IN myStudentId INT
@@ -526,11 +492,10 @@ BEGIN
         ON so.objectiveId = ro.objectiveId
     WHERE so.studentId = myStudentId;
 END $$
-
 DELIMITER ;
 
+#reset these after every attempt
 DELIMITER $$
-
 DROP PROCEDURE IF EXISTS deleteStudentObjectives $$
 CREATE PROCEDURE deleteStudentObjectives(
     IN myStudentId INT
@@ -539,11 +504,7 @@ BEGIN
     DELETE FROM StudentObjectives
     WHERE studentId = myStudentId;
 END $$
-
 DELIMITER ;
-
-
-
 
 #student gets next question
 #DAL: Done
@@ -555,8 +516,6 @@ CREATE PROCEDURE GetNextQuestion (
 )
 BEGIN
     DECLARE nextQuestionId INT;
-
-    -- Find the next unanswered question
     SELECT q.questionId
     INTO nextQuestionId
     FROM Questions q
@@ -567,8 +526,6 @@ BEGIN
       )
     ORDER BY q.questionId
     LIMIT 1;
-
-    -- If no more questions
     IF nextQuestionId IS NULL THEN
         SELECT NULL AS questionId, NULL AS questionText, NULL AS choiceId, NULL AS choiceLabel, NULL AS choiceText;
     ELSE
@@ -594,18 +551,14 @@ CREATE PROCEDURE SubmitAnswer (
 BEGIN
     DECLARE correctId INT;
     DECLARE isCorrectVal BOOLEAN;
-
     -- find the correct answer
     SELECT correct_choice_id INTO correctId
     FROM Questions WHERE questionId = myQuestionId;
-
     -- check if its correct
     SET isCorrectVal = (myChoiceId = correctId);
-
     -- insert attempt
     INSERT INTO Attempts (studentId, quizId, questionId, chosenChoiceId, isCorrect, pointsEarned)
     VALUES (myStudentId, myQuizId, myQuestionId, myChoiceId, isCorrectVal, IF(isCorrectVal, 1, 0));
-
     -- return feedback immediately
     SELECT isCorrectVal AS isCorrect, correctId AS correctChoiceId;
 END$$
@@ -615,26 +568,22 @@ DELIMITER ;
 #DAL: Done
 DELIMITER $$
 DROP PROCEDURE IF EXISTS GetQuizScore $$
-
 CREATE PROCEDURE GetQuizScore (
     IN myStudentId INT,
     IN myQuizId INT
 )
 BEGIN
     DECLARE quizPoints INT DEFAULT 0;
-
     -- Calculate total quiz points for this attempt
     SELECT COALESCE(SUM(pointsEarned), 0)
     INTO quizPoints
     FROM Attempts
     WHERE studentId = myStudentId
       AND quizId = myQuizId;
-
     -- Add the quiz points to the student's totalPoints
     UPDATE Students
     SET totalPoints = COALESCE(totalPoints, 0) + quizPoints
     WHERE studentId = myStudentId;
-
     -- Return the results 
     SELECT 
         quizPoints AS totalScore,
@@ -644,7 +593,6 @@ BEGIN
     WHERE studentId = myStudentId
       AND quizId = myQuizId;
 END$$
-
 DELIMITER ;
 
 #assign badge- when points in profile reaches a threshold (100, 250, 500, 750, 100)
@@ -656,12 +604,15 @@ BEGIN
     DECLARE myTotalPoints INT;
     DECLARE myBadgeId INT;
     DECLARE myBadgeName VARCHAR(100);
-
+    DECLARE badgeBefore VARCHAR(100);
+    -- Get current badge for comparison
+    SELECT badge INTO badgeBefore
+    FROM Students
+    WHERE studentId = myStudentId;
     -- Get the student's total points
     SELECT totalPoints INTO myTotalPoints
     FROM Students
     WHERE studentId = myStudentId;
-
     -- Find the highest badge they qualify for
     SELECT badgeId, badgeName
     INTO myBadgeId, myBadgeName
@@ -669,24 +620,28 @@ BEGIN
     WHERE pointThreshold <= myTotalPoints
     ORDER BY pointThreshold DESC
     LIMIT 1;
-
     -- Only proceed if they qualify for at least one badge
     IF myBadgeId IS NOT NULL THEN
-
-        -- Insert into StudentBadges if they don’t already have this badge
+        -- Add to StudentBadges if they don't already have it
         INSERT IGNORE INTO StudentBadges (studentId, badgeId)
         VALUES (myStudentId, myBadgeId);
-
-        -- Update their current badge in Students table
-        UPDATE Students
-        SET badge = myBadgeName
-        WHERE studentId = myStudentId;
-
+        -- Update Students.badge if it's a NEW badge
+        IF badgeBefore IS NULL OR badgeBefore <> myBadgeName THEN
+            UPDATE Students
+            SET badge = myBadgeName
+            WHERE studentId = myStudentId;
+            -- Return the new badge name
+            SELECT myBadgeName AS newBadge;
+        ELSE
+            -- No new badge earned
+            SELECT NULL AS newBadge;
+        END IF;
+    ELSE
+        -- No qualifying badge
+        SELECT NULL AS newBadge;
     END IF;
 END$$
-
 DELIMITER ;
-
 
 #display student badges
 #DAL: Done
@@ -761,7 +716,6 @@ CREATE PROCEDURE canCreateQuiz(
 )
 BEGIN
     DECLARE isEligible INT DEFAULT 0;
-    
     SELECT 
         CASE
             WHEN EXISTS (SELECT 1 FROM Instructors WHERE instructorId = myUserId)
@@ -770,10 +724,8 @@ BEGIN
             ELSE 0
         END
     INTO isEligible;
-    
     SELECT isEligible AS canCreate;
 END$$
-
 DELIMITER ;
 
 DELIMITER $$
@@ -790,10 +742,129 @@ DECLARE instructorFlag BOOLEAN;
     WHERE userId = myUserId;
 
     SELECT instructorFlag AS isInstructor;
-    
 END$$
 DELIMITER ;
 
+#BEGINS attempt session- right after they choose their objective
+DELIMITER $$
+DROP PROCEDURE IF EXISTS StartAttemptSession $$
+CREATE PROCEDURE StartAttemptSession(
+    IN myStudentId INT,
+    IN myQuizId INT,
+    IN myObjectiveId INT
+)
+BEGIN
+    INSERT INTO AttemptSessions (studentId, quizId, objectiveId)
+    VALUES (myStudentId, myQuizId, myObjectiveId);
 
+    SELECT LAST_INSERT_ID() AS sessionId;
+END$$
+DELIMITER ;
 
+#saves each answer
+DELIMITER $$
+DROP PROCEDURE IF EXISTS SaveStudentAnswer $$
+CREATE PROCEDURE SaveStudentAnswer(
+    IN mySessionId INT,
+    IN myQuestionId INT,
+    IN myChosenChoiceId INT
+)
+BEGIN
+    DECLARE correctChoiceId INT;
+    DECLARE correctLetter CHAR(1);
+    DECLARE chosenLetter CHAR(1);
+    DECLARE isCorrect BOOLEAN;
+    -- get correct choice ID and label
+    SELECT qc.choiceId, qc.choiceLabel
+    INTO correctChoiceId, correctLetter
+    FROM Questions q
+    JOIN QuestionChoices qc ON q.correct_choice_id = qc.choiceId
+    WHERE q.questionId = myQuestionId;
+    -- get chosen letter
+    SELECT choiceLabel INTO chosenLetter
+    FROM QuestionChoices
+    WHERE choiceId = myChosenChoiceId;
 
+    -- checkcorrectnss
+    SET isCorrect = (chosenLetter = correctLetter);
+    -- insert attempt answer
+    INSERT INTO AttemptAnswers (
+        sessionId, questionId, chosenChoiceId, chosenLetter,
+        correctLetter, isCorrect, pointsEarned
+    )
+    VALUES (
+        mySessionId, myQuestionId, myChosenChoiceId, chosenLetter,
+        correctLetter, isCorrect, IF(isCorrect, 1, 0)
+    );
+    -- points
+    IF isCorrect THEN
+        UPDATE Students
+        SET totalPoints = totalPoints + 5
+        WHERE studentId = (
+            SELECT studentId FROM AttemptSessions WHERE sessionId = mySessionId
+        );
+    END IF;
+END$$
+DELIMITER ;
+
+#ENDS attempt session
+DELIMITER $$
+DROP PROCEDURE IF EXISTS FinalizeAttemptSession $$
+CREATE PROCEDURE FinalizeAttemptSession(
+    IN mySessionId INT
+)
+BEGIN
+    DECLARE totalCorrect INT;
+    DECLARE totalQuestions INT;
+    DECLARE percent DECIMAL(5,2);
+    -- total correct answers
+    SELECT SUM(isCorrect) INTO totalCorrect
+    FROM AttemptAnswers
+    WHERE sessionId = mySessionId;
+    -- number of answered questions
+    SELECT COUNT(*) INTO totalQuestions
+    FROM AttemptAnswers
+    WHERE sessionId = mySessionId;
+
+    IF totalQuestions = 0 THEN
+        SET percent = 0.00;
+    ELSE
+        SET percent = (totalCorrect / totalQuestions) * 100;
+    END IF;
+
+    UPDATE AttemptSessions
+    SET score = totalCorrect,
+        percentage = percent
+    WHERE sessionId = mySessionId;
+END$$
+DELIMITER ;
+
+#gets the session results
+DELIMITER $$
+DROP PROCEDURE IF EXISTS GetSessionResults $$
+CREATE PROCEDURE GetSessionResults(
+    IN mySessionId INT
+)
+BEGIN
+    SELECT * FROM AttemptSessions WHERE sessionId = mySessionId;
+
+    SELECT aa.*, q.questionText
+    FROM AttemptAnswers aa
+    JOIN Questions q ON q.questionId = aa.questionId
+    WHERE aa.sessionId = mySessionId;
+END$$
+DELIMITER ;
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS GetLatestSessionId $$
+CREATE PROCEDURE GetLatestSessionId(
+    IN myStudentId INT
+)
+BEGIN
+    SELECT sessionId
+    FROM AttemptSessions
+    WHERE studentId = myStudentId
+    ORDER BY sessionId DESC
+    LIMIT 1;
+END$$
+DELIMITER ;

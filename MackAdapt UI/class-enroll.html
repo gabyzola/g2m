@@ -102,20 +102,20 @@
       } from "./src/api/backend.js";
 
       const params = new URLSearchParams(window.location.search);
-      const classId = params.get("classId");
+      const classId = params.get("classId"); //make sure enrollment is happening for the correct class
 
       if (!classId) {
         alert("No class selected.");
       }
 
+      //html element ids
       const results = document.getElementById("results");
       const enrolled = document.getElementById("enrolled");
       const search = document.getElementById("search");
       const addBtn = document.getElementById("addBtn");
 
-
       async function loadEnrolled() {
-        const list = await getClassEnrollees(classId);
+        const list = await getClassEnrollees(classId);//gets who is already enrolled and list it
 
         if (!list || list.length === 0) {
           enrolled.innerHTML = `<p class="empty">No students enrolled yet.</p>`;
@@ -187,7 +187,7 @@
         const remove = e.target.closest("[data-remove-id]");
         if (remove) {
           const studentId = remove.getAttribute("data-remove-id");
-          await removeStudent(classId, studentId);
+          await removeStudent(classId, studentId); //remove student from class
           await loadEnrolled();
           await doSearch();
         }

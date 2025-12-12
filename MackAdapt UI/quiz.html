@@ -94,7 +94,7 @@ let score = 0;
 let userAnswers = {};
 let attemptSessionId = -1;
 
-// Wrapper to start attempt session for this page
+//start attempt session for this page
 async function startSession(objectiveId = null) {
   attemptSessionId = await startAttemptSession(studentId, quizId, objectiveId || 0);
   if (attemptSessionId <= 0) {
@@ -104,7 +104,7 @@ async function startSession(objectiveId = null) {
   }
 }
 
-// Load objectives for this quiz
+//load objectives for this quiz
 async function loadObjectives() {
   const objectives = await getQuizObjectives(quizId);
 
@@ -126,7 +126,7 @@ async function loadObjectives() {
   objectiveCard.style.display = "block";
 }
 
-// Handle student selecting an objective
+// handle student selecting an objective
 submitObjectiveBtn.addEventListener("click", async () => {
   const selected = document.querySelector("input[name='objective']:checked");
   if (!selected) {
@@ -149,7 +149,7 @@ submitObjectiveBtn.addEventListener("click", async () => {
   loadQuestions();
 });
 
-// Load quiz questions filtered by student's objectives
+// load quiz questions filtered by student's objectives
 async function loadQuestions() {
   const raw = await getStudentQuestions(studentId, quizId);
 
@@ -160,8 +160,8 @@ async function loadQuestions() {
   }
 
   QUESTIONS = raw.map(q => {
-    const choicesMap = {};   // label -> text
-    const choiceMap = {};    // label -> full choice object (includes choiceId)
+    const choicesMap = {};   
+    const choiceMap = {};    
     const opts = ["A", "B", "C", "D"];
 
     q.choices.forEach((c, i) => {
@@ -188,7 +188,7 @@ async function loadQuestions() {
   render();
 }
 
-// Render current question
+// render current question
 function render() {
   const q = QUESTIONS[index];
   qStem.textContent = q.questionText;
@@ -282,7 +282,7 @@ async function finishQuiz() {
     console.log("Attempt results:", results);
   }
 }
-// Start flow
+
 loadObjectives();
 </script>
 

@@ -83,7 +83,7 @@ public class BusinessLogic {
     }
 
     //add reading (topic) to a class module
-    //STRETCH GOAL: drop in pdf from files
+    //STRETCH GOAL: drop in pdf from files (not happening rn lol got pushed back too much)
     //api: done
     public int uploadReading(int instructorId, int classId, String readingName) {
         try {
@@ -96,7 +96,7 @@ public class BusinessLogic {
     }
 
     //add reading objective + profs will enter it manually for now
-    //STRETCH GOAL: ml gets them from the reading
+    //STRETCH GOAL: ml gets them from the reading (100% not happening rn)
     //api: done
     public int insertNewReadingObjective(int readingId, int classId, String objectiveName) {
         if (objectiveName == null || objectiveName.isEmpty()) {
@@ -258,7 +258,6 @@ public class BusinessLogic {
         return result;
     }
 
-
     //checks if user can create a quiz -> similar to get user role
     //api: done
     public boolean canCreateQuiz(int userId, int classId) {
@@ -276,7 +275,6 @@ public class BusinessLogic {
     public String assignBadge(int studentId) {
         return dal.assignBadge(studentId);
     }
-
 
     //display student's badges
     //api: done
@@ -301,7 +299,7 @@ public class BusinessLogic {
     }
 
     //begin attempt session
-    //api: to add
+    //api: done
     public int startAttemptSession(int studentId, int quizId, int objectiveId) {
         try {
             int sessionId = dal.startAttemptSession(studentId, quizId, objectiveId);
@@ -322,7 +320,7 @@ public class BusinessLogic {
     }
 
     //save a single answer during the quiz
-    //api: to add
+    //api: done
     public boolean saveStudentAnswer(int sessionId, int questionId, int chosenChoiceId) {
         try {
             boolean success = dal.saveStudentAnswer(sessionId, questionId, chosenChoiceId);
@@ -341,7 +339,7 @@ public class BusinessLogic {
     }
 
     //ends quiz attempt
-    // api: to add
+    // api: done
     public boolean finalizeAttemptSession(int sessionId) {
         try {
             boolean success = dal.finalizeAttemptSession(sessionId);
@@ -362,7 +360,7 @@ public class BusinessLogic {
     }
 
     //gets results for attempt 
-    //api: to add
+    //api: done (frontend fixed)
     public Map<String, Object> getSessionResults(int sessionId) {
         try {
             Map<String, Object> results = dal.getSessionResults(sessionId);
@@ -382,6 +380,8 @@ public class BusinessLogic {
         }
     }
 
+    //gets last session id for a student (fixes a frontend problem in results.html)
+    //api: done
     public Integer getLatestSessionForStudent(int studentId) {
         return dal.getLatestSessionId(studentId);
     }

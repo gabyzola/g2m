@@ -10,6 +10,8 @@ import g2m.g2m_backend.DAL.javaSQLobjects.QuestionData;
 import g2m.g2m_backend.DAL.javaSQLobjects.Student;
 import g2m.g2m_backend.business.BusinessLogic;
 
+//CLI TESTING FROM VERY EARLY ON
+
 //all student ids will be automatically taken from their login info
 //students must not have to enter their ids
 public class PresentationLayer {

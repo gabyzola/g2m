@@ -39,7 +39,7 @@ public class QuizController {
     }
 
     //to be used in registering a user or returning an existing user
-    //js: 
+    //js: all set
     @PostMapping("/users/register")
     public User registerUser(@RequestBody Map<String, Object> data) {
 
@@ -107,14 +107,14 @@ public class QuizController {
     //display a list of instructor classes
     //TESTED: Good!
     //retest: good!
-    //js:
+    //js: all good
     @GetMapping("/instructors/{instructorId}/classes")
     public List<Map<String, Object>> viewInstructorClasses(@PathVariable int instructorId) {
         return bl.viewInstructorClasses(instructorId);
     }
 
     // Enroll student: Tested
-    //js:
+    //js: good
     @PostMapping("/instructors/classes/enroll")
     public boolean enrollStudent(@RequestBody Map<String, Object> data) {
         int classId = Integer.parseInt(data.get("classId").toString());
@@ -126,7 +126,7 @@ public class QuizController {
     //TESTED: Good!
     //retest: good!
     //frontend: Implemented
-    //frontend tested:
+    //frontend tested: done
     @GetMapping("/classes/{classId}/enrollees")
     public List<Map<String, Object>> viewClassEnrollees(@PathVariable int classId) {
         return bl.viewClassEnrollees(classId);
@@ -135,8 +135,8 @@ public class QuizController {
     //display student classes
     //TESTED: Good!
     //retest: good!
-    //frontend:
-    //frontend tested:
+    //frontend: done
+    //frontend tested: done
     @GetMapping("/students/{studentId}/classes")
     public List<Map<String, Object>> viewStudentClasses(@PathVariable int studentId) {
         return bl.viewStudentClasses(studentId);
@@ -144,8 +144,8 @@ public class QuizController {
 
     //display readings
     //TESTED: Good!
-    //frontend:
-    //frontend tested:
+    //frontend: good
+    //frontend tested: good
     @GetMapping("/classes/{classId}/readings")
     public List<Map<String, Object>> getClassReadings(@PathVariable int classId) {
         return bl.getClassReadings(classId);
@@ -164,6 +164,7 @@ public class QuizController {
     }
 
     //gets whether student or instructor
+    //works in frontend
     @GetMapping("/role/{userId}")
     public Map<String, Object> getUserRole(@PathVariable int userId) {
         int role = bl.getUserRole(userId); //1 = instructor, 0 = student, -1 = not found/error
@@ -172,7 +173,7 @@ public class QuizController {
 
     //just returns a new quiz id to put it in the query string
     //frontend: Implemented
-    //frontend tested:
+    //frontend tested:good
    @PostMapping("/classes/{classId}/quizzcreation")
     public ResponseEntity<Map<String, Integer>> createQuiz(
             @PathVariable int classId,
@@ -188,27 +189,23 @@ public class QuizController {
         }
     }
 
-    
-
     //upload reading: UNTESTED
-    //frontend:
-    //frontend tested:
+    //frontend: good
+    //frontend tested: good
     @PostMapping("/classes/{classId}/readingupload")
     public Map<String, Object> uploadReading(@PathVariable int classId,
                                             @RequestBody Map<String, Object> data) {
 
         int instructorId = Integer.parseInt(data.get("instructorId").toString());
         String readingName = data.get("readingName").toString();
-
         int readingId = bl.uploadReading(instructorId, classId, readingName);
-
         return Map.of("readingId", readingId);
     }
 
     //add objectives to reading: UNTESTED
     //this needs to be manual for now bc time crucnch
-    //frontend: 
-    //frontend tested:
+    //frontend: good
+    //frontend tested: good
     @PostMapping("/readings/{readingId}/objectives")
     public ResponseEntity<Map<String, Object>> addReadingObjective(
             @PathVariable int readingId,
@@ -233,11 +230,10 @@ public class QuizController {
         return bl.assignBadge(studentId);
     }
 
-
     //instructor links readig to quiz during quiz creation: UNTESTED
     //this basically gets the reading id from the reading they're linking
     //frontend: Implemented
-    //frontend tested:
+    //frontend tested: good
     @PostMapping("/quiz/{quizId}/addReading")
     public Map<String, Object> addReadingToQuiz(
             @PathVariable int quizId,
@@ -256,7 +252,7 @@ public class QuizController {
     //i send that to bl
     //js: done
     //frontend: Implemented
-    //frontend tested:
+    //frontend tested: good
     @PostMapping("/quizzes/{quizId}/questions")
     public ResponseEntity<Map<String, Object>> addQuestion(
             @PathVariable int quizId,
@@ -330,7 +326,6 @@ public class QuizController {
         return bl.viewReadingObjectives(readingId);
     }
 
-
     //student selects objectives that were displayed in viewObjectivesByQuiz and they are then sent here
     //UNTESTED
     //frontend:
@@ -344,7 +339,7 @@ public class QuizController {
         System.out.println("Quiz ID from path: " + quizId);
         System.out.println("Request Body: " + requestBody);
 
-        // Safely parse integers from request body
+        // debug safely parse integers from request body
         int studentId;
         int objectiveId;
         try {
@@ -355,11 +350,8 @@ public class QuizController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                                 .body(Map.of("status", "error", "message", "Invalid IDs"));
         }
-
         System.out.println("Parsed studentId: " + studentId);
         System.out.println("Parsed objectiveId: " + objectiveId);
-
-        // Call your business logic
         boolean success = bl.selectObjectiveForStudent(studentId, quizId, objectiveId);
         System.out.println("BL result = " + success);
 
@@ -372,7 +364,6 @@ public class QuizController {
     }
 
     //display chosen objectives
-    //if gio wants to add a section where the student can see what they chose, not urgent
     //TESTED: good!
     //frontend:
     //frontend tested:
@@ -383,7 +374,7 @@ public class QuizController {
 
     //backend gcalculates a subset of questions for student, make sure these can be displayed
     //async: done
-    //frontend:
+    //frontend: done
     //frontend tested:
     @GetMapping("/quizzes/student/{studentId}/{quizId}/questions")
     public List<QuizQuestion> viewStudentQuestions(
@@ -398,31 +389,18 @@ public class QuizController {
     //TESTED: Good!
     //retest: good!
     //async: done
-    //frontend:
-    //frontend tested:
+    //frontend: done
+    //frontend tested: done
     @GetMapping("/quizzes/{quizId}/questions")
     public List<Map<String, Object>> viewQuizQuestions(@PathVariable int quizId) {
         return bl.getQuizQuestions(quizId);
     }
 
-    /* 
-    //submit answer individually
-    @PostMapping("/quizzes/submit")
-    public Map<String, Object> submitAnswer(@RequestBody AnswerDTO answer) {
-        boolean correct = bl.checkAnswer(answer.getQuestionId(), answer.getChoiceId());
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("correct", correct);
-
-        return response;
-    }
-    */
-
     //display student badges
     //TESTED: Good!
     //retest: good!
-    //frontend:
-    //frontend tested:
+    //frontend: good
+    //frontend tested: good
     @GetMapping("/students/{studentId}/badges")
     public List<Map<String, Object>> viewStudentBadges(@PathVariable int studentId) {
         return bl.displayStudentBadges(studentId);
@@ -431,14 +409,15 @@ public class QuizController {
     //view all badges
     //TESTED: Good!
     //retest: good!
-    //frontend:
-    //frontend tested:
+    //frontend: good
+    //frontend tested: good
     @GetMapping("/badges")
     public ArrayList<Badge> viewAllBadges() {
         return bl.displayAllBadges();
     }
 
     //removes class enrollee
+    //good
     @DeleteMapping("/classes/{classId}/enrollees/{studentId}")
     public boolean removeEnrollee(
             @PathVariable int classId,
@@ -447,6 +426,7 @@ public class QuizController {
         return bl.removeEnrollee(classId, studentId);
     }
 
+    //good, resets at the end of quiz
     @DeleteMapping("/remove/objectives/{studentId}")
     public boolean resetObjective(
             @PathVariable int studentId
@@ -474,7 +454,7 @@ public class QuizController {
         return Map.of("sessionId", sessionId);
     }
 
-    // Save individual answers
+    //save individual answers
     @PostMapping("/attempt/answer")
     public boolean saveStudentAnswer(@RequestBody Map<String, Object> body) {
         int sessionId, questionId, chosenChoiceId;
@@ -490,19 +470,19 @@ public class QuizController {
         return bl.saveStudentAnswer(sessionId, questionId, chosenChoiceId);
     }
 
-    // Ends attempt
+    //ends attempt
     @PostMapping("/attempt/finish/{sessionId}")
     public boolean finalizeAttempt(@PathVariable int sessionId) {
         return bl.finalizeAttemptSession(sessionId);
     }
 
-    // Get session results
+    //get session results
     @GetMapping("/attempt/{sessionId}/results")
     public Map<String, Object> getAttemptResults(@PathVariable int sessionId) {
         return bl.getSessionResults(sessionId);
     }
 
-    // Get the latest attempt sessionId for a student
+    //get the latest attempt sessionId for a student
     @GetMapping("/attempt/latest/{studentId}")
     public Integer getLatestSessionId(@PathVariable int studentId) {
         return bl.getLatestSessionForStudent(studentId);

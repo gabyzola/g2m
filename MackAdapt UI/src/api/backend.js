@@ -453,8 +453,8 @@ export async function startAttemptSession(studentId, quizId, objectiveId) {
 
     if (!res.ok) throw new Error("Failed to start attempt session");
 
-    const data = await res.json(); // { sessionId: 123 }
-    return data.sessionId;          // return just the sessionId
+    const data = await res.json(); 
+    return data.sessionId;          
   } catch (err) {
     console.error("Error starting attempt session:", err);
     return -1;
@@ -472,8 +472,8 @@ export async function saveStudentAnswer(sessionId, questionId, chosenChoiceId) {
 
     if (!res.ok) throw new Error("Failed to save student answer");
 
-    const data = await res.json(); // { success: true/false } or boolean
-    return data.success ?? data;    // ensures boolean
+    const data = await res.json(); 
+    return data.success ?? data;    
   } catch (err) {
     console.error("Error saving student answer:", err);
     return false;
@@ -489,8 +489,8 @@ export async function finalizeAttemptSession(sessionId) {
 
     if (!res.ok) throw new Error("Failed to finalize attempt session");
 
-    const data = await res.json(); // { success: true/false } or boolean
-    return data.success ?? data;    // ensures boolean
+    const data = await res.json(); 
+    return data.success ?? data;    //ensures boolean
   } catch (err) {
     console.error("Error finalizing attempt session:", err);
     return false;
@@ -511,7 +511,7 @@ export async function getAttemptResults(sessionId) {
   }
 }
 
-// Get the latest sessionId for a student
+//get the latest sessionId for a student
 export async function getLatestSessionId(studentId) {
   try {
     const res = await fetch(`/api/attempt/latest/${studentId}`);
@@ -531,7 +531,7 @@ export async function assignBadge(studentId) {
       method: "POST"
     });
     if (!res.ok) throw new Error("Failed badge assign");
-    return await res.text();  // returns badge name or "" / null
+    return await res.text(); 
   } catch (err) {
     console.error("Error assigning badge:", err);
     return null;
