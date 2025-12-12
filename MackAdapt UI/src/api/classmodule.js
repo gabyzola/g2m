@@ -49,6 +49,58 @@ let quizToDelete = null;
 const deleteModal = document.getElementById("deleteQuizModal");
 const cancelDeleteQuizBtn = document.getElementById("cancelDeleteQuizBtn");
 const confirmDeleteQuizBtn = document.getElementById("confirmDeleteQuizBtn");
+const readingBtn = document.createElement("button");
+
+readingBtn.addEventListener("click", () => {
+        readingNameInput.value = "";
+        objectivesContainer.innerHTML = `
+          <label>
+              Objective:
+              <input type="text" name="objective" style="width:100%; margin-top:.25rem; margin-bottom:.25rem;">
+          </label>
+        `;
+        readingModal.style.display = "flex";
+      });
+
+      //adds more objective fields
+      addObjectiveBtn.addEventListener("click", () => {
+        const newInput = document.createElement("label");
+        newInput.innerHTML = `
+          Objective:
+          <input type="text" name="objective" style="width:100%; margin-top:.25rem; margin-bottom:.25rem;">
+        `;
+        objectivesContainer.appendChild(newInput);
+      });
+
+      cancelReadingBtn.addEventListener("click", () => {
+        readingModal.style.display = "none";
+      });
+
+      saveReadingBtn.addEventListener("click", async () => {
+        const readingName = readingNameInput.value.trim();
+        if (!readingName) return alert("Enter a reading name");
+
+        const objectiveInputs = objectivesContainer.querySelectorAll('input[name="objective"]');
+        const objectives = Array.from(objectiveInputs)
+          .map(i => i.value.trim())
+          .filter(v => v.length > 0);
+
+        try {
+          const readingRes = await uploadReading(classId, userId, readingName);
+          const readingId = readingRes.readingId;
+
+          for (let obj of objectives) {
+            await addReadingObjective(readingId, classId, obj);
+          }
+
+          // alert("Reading added successfully!");
+          readingModal.style.display = "none";
+          loadClassData();
+        } catch (err) {
+          console.error(err);
+          alert("Error adding reading.");
+        }
+      });
 
 //loads data for page
 async function loadClassData() {
@@ -132,62 +184,9 @@ async function loadClassData() {
       });
 
       // ADD READING
-      const readingBtn = document.createElement("button");
       readingBtn.textContent = "Add Unit";
       readingBtn.classList.add("action-btn");
       toolbar.appendChild(readingBtn);
-
-
-      readingBtn.addEventListener("click", () => {
-        readingNameInput.value = "";
-        objectivesContainer.innerHTML = `
-          <label>
-              Objective:
-              <input type="text" name="objective" style="width:100%; margin-top:.25rem; margin-bottom:.25rem;">
-          </label>
-        `;
-        readingModal.style.display = "flex";
-      });
-
-      //adds more objective fields
-      addObjectiveBtn.addEventListener("click", () => {
-        const newInput = document.createElement("label");
-        newInput.innerHTML = `
-          Objective:
-          <input type="text" name="objective" style="width:100%; margin-top:.25rem; margin-bottom:.25rem;">
-        `;
-        objectivesContainer.appendChild(newInput);
-      });
-
-      cancelReadingBtn.addEventListener("click", () => {
-        readingModal.style.display = "none";
-      });
-
-      saveReadingBtn.addEventListener("click", async () => {
-        const readingName = readingNameInput.value.trim();
-        if (!readingName) return alert("Enter a reading name");
-
-        const objectiveInputs = objectivesContainer.querySelectorAll('input[name="objective"]');
-        const objectives = Array.from(objectiveInputs)
-          .map(i => i.value.trim())
-          .filter(v => v.length > 0);
-
-        try {
-          const readingRes = await uploadReading(classId, userId, readingName);
-          const readingId = readingRes.readingId;
-
-          for (let obj of objectives) {
-            await addReadingObjective(readingId, classId, obj);
-          }
-
-          // alert("Reading added successfully!");
-          readingModal.style.display = "none";
-          loadClassData();
-        } catch (err) {
-          console.error(err);
-          alert("Error adding reading.");
-        }
-      });
     document.querySelectorAll(".delete-icon").forEach(icon => {
         icon.style.display = "block";
       });
