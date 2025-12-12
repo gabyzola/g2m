@@ -10,6 +10,25 @@
   padding: 0;
   box-sizing: border-box;
 }
+
+.quiz-card {
+    position: relative;
+}
+
+.delete-icon {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    cursor: pointer;
+    color: #cc3333;
+    font-size: 18px;
+    display: none;  
+}
+
+.quiz-card:hover .delete-icon {
+    color: #ff4444;
+}
+
  
 body {
   font-family: 'Segoe UI', sans-serif;

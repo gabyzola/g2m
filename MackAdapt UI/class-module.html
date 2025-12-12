@@ -46,7 +46,7 @@
                     <li>Loading enrollees...</li>
                 </ul>
 
-                <h3 class="sidebar-title">Class Readings</h3>
+                <h3 class="sidebar-title">Class Units</h3>
                 <ul id="readings">
                     <li>Loading readings...</li>
                 </ul>
@@ -55,9 +55,9 @@
 
         <div id="readingModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:9999;">
         <div style="background:#fff; padding:1.5rem; border-radius:10px; max-width:480px; width:90%;">
-            <h3>Add Reading</h3>
+            <h3>Add Unit</h3>
             <label>
-            Reading Name:
+            Unit Name:
             <input type="text" id="readingNameInput" style="width:100%; margin-top:.25rem; margin-bottom:.5rem;">
             </label>
             <div id="objectivesContainer">
@@ -69,10 +69,29 @@
             <button id="addObjectiveBtn" style="margin-top:.5rem;">Add Objective</button>
             <div style="margin-top:1rem; display:flex; gap:.5rem; justify-content:flex-end;">
             <button id="cancelReadingBtn">Cancel</button>
-            <button id="saveReadingBtn">Save Reading</button>
+            <button id="saveReadingBtn">Save Unit</button>
             </div>
         </div>
         </div>
+
+        <div id="deleteQuizModal" style="
+            display:none;
+            position:fixed;
+            inset:0;
+            background:rgba(0,0,0,0.5);
+            align-items:center;
+            justify-content:center;
+            z-index:9999;">
+            <div style="background:#fff; padding:1.5rem; border-radius:10px; max-width:360px; width:90%;">
+                <h3>Delete Quiz</h3>
+                <p>Are you sure you want to permanently delete this quiz?</p>
+                <div style="margin-top:1rem; display:flex; gap:.5rem; justify-content:flex-end;">
+                <button id="cancelDeleteQuizBtn">Cancel</button>
+                <button id="confirmDeleteQuizBtn" style="background:#c0392b; color:white;">Delete</button>
+                </div>
+            </div>
+        </div>
+
 
 
         <footer>

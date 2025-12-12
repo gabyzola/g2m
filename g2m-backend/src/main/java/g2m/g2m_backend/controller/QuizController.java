@@ -434,6 +434,13 @@ public class QuizController {
         return bl.resetObjectives(studentId);
     }
 
+    @DeleteMapping("/remove/quiz/{quizId}")
+    public boolean deleteQuiz(
+            @PathVariable int quizId
+    ) {
+        return bl.deleteQuiz(quizId);
+    }
+
     //begins attempt
     @PostMapping("/attempt/start")
     public Map<String, Object> startAttemptSession(@RequestBody Map<String, Object> body) {
