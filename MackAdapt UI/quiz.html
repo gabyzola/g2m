@@ -67,13 +67,39 @@ import {
   finalizeAttemptSession, 
   saveStudentAnswer, 
   getAttemptResults,
-  assignBadge
+  assignBadge,
+  lookupUserBySub
 } from "./src/api/backend.js";
 
 const params = new URLSearchParams(window.location.search);
 const classId = params.get("classId");
 const quizId = params.get("quizId"); 
-const studentId = params.get("userId");
+
+//gets the logged in user from session storage instead of url so people cant get user info from the url
+const googleToken = sessionStorage.getItem("googleToken");
+console.log("[DEBUG] Google token from sessionStorage:", googleToken);
+
+let userId = null;
+let email = null;
+
+//if google token is null then no one is logged in or there's some horrible problem
+if (!googleToken) {
+  document.getElementById("main").innerHTML = "<p>Error: Not logged in.</p>";
+} else {
+  //grab the user by the google sub
+  const user = await lookupUserBySub(googleToken);
+  console.log("[DEBUG] User object returned from backend:", user);
+
+  //user never got logged in...they dont exist in the db
+  if (!user || user.userId <= 0) {
+    document.getElementById("main").innerHTML =
+      "<p>Error: Failed to identify user.</p>";
+  } else {
+    //user exists in db so set their email and id
+    userId = user.userId;
+    email = user.email;
+  }
+}
 
 const objectiveCard = document.getElementById("objective-card");
 const questionCard = document.querySelector(".card"); 
@@ -96,7 +122,7 @@ let attemptSessionId = -1;
 
 //start attempt session for this page
 async function startSession(objectiveId = null) {
-  attemptSessionId = await startAttemptSession(studentId, quizId, objectiveId || 0);
+  attemptSessionId = await startAttemptSession(userId, quizId, objectiveId || 0);
   if (attemptSessionId <= 0) {
     alert("Failed to start session");
   } else {
@@ -135,7 +161,7 @@ submitObjectiveBtn.addEventListener("click", async () => {
   }
 
   const objectiveId = selected.value;
-  const result = await selectObjectiveForQuiz(quizId, studentId, objectiveId);
+  const result = await selectObjectiveForQuiz(quizId, userId, objectiveId);
 
   if (result.status !== "success") {
     alert("Failed to select objective.");
@@ -151,7 +177,7 @@ submitObjectiveBtn.addEventListener("click", async () => {
 
 // load quiz questions filtered by student's objectives
 async function loadQuestions() {
-  const raw = await getStudentQuestions(studentId, quizId);
+  const raw = await getStudentQuestions(userId, quizId);
 
   if (!raw || raw.length === 0) {
     qStem.textContent = "No questions available.";
@@ -259,7 +285,7 @@ async function finishQuiz() {
   scoreLine.textContent = `You scored ${pct}%.`;
   resultModal.style.display = "flex";
 
-  const newBadge = await assignBadge(studentId);
+  const newBadge = await assignBadge(userId);
 
   if (newBadge) {
     scoreLine.textContent += `You earned a new badge: ${newBadge}!`;
@@ -270,7 +296,7 @@ async function finishQuiz() {
     if (!success) console.error("Failed to finalize session");
 
     try {
-      const resetSuccess = await fetch(`/api/remove/objectives/${studentId}`, {
+      const resetSuccess = await fetch(`/api/remove/objectives/${userId}`, {
         method: 'DELETE'
       }).then(res => res.json());
       if (!resetSuccess) console.error("Failed to reset objectives");
