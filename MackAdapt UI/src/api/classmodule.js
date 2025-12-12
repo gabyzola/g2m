@@ -6,7 +6,8 @@ import {
   uploadReading,
   addReadingObjective,
   getClassName,
-  lookupUserBySub
+  lookupUserBySub,
+  deleteQuiz
 } from "./backend.js";
 
 const params = new URLSearchParams(window.location.search);
@@ -43,6 +44,12 @@ if (!googleToken) {
   }
 }
 
+let quizToDelete = null;
+
+const deleteModal = document.getElementById("deleteQuizModal");
+const cancelDeleteQuizBtn = document.getElementById("cancelDeleteQuizBtn");
+const confirmDeleteQuizBtn = document.getElementById("confirmDeleteQuizBtn");
+
 //loads data for page
 async function loadClassData() {
   const cname = await getClassName(classId);
@@ -51,6 +58,7 @@ async function loadClassData() {
     cname?.className || `Class ID: ${classId}`;
 
     //gets class quizzes and sticks them in html under quizzes id
+    const canCreate = await canCreateQuiz(classId, userId);
   const quizzes = await getClassQuizzes(classId);
   const quizzesContainer = document.getElementById("quizzes");
   quizzesContainer.innerHTML = "";
@@ -63,20 +71,28 @@ async function loadClassData() {
     quizzes.forEach(q => {
       const card = document.createElement("div");
       card.className = "quiz-card";
-      card.innerHTML = `
-        <h3>${q.quizName || "Quiz #" + q.quizId}</h3>
-        <a href="quiz.html?quizId=${q.quizId}&classId=${classId}&userId=${userId}">Go to Quiz</a>
-      `; //FIX: make sure user id isnt in the url! this is a security issue!
-      quizzesContainer.appendChild(card);
+
+      let deleteIcon = "";
+    if (canCreate) {
+      deleteIcon = `<i class="fa-solid fa-trash delete-icon" data-quiz-id="${q.quizId}"></i>`;
+    }
+
+    card.innerHTML = `
+      <h3>${q.quizName || "Quiz #" + q.quizId}</h3>
+      <a href="quiz.html?quizId=${q.quizId}&classId=${classId}">Go to Quiz</a>
+      ${deleteIcon}
+    `;
+
+    quizzesContainer.appendChild(card);
     });
   }
 
   //check if user is an isntructor or not
   try {
     const canCreate = await canCreateQuiz(classId, userId);
-
-    // inside loadClassData(), where you check canCreate:
     const toolbar = document.getElementById("quiz-toolbar");
+    toolbar.innerHTML = "";   
+    toolbar.style.display = "none";
 
     if (canCreate) {
       toolbar.style.display = "flex";   // show toolbar only for instructors
@@ -117,11 +133,11 @@ async function loadClassData() {
 
       // ADD READING
       const readingBtn = document.createElement("button");
-      readingBtn.textContent = "Add Reading";
+      readingBtn.textContent = "Add Unit";
       readingBtn.classList.add("action-btn");
       toolbar.appendChild(readingBtn);
 
-      // (Your existing reading modal code stays EXACTLY the same)
+
       readingBtn.addEventListener("click", () => {
         readingNameInput.value = "";
         objectivesContainer.innerHTML = `
@@ -164,13 +180,16 @@ async function loadClassData() {
             await addReadingObjective(readingId, classId, obj);
           }
 
-          alert("Reading added successfully!");
+          // alert("Reading added successfully!");
           readingModal.style.display = "none";
           loadClassData();
         } catch (err) {
           console.error(err);
           alert("Error adding reading.");
         }
+      });
+    document.querySelectorAll(".delete-icon").forEach(icon => {
+        icon.style.display = "block";
       });
     }
   } catch (err) {
@@ -183,7 +202,7 @@ async function loadClassData() {
   readingsList.innerHTML = "";
 
   if (!readings || readings.length === 0) {
-    readingsList.innerHTML = "<li>No readings added yet.</li>";
+    readingsList.innerHTML = "<li>No units added yet.</li>";
   } else {
     readings.forEach(r => {
       const li = document.createElement("li");
@@ -207,5 +226,33 @@ async function loadClassData() {
     });
   }
 }
+
+document.addEventListener("click", e => {
+  if (e.target.classList.contains("delete-icon")) {
+    quizToDelete = e.target.dataset.quizId;
+    deleteModal.style.display = "flex";
+  }
+});
+
+
+cancelDeleteQuizBtn.addEventListener("click", () => {
+  quizToDelete = null;
+  deleteModal.style.display = "none";
+});
+
+
+confirmDeleteQuizBtn.addEventListener("click", async () => {
+  if (!quizToDelete) return;
+
+  try {
+    await deleteQuiz(quizToDelete, classId, userId);
+    deleteModal.style.display = "none";
+    quizToDelete = null;
+    loadClassData(); // refresh after delete
+  } catch (err) {
+    console.error(err);
+    alert("Error deleting quiz.");
+  }
+});
 
 loadClassData();

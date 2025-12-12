@@ -75,7 +75,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         const success = await res.json();
         if (success) {
-          window.location.href = "class-enroll.html?classId=${classId}"; 
+          window.location.href = `class-enroll.html?classId=${classId}`; 
         } else {
           alert("Failed to create class");
         }

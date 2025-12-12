@@ -300,6 +300,14 @@ public class BusinessLogic {
         return dal.deleteStudentObjective(userId);
     }
 
+    public boolean deleteUser(int userId) {
+        return dal.deleteUser(userId);
+    }
+
+    public boolean deleteQuiz(int quizId) {
+        return dal.deleteQuiz(quizId);
+    }
+
     //begin attempt session
     //api: to add
     public int startAttemptSession(int studentId, int quizId, int objectiveId) {

@@ -405,6 +405,20 @@ export async function removeStudent(classId, studentId) {
   }
 }
 
+export async function deleteQuiz(quizId) {
+  try {
+    const res = await fetch(`/api/remove/quiz/${quizId}`, {
+      method: "DELETE"
+    });
+
+    if (!res.ok) throw new Error("Failed to remove quiz");
+    return await res.json(); 
+  } catch (err) {
+    console.error("Error removing quiz:", err);
+    return false;
+  }
+}
+
 //search students (used for email in class enrollment)
 export async function searchStudents(query) {
   try {
