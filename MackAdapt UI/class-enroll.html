@@ -75,7 +75,7 @@
       <h2>Enroll Students</h2>
 
       <div style="margin-bottom: 1rem;">
-      <a href='/class-module.html?classId=${classId}' 
+      <a href="/class-module.html?classId=${classId}" 
         style="display:inline-block; padding:.5rem 1rem; background:#ccd; border-radius:6px; text-decoration:none; color:#000; font-weight:600;">
         &larr; Back to Class Module
       </a>
@@ -114,6 +114,14 @@
       if (!classId) {
         alert("No class selected.");
       }
+
+      // Add Back button link dynamically
+    const backButton = document.createElement('a');
+    backButton.textContent = "← Back to Class Module";
+    backButton.href = `/class-module.html?classId=${classId}`;
+    backButton.style.cssText = "display:inline-block; padding:.5rem 1rem; background:#ccd; border-radius:6px; text-decoration:none; color:#000; font-weight:600; margin-bottom:1rem;";
+    document.querySelector("main.wrap").prepend(backButton);
+
 
       //html element ids
       const results = document.getElementById("results");
