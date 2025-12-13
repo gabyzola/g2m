@@ -11,6 +11,17 @@
   box-sizing: border-box;
 }
 
+.star {
+  position: absolute;
+  font-size: 1.2rem;
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+.star.gold { color: #FFC72C; }   
+.star.navy { color: #002855; }   
+
+
 .quiz-card {
     position: relative;
 }
