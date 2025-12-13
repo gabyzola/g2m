@@ -12,6 +12,8 @@
         margin: 0;
         background-color: #f7f7f7;
         font-family: Arial, sans-serif;
+        position: relative;
+        overflow-x: hidden;
     }
 
     /* Top nav */
@@ -108,20 +110,28 @@
 </head>
 <body>
 
+  <!-- 
+    <span class="star gold" style="top:80px; left:40px;">★</span>
+    <span class="star navy" style="top:140px; right:60px;">★</span>
+    <span class="star gold" style="bottom:-200px; left:120px;">★</span>
+    <span class="star navy" style="bottom:60px; right:140px;">★</span>
+    -->
+
+
   <header>
     <h1>MackAdapt</h1>
     <nav>
         <ul>
             <li><a href="index.html">Home</a></li>
-            <li><a href="classes.html" class="active">Classes</a></li>
+            <li><a href="classes.html">Classes</a></li>
             <li><a href="student-dashboard.html">Student Dashboard</a></li>
-            <li><a href="/login.html">Login</a></li>
+            <li><a href="/login.html" class="active">Login</a></li>
         </ul>
     </nav>
   </header>
 
   <div class="container">
-      <div class="login-card">
+      <div class="login-card" style="align-items: center;">
           <h2>Sign In</h2>
 
           <div id="errorBox" class="error"></div>

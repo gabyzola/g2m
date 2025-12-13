@@ -130,10 +130,20 @@ async function loadClassData() {
     }
 
     card.innerHTML = `
+    <div class="quiz-card-content">
       <h3>${q.quizName || "Quiz #" + q.quizId}</h3>
-      <a href="quiz.html?quizId=${q.quizId}&classId=${classId}">Go to Quiz</a>
+
+      <a 
+        href="quiz.html?quizId=${q.quizId}&classId=${classId}"
+        class="quiz-link-btn"
+      >
+        <i class="fa-solid fa-play"></i>
+        Start Quiz
+      </a>
+
       ${deleteIcon}
-    `;
+    </div>
+  `;
 
     quizzesContainer.appendChild(card);
     });
