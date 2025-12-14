@@ -122,7 +122,7 @@ let attemptSessionId = -1;
 
 // Wrapper to start attempt session for this page
 async function startSession(objectiveId = null) {
-  attemptSessionId = await startAttemptSession(userId, quizId, objectiveId || 0);
+  attemptSessionId = await startAttemptSession(userId, quizId, objectiveId);
   if (attemptSessionId <= 0) {
     alert("Failed to start session");
   } else {
@@ -144,7 +144,7 @@ async function loadObjectives() {
 
   objectiveList.innerHTML = objectives.map(obj => `
     <label style="display:block; margin:.6rem 0;">
-      <input type="radio" name="objective" value="${obj.objectiveId}">
+      <input type="checkbox" name="objective" value="${obj.objectiveId}">
       ${obj.objectiveName}
     </label>
   `).join("");
@@ -154,24 +154,29 @@ async function loadObjectives() {
 
 // Handle student selecting an objective
 submitObjectiveBtn.addEventListener("click", async () => {
-  const selected = document.querySelector("input[name='objective']:checked");
-  if (!selected) {
-    alert("Please select an objective.");
+  const selectedObjectives = [
+    ...document.querySelectorAll("input[name='objective']:checked")
+  ].map(cb => parseInt(cb.value));
+
+  if (selectedObjectives.length === 0) {
+    alert("Please select at least one objective.");
     return;
   }
 
-  const objectiveId = selected.value;
-  const result = await selectObjectiveForQuiz(quizId, userId, objectiveId);
-
-  if (result.status !== "success") {
-    alert("Failed to select objective.");
-    return;
+  // Send objectives one-by-one (works with existing backend)
+  for (const objectiveId of selectedObjectives) {
+    const result = await selectObjectiveForQuiz(quizId, userId, objectiveId);
+    if (result.status !== "success") {
+      alert("Failed to select one or more objectives.");
+      return;
+    }
   }
 
   objectiveCard.style.display = "none";
   questionCard.style.display = "block";
 
-  await startSession(objectiveId);
+  // Start session WITHOUT a single objective
+  await startSession(); 
   loadQuestions();
 });
 

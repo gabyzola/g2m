@@ -87,7 +87,7 @@ public class QuizController {
         System.out.println("Result from getUserIdByEmail: " + userId);
 
         return Map.of("userId", userId);
-    }
+    } 
     
     //lookup user by google sub
     //js:
@@ -464,22 +464,35 @@ public class QuizController {
     //begins attempt
     @PostMapping("/attempt/start")
     public Map<String, Object> startAttemptSession(@RequestBody Map<String, Object> body) {
-        int studentId, quizId, objectiveId;
+        int studentId, quizId;
+        Integer objectiveId = null; // <-- nullable
+
         try {
             studentId = Integer.parseInt(body.get("studentId").toString());
             quizId = Integer.parseInt(body.get("quizId").toString());
-            objectiveId = Integer.parseInt(body.get("objectiveId").toString());
+
+            if (body.containsKey("objectiveId") && body.get("objectiveId") != null) {
+                objectiveId = Integer.parseInt(body.get("objectiveId").toString());
+            }
+
         } catch (Exception e) {
             System.out.println("Failed to parse IDs: " + e.getMessage());
             return Map.of("sessionId", -1);
         }
 
         int sessionId = bl.startAttemptSession(studentId, quizId, objectiveId);
-        System.out.println("Starting attempt session with studentId=" + studentId + ", quizId=" + quizId + ", objectiveId=" + objectiveId);
+
+        System.out.println(
+            "Starting attempt session with studentId=" + studentId +
+            ", quizId=" + quizId +
+            ", objectiveId=" + objectiveId
+        );
+
         System.out.println("Created sessionId=" + sessionId);
 
         return Map.of("sessionId", sessionId);
     }
+
 
     // Save individual answers
     @PostMapping("/attempt/answer")

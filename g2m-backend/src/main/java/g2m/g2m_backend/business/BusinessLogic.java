@@ -310,7 +310,7 @@ public class BusinessLogic {
 
     //begin attempt session
     //api: to add
-    public int startAttemptSession(int studentId, int quizId, int objectiveId) {
+    public int startAttemptSession(int studentId, int quizId, Integer objectiveId) {
         try {
             int sessionId = dal.startAttemptSession(studentId, quizId, objectiveId);
 
@@ -328,6 +328,7 @@ public class BusinessLogic {
             return -1;
         }
     }
+
 
     //save a single answer during the quiz
     //api: to add

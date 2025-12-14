@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -645,7 +646,7 @@ public class QuizDal {
             } catch (SQLException e) { e.printStackTrace(); }
         }
     }
-
+ 
     //get student objectives idk if this is actually needed in the ui, but i already coded it
     //bl: done
    public List<Map<String, Object>> getStudentObjectives(int studentId) {
@@ -812,7 +813,7 @@ public class QuizDal {
     }
 
     //starts attempt session right after a student picks their objectives
-    public int startAttemptSession(int studentId, int quizId, int objectiveId) {
+    public int startAttemptSession(int studentId, int quizId, Integer objectiveId) {
         CallableStatement stmt = null;
         ResultSet rs = null;
 
@@ -820,7 +821,12 @@ public class QuizDal {
             stmt = myConnection.prepareCall("{CALL StartAttemptSession(?, ?, ?)}");
             stmt.setInt(1, studentId);
             stmt.setInt(2, quizId);
-            stmt.setInt(3, objectiveId);
+
+            if (objectiveId == null) {
+                stmt.setNull(3, Types.INTEGER);
+            } else {
+                stmt.setInt(3, objectiveId);
+            }
 
             rs = stmt.executeQuery();
 
@@ -839,6 +845,7 @@ public class QuizDal {
             try { if (stmt != null) stmt.close(); } catch (SQLException ignore) {}
         }
     }
+
 
     //saves each student answer
     public boolean saveStudentAnswer(int sessionId, int questionId, int chosenChoiceId) {
