@@ -1196,6 +1196,25 @@ public class QuizDal {
         return sessionId; 
     }
 
+    //get students points
+    public Integer getStudentPoints(int studentId) {
+        Integer totalPoints = null;
+
+        try (CallableStatement cs = myConnection.prepareCall("{CALL GetStudentPoints(?)}")) {
+            cs.setInt(1, studentId);
+
+            ResultSet rs = cs.executeQuery();
+            if (rs.next()) {
+                totalPoints = rs.getInt("totalPoints");
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return totalPoints; 
+    }
+
 
     public void close() {
         try {

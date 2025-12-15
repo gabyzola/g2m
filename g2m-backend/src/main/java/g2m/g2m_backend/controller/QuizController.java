@@ -426,6 +426,13 @@ public class QuizController {
         return bl.removeEnrollee(classId, studentId);
     }
 
+    @DeleteMapping("/users/remove/{userId}")
+    public boolean removeUser(
+            @PathVariable int studentId
+    ) {
+        return bl.deleteUser(studentId);
+    }
+
     //good, resets at the end of quiz
     @DeleteMapping("/remove/objectives/{studentId}")
     public boolean resetObjective(
@@ -497,6 +504,13 @@ public class QuizController {
             @PathVariable int classId
     ) {
         return bl.getLatestSessionForStudent(studentId, classId);
+    }
+
+    @GetMapping("/students/{studentId}/totalPoints")
+    public Integer getStudentPoints(
+            @PathVariable int studentId
+    ) {
+        return bl.getStudentPoints(studentId);
     }
 
 

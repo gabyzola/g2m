@@ -179,26 +179,6 @@ nav a.active {
       <div class="section-title">🏅 Your Badges</div>
 
       <div class="badge-grid">
-        <div class="badge-item">
-          <img src="/Images/badges/Rookie.png" alt="Rookie" />
-          <div>Complete your first quiz</div>
-        </div>
-        <div class="badge-item">
-          <img src="/Images/badges/Rookie (1).png" alt="Steady Learner" />
-          <div>Reach 100 total points</div>
-        </div>
-        <div class="badge-item">
-          <img src="/Images/badges/Rookie (2).png" alt="Knowledge Collector" />
-          <div>Reach 500 total points</div>
-        </div>
-        <div class="badge-item">
-          <img src="/Images/badges/Rookie (3).png" alt="Quiz Master" />
-          <div>Reach 700 total points</div>
-        </div>
-        <div class="badge-item">
-          <img src="/Images/badges/Rookie (4).png" alt="Legend" />
-          <div>Reach 1000 total points</div>
-        </div>
       </div>
     </section>
 
@@ -226,7 +206,15 @@ nav a.active {
     </div>
   </div>
 
-  <script>
+  <script type="module">
+    import { 
+      removeUser,
+      getStudentTotalPoints, 
+      lookupUserBySub
+    } from "./src/api/backend.js";
+
+    let userId = null;
+
     function openDeleteModal() {
       document.getElementById('deleteModal').style.display = 'flex';
     }
@@ -237,6 +225,48 @@ nav a.active {
       alert("Account would be deleted.");
       closeDeleteModal();
     }
+
+    //defines all badges and point thresholds
+    const badges = [
+      { name: "Rookie", img: "/Images/badges/Rookie.png", points: 0, description: "Complete your first quiz" },
+      { name: "Steady Learner", img: "/Images/badges/Rookie (1).png", points: 100, description: "Reach 100 total points" },
+      { name: "Knowledge Collector", img: "/Images/badges/Rookie (2).png", points: 500, description: "Reach 500 total points" },
+      { name: "Quiz Master", img: "/Images/badges/Rookie (3).png", points: 700, description: "Reach 700 total points" },
+      { name: "Legend", img: "/Images/badges/Rookie (4).png", points: 1000, description: "Reach 1000 total points" }
+    ];
+
+    async function renderBadges(userId) {
+      const points = await getStudentTotalPoints(userId);
+      const badgeGrid = document.querySelector(".badge-grid");
+      badgeGrid.innerHTML = ""; 
+
+      badges.forEach(badge => {
+        const earned = points >= badge.points;
+        const div = document.createElement("div");
+        div.classList.add("badge-item");
+        if (!earned) div.style.filter = "grayscale(80%) opacity(0.5)"; //grayed if not eligable
+
+        div.innerHTML = `
+          <img src="${badge.img}" alt="${badge.name}" />
+          <div>${badge.description}</div>
+        `;
+        badgeGrid.appendChild(div);
+      });
+    }
+
+    // Initialize dashboard
+    async function initDashboard() {
+      const googleToken = sessionStorage.getItem("googleToken");
+      if (!googleToken) return;
+
+      const user = await lookupUserBySub(googleToken);
+      if (!user) return;
+
+      userId = user.userId; 
+      renderBadges(userId);
+    }
+
+    initDashboard();
   </script>
 </body>
 </html>

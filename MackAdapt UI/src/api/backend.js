@@ -405,6 +405,26 @@ export async function removeStudent(classId, studentId) {
   }
 }
 
+export async function removeUser(userId) {
+  try {
+    const res = await fetch(`/api/users/remove/${userId}`, {
+      method: "DELETE"
+    });
+
+    if (!res.ok) throw new Error("Failed request");
+
+    const text = await res.text();
+
+    if (!text) return false;
+
+    return JSON.parse(text); 
+  } catch (err) {
+    console.error("Error removing user:", err);
+    return false;
+  }
+}
+
+
 export async function deleteQuiz(quizId) {
   try {
     const res = await fetch(`/api/remove/quiz/${quizId}`, {
@@ -541,6 +561,44 @@ export async function getLatestSessionId(studentId, classId) {
     return null;
   }
 }
+
+export async function getStudentTotalPoints(studentId) {
+  try {
+    const res = await fetch(`/api/students/${studentId}/totalPoints`);
+    if (!res.ok) throw new Error("Failed request");
+
+    const text = await res.text();
+
+    // No student / no points
+    if (!text) return null;
+
+    return JSON.parse(text);
+  } catch (err) {
+    console.error("Error fetching student totalPoints:", err);
+    return null;
+  }
+}
+
+async function renderBadges(userId) {
+  const points = await getStudentTotalPoints(userId);
+  const badgeGrid = document.querySelector(".badge-grid");
+
+  badgeGrid.innerHTML = ""; // Clear existing badges
+
+  badges.forEach(badge => {
+    const earned = points >= badge.points;
+    const div = document.createElement("div");
+    div.classList.add("badge-item");
+    if (!earned) div.style.filter = "grayscale(80%) opacity(0.5)"; // Gray out if not earned
+
+    div.innerHTML = `
+      <img src="${badge.img}" alt="${badge.name}" />
+      <div>${badge.description}</div>
+    `;
+    badgeGrid.appendChild(div);
+  });
+}
+
 
 
 export async function assignBadge(studentId) {

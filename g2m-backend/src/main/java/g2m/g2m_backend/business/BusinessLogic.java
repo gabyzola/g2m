@@ -394,6 +394,9 @@ public class BusinessLogic {
         return dal.getLatestSessionId(studentId, classId);
     }
 
+    public Integer getStudentPoints(int studentId) {
+        return dal.getStudentPoints(studentId);
+    }
 
     /*misc*/
 
