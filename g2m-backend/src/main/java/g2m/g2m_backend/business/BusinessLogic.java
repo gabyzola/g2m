@@ -390,8 +390,8 @@ public class BusinessLogic {
 
     //gets last session id for a student (fixes a frontend problem in results.html)
     //api: done
-    public Integer getLatestSessionForStudent(int studentId) {
-        return dal.getLatestSessionId(studentId);
+    public Integer getLatestSessionForStudent(int studentId, int classId) {
+        return dal.getLatestSessionId(studentId, classId);
     }
 
 

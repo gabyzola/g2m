@@ -144,7 +144,8 @@
 
     async function renderAttemptResults(studentId) {
         //gets students latest session id, must be called bc we need session id to get results, not student id
-        const sessionId = await getLatestSessionId(studentId);
+        const sessionId = await getLatestSessionId(studentId, classId);
+
 
         if (!sessionId) {
             //student has never completed a quiz
@@ -227,3 +228,4 @@
 
 </body>
 </html>
+ 

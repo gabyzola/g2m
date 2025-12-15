@@ -1177,11 +1177,12 @@ public class QuizDal {
         return students;
     }
 
-    public Integer getLatestSessionId(int studentId) {
+    public Integer getLatestSessionId(int studentId, int classId) {
         Integer sessionId = null;
 
-        try (CallableStatement cs = myConnection.prepareCall("{CALL GetLatestSessionId(?)}")) {
+        try (CallableStatement cs = myConnection.prepareCall("{CALL GetLatestSessionId(?, ?)}")) {
             cs.setInt(1, studentId);
+            cs.setInt(2, classId);
 
             ResultSet rs = cs.executeQuery();
             if (rs.next()) {

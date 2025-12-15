@@ -525,19 +525,19 @@ export async function getAttemptResults(sessionId) {
   }
 }
 
-//get the latest sessionId for a student
-export async function getLatestSessionId(studentId) {
+export async function getLatestSessionId(studentId, classId) {
   try {
-    const res = await fetch(`/api/attempt/latest/${studentId}`);
+    const res = await fetch(`/api/attempt/latest/${studentId}/${classId}`);
     if (!res.ok) throw new Error("Failed request");
 
     const sessionId = await res.json();
-    return sessionId; 
+    return sessionId;
   } catch (err) {
     console.error("Error fetching latest sessionId:", err);
     return null;
   }
 }
+
 
 export async function assignBadge(studentId) {
   try {

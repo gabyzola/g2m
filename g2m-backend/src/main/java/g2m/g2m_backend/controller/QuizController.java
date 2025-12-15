@@ -490,10 +490,15 @@ public class QuizController {
     }
 
     //get the latest attempt sessionId for a student
-    @GetMapping("/attempt/latest/{studentId}")
-    public Integer getLatestSessionId(@PathVariable int studentId) {
-        return bl.getLatestSessionForStudent(studentId);
+    // get the latest attempt sessionId for a student in a class
+    @GetMapping("/attempt/latest/{studentId}/{classId}")
+    public Integer getLatestSessionId(
+            @PathVariable int studentId,
+            @PathVariable int classId
+    ) {
+        return bl.getLatestSessionForStudent(studentId, classId);
     }
+
 
     // Search students: Ready to connect
     //TESTED: Good
