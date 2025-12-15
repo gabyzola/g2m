@@ -28,6 +28,20 @@
   </header>
 
     <main>
+
+      <div id="uiMessage" style="
+        display:none;
+        max-width:720px;
+        margin:1rem auto;
+        padding:.75rem 1rem;
+        border-radius:6px;
+        background:#fff3cd;
+        border:1px solid #ffeeba;
+        color:#856404;
+        font-weight:500;
+      ">
+      </div>
+
       <div class="card" id="objective-card" style="display:none;">
         <h2>Choose an Objective to Focus On</h2>
         <div id="objective-list"></div>
@@ -70,6 +84,29 @@ import {
   assignBadge,
   lookupUserBySub
 } from "./src/api/backend.js";
+
+function showMessage(text, type = "warning") {
+  const box = document.getElementById("uiMessage");
+
+  const styles = {
+    warning: { bg: "#fff3cd", border: "#ffeeba", color: "#856404" },
+    error:   { bg: "#f8d7da", border: "#f5c6cb", color: "#721c24" },
+    success: { bg: "#d4edda", border: "#c3e6cb", color: "#155724" }
+  };
+
+  const s = styles[type] || styles.warning;
+
+  box.textContent = text;
+  box.style.background = s.bg;
+  box.style.borderColor = s.border;
+  box.style.color = s.color;
+  box.style.display = "block";
+
+  // auto-hide after 4 seconds
+  setTimeout(() => {
+    box.style.display = "none";
+  }, 4000);
+}
 
 const params = new URLSearchParams(window.location.search);
 const classId = params.get("classId");
@@ -124,7 +161,8 @@ let attemptSessionId = -1;
 async function startSession(objectiveId = null) {
   attemptSessionId = await startAttemptSession(userId, quizId, objectiveId);
   if (attemptSessionId <= 0) {
-    alert("Failed to start session");
+    showMessage("We couldn't start your quiz session. Please try again.", "error");
+
   } else {
     console.log("Attempt session started:", attemptSessionId);
   }
@@ -159,7 +197,8 @@ submitObjectiveBtn.addEventListener("click", async () => {
   ].map(cb => parseInt(cb.value));
 
   if (selectedObjectives.length === 0) {
-    alert("Please select at least one objective.");
+    showMessage("Please select at least one learning objective to continue.", "warning");
+
     return;
   }
 
@@ -167,7 +206,8 @@ submitObjectiveBtn.addEventListener("click", async () => {
   for (const objectiveId of selectedObjectives) {
     const result = await selectObjectiveForQuiz(quizId, userId, objectiveId);
     if (result.status !== "success") {
-      alert("Failed to select one or more objectives.");
+      showMessage("One or more objectives could not be saved. Please try again.", "error");
+
       return;
     }
   }
@@ -239,7 +279,8 @@ function render() {
 nextBtn.addEventListener("click", async () => {
   const selected = document.querySelector('input[name="ans"]:checked');
   if (!selected) {
-    alert("Choose an answer");
+    showMessage("Please select an answer before continuing.", "warning");
+
     return;
   }
 
