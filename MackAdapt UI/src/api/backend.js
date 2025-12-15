@@ -530,8 +530,12 @@ export async function getLatestSessionId(studentId, classId) {
     const res = await fetch(`/api/attempt/latest/${studentId}/${classId}`);
     if (!res.ok) throw new Error("Failed request");
 
-    const sessionId = await res.json();
-    return sessionId;
+    const text = await res.text();
+
+    // No session exists
+    if (!text) return null;
+
+    return JSON.parse(text);
   } catch (err) {
     console.error("Error fetching latest sessionId:", err);
     return null;

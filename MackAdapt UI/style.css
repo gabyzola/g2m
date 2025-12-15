@@ -340,7 +340,7 @@ footer {
   margin-top: 4rem;
 }
 .hero-image {
-  background-image: url("images/hero.jpeg");
+  background-image: url("/hero.jpeg");
   background-size: cover;
   background-position: center;
   position: relative;
