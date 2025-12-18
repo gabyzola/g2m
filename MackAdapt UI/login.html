@@ -133,8 +133,16 @@
   <div class="container">
       <div class="login-card" style="align-items: center;">
           <h2>Sign In</h2>
-
           <div id="errorBox" class="error"></div>
+          <p id="merrimackNotice" style="
+              text-align: center;
+              font-size: 14px;
+              color: #555;
+              margin-bottom: 15px;
+          ">
+              Please sign in using your <strong>@merrimack.edu</strong> email
+          </p>
+          <p id="domainError" class="error" style="display:none;"></p>
           <div id="g-signin"></div>
 
       </div>
@@ -194,6 +202,17 @@ async function handleGoogleCredentialResponse(response) {
     const decoded = JSON.parse(atob(jwt.split('.')[1]));
     const email = decoded.email;
     const sub = decoded.sub;
+
+    const domainError = document.getElementById("domainError");
+    domainError.style.display = "none";
+    domainError.textContent = "";
+
+    if (!email.endsWith("@merrimack.edu")) {
+        domainError.textContent =
+            "Sign-in failed. Please use your Merrimack (@merrimack.edu) Google account.";
+        domainError.style.display = "block";
+        return;
+    }
 
     if (!email || !sub) throw new Error("Invalid Google credential.");
     currentGoogleSub = decoded.sub;
