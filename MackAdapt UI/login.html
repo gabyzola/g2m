@@ -203,17 +203,6 @@ async function handleGoogleCredentialResponse(response) {
     const email = decoded.email;
     const sub = decoded.sub;
 
-    const domainError = document.getElementById("domainError");
-    domainError.style.display = "none";
-    domainError.textContent = "";
-
-    if (!email.endsWith("@merrimack.edu")) {
-        domainError.textContent =
-            "Sign-in failed. Please use your Merrimack (@merrimack.edu) Google account.";
-        domainError.style.display = "block";
-        return;
-    }
-
     if (!email || !sub) throw new Error("Invalid Google credential.");
     currentGoogleSub = decoded.sub;
 
@@ -225,6 +214,13 @@ async function handleGoogleCredentialResponse(response) {
         window.sessionStorage.setItem("googleToken", currentGoogleSub);
       window.location.href = `/classes`;
       return;
+    }
+
+    if (!email.endsWith("@merrimack.edu")) {
+        domainError.textContent =
+            "Sign-in failed. Please use your Merrimack (@merrimack.edu) Google account.";
+        domainError.style.display = "block";
+        return;
     }
 
     if (userId === -1) {
