@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MackAdapt – Sign In</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+
+  <header>
+    <h1>MackAdapt</h1>
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="classes.html">Classes</a></li>
+            <li><a href="student-dashboard.html">Student Dashboard</a></li>
+            <li><a href="/login.html" class="active">Login</a></li>
+        </ul>
+    </nav>
+  </header>
+
+  <div class="container">
+      <div class="login-card">
+          <h2>Sign In</h2>
+          <div id="errorBox" class="error"></div>
+          <p id="merrimackNotice">
+              Please sign in using your <strong>@merrimack.edu</strong> email
+          </p>
+          <p id="domainError" class="error" style="display:none;"></p>
+          <div id="g-signin"></div>
+      </div>
+  </div>
+
+  <div id="modalBg" class="modal-bg">
+      <div class="modal">
+          <h3>Create Your Account</h3>
+
+          <input id="regEmail" disabled>
+          <input id="regFirstName" placeholder="First Name">
+          <input id="regLastName" placeholder="Last Name">
+          <select id="regRole">
+              <option value="">Select Role</option>
+              <option value="student">Student</option>
+              <option value="instructor">Instructor</option>
+          </select>
+          <input id="majorField" placeholder="Major (Students Only)">
+          <input id="subjectField" placeholder="Teaching Subject (Instructors Only)">
+          <button id="createAccountBtn">Create Account</button>
+      </div>
+  </div>
+
+  <script type="module" src="/src/login.js"></script>
+
+</body>
+</html>
