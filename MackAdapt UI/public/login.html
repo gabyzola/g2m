@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>MackAdapt – Sign In</title>
-<link rel="stylesheet" href="style.css" />
+<link rel="stylesheet" href="/assets/index-DODnJMT3.css" />
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
   
@@ -172,126 +172,139 @@
     </div>
 </div>
 
+<!-- Google Sign-In Initialization -->
+<!-- Google Sign-In Initialization -->
+<script>
+  // Wait until the GSI client has loaded
+  window.addEventListener("DOMContentLoaded", () => {
+      const GOOGLE_CLIENT_ID = "762914522263-mshmosk8e89upni0c0p3upirltuqt7m6.apps.googleusercontent.com";
+
+      // Initialize Google Sign-In
+      google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: handleGoogleCredentialResponse // global function, defined in module below
+      });
+
+      // Render the button
+      google.accounts.id.renderButton(
+          document.getElementById("g-signin"),
+          {
+              theme: "filled_blue",
+              size: "large",
+              width: 260
+          }
+      );
+  });
+</script>
+
+<!-- Your module script for app logic -->
 <script type="module">
-import { lookupUser } from "./src/api/backend.js";
-let currentGoogleSub = null;
+  import { lookupUser } from "./src/api/backend.js"; // Make sure this path is correct
 
-window.addEventListener("DOMContentLoaded", () => {
-    
-    const GOOGLE_CLIENT_ID = "762914522263-mshmosk8e89upni0c0p3upirltuqt7m6.apps.googleusercontent.com";
+  let currentGoogleSub = null;
 
-    google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
-        callback: handleGoogleCredentialResponse,
-    });
+  // Expose handleGoogleCredentialResponse to global scope so the GSI script can call it
+  window.handleGoogleCredentialResponse = async function(response) {
+    try {
+      const jwt = response.credential;
+      const decoded = JSON.parse(atob(jwt.split('.')[1]));
+      const email = decoded.email;
+      const sub = decoded.sub;
 
-    google.accounts.id.renderButton(document.getElementById("g-signin"), {
-        theme: "filled_blue",
-        size: "large",
-        width: 260,
-    });
+      if (!email || !sub) throw new Error("Invalid Google credential.");
+      currentGoogleSub = sub;
 
-    // google.accounts.id.prompt();
-    document.getElementById("createAccountBtn").addEventListener("click", submitRegistration);
-  document.getElementById("regRole").addEventListener("change", toggleRoleFields);
-});
+      // Lookup user in backend
+      const userId = await lookupUser(email); 
 
-async function handleGoogleCredentialResponse(response) {
-  try {
-    const jwt = response.credential;
-    const decoded = JSON.parse(atob(jwt.split('.')[1]));
-    const email = decoded.email;
-    const sub = decoded.sub;
+      if (userId > 0) {
+          window.sessionStorage.setItem("googleToken", currentGoogleSub);
+          window.location.href = `/classes`;
+          return;
+      }
 
-    if (!email || !sub) throw new Error("Invalid Google credential.");
-    currentGoogleSub = decoded.sub;
+      if (!email.endsWith("@merrimack.edu")) {
+          const domainError = document.getElementById("domainError");
+          domainError.textContent =
+              "Sign-in failed. Please use your Merrimack (@merrimack.edu) Google account.";
+          domainError.style.display = "block";
+          return;
+      }
 
-    if (!email) throw new Error("Email not found in Google credential.");
+      if (userId === -1) {
+          // Show registration modal
+          document.getElementById("modalBg").style.display = "flex";
+          document.getElementById("regEmail").value = email;
+          return;
+      }
 
-    const userId = await lookupUser(email); //returns stuff correctly
-
-    if (userId > 0) {
-        window.sessionStorage.setItem("googleToken", currentGoogleSub);
-      window.location.href = `/classes`;
-      return;
+      alert("Unexpected error during login.");
+    } catch (err) {
+      console.error("Google login error:", err);
+      alert("Login failed. Please try again.");
     }
-
-    if (!email.endsWith("@merrimack.edu")) {
-        domainError.textContent =
-            "Sign-in failed. Please use your Merrimack (@merrimack.edu) Google account.";
-        domainError.style.display = "block";
-        return;
-    }
-
-    if (userId === -1) {
-      //show registration modal, this works when my id doesnt exist so we're good there
-      document.getElementById("modalBg").style.display = "flex";
-      document.getElementById("regEmail").value = email;
-      return;
-    }
- 
-    //unexpected
-    alert("Unexpected error during login.");
-  } catch (err) {
-    console.error("Google login error:", err);
-    alert("Login failed. Please try again.");
-  }
-}
-function toggleRoleFields() {
-  const role = document.getElementById("regRole").value;
-  document.getElementById("majorField").style.display = role === "student" ? "block" : "none";
-  document.getElementById("subjectField").style.display = role === "instructor" ? "block" : "none";
-}
-
-async function submitRegistration() {
-  const email = document.getElementById("regEmail").value;
-  const first = document.getElementById("regFirstName").value.trim();
-  const last = document.getElementById("regLastName").value.trim();
-  const role = document.getElementById("regRole").value;
-  const major = document.getElementById("majorField").value.trim();
-  const subject = document.getElementById("subjectField").value.trim();
-
-  if (!first || !last || !role) {
-    alert("Please fill out all required fields.");
-    return;
-  }
-
-  const payload = {
-    googleSub: currentGoogleSub,
-    email,
-    isInstructor: role === "instructor",
-    major,
-    schoolSubject: subject,
-    firstName: first,
-    lastName: last
   };
 
-  console.log("Submitting registration payload:", payload);
+  // Toggle role fields in registration modal
+  function toggleRoleFields() {
+    const role = document.getElementById("regRole").value;
+    document.getElementById("majorField").style.display = role === "student" ? "block" : "none";
+    document.getElementById("subjectField").style.display = role === "instructor" ? "block" : "none";
+  }
 
-  try {
-    const response = await fetch("api/users/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
+  // Handle account creation
+  async function submitRegistration() {
+    const email = document.getElementById("regEmail").value;
+    const first = document.getElementById("regFirstName").value.trim();
+    const last = document.getElementById("regLastName").value.trim();
+    const role = document.getElementById("regRole").value;
+    const major = document.getElementById("majorField").value.trim();
+    const subject = document.getElementById("subjectField").value.trim();
 
-    const newUser = await response.json();
-
-    if (!newUser || !newUser.userId) {
-      alert("Registration failed.");
+    if (!first || !last || !role) {
+      alert("Please fill out all required fields.");
       return;
     }
 
-    console.log("[DEBUG] Storing Google Sub in sessionStorage:", currentGoogleSub);
-    window.sessionStorage.setItem("googleToken", currentGoogleSub);
+    const payload = {
+      googleSub: currentGoogleSub,
+      email,
+      isInstructor: role === "instructor",
+      major,
+      schoolSubject: subject,
+      firstName: first,
+      lastName: last
+    };
 
-    window.location.href = `/classes`;
-  } catch (err) {
-    console.error(err);
-    alert("Server error during registration.");
+    try {
+      const response = await fetch("api/users/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const newUser = await response.json();
+
+      if (!newUser || !newUser.userId) {
+        alert("Registration failed.");
+        return;
+      }
+
+      window.sessionStorage.setItem("googleToken", currentGoogleSub);
+      window.location.href = `/classes`;
+    } catch (err) {
+      console.error(err);
+      alert("Server error during registration.");
+    }
   }
-}
+
+  // Event listeners for modal
+  document.getElementById("createAccountBtn").addEventListener("click", submitRegistration);
+  document.getElementById("regRole").addEventListener("change", toggleRoleFields);
+
 </script>
+
+
 
 </body>
 </html>

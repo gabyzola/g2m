@@ -1,4 +1,4 @@
-import { getInstructorClasses, getStudentClasses, isUserInstructor, lookupUserBySub } from "./api/backend.js";
+import { getInstructorClasses, getStudentClasses, isUserInstructor, lookupUserBySub } from "./backend.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
 
