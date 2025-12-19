@@ -9,6 +9,7 @@ import {
   lookupUserBySub,
   deleteQuiz
 } from "./backend.js";
+import "./style.css";
 
 const params = new URLSearchParams(window.location.search);
 const classId = params.get("classId"); // classId still comes from url

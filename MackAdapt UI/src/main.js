@@ -1,4 +1,5 @@
 import { getInstructorClasses, getStudentClasses, isUserInstructor, lookupUserBySub } from "./backend.js";
+import "./style.css";
 
 document.addEventListener("DOMContentLoaded", async () => {
 

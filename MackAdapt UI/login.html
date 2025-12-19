@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <title>MackAdapt – Sign In</title>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
@@ -49,6 +48,12 @@
       </div>
   </div>
 
+  <script
+    src="https://accounts.google.com/gsi/client"
+    async
+    defer
+    onload="initGoogleSignIn()"
+  ></script>
   <script type="module" src="/src/login.js"></script>
 
 </body>

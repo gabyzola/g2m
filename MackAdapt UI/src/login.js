@@ -1,22 +1,31 @@
 import { lookupUser } from "./backend.js";
-import "./style.css"; // Import CSS for Vite to bundle
+import "./style.css";
 
 let currentGoogleSub = null;
 
-// Wait for DOM and GSI client
-window.addEventListener("DOMContentLoaded", () => {
-  const GOOGLE_CLIENT_ID = "762914522263-mshmosk8e89upni0c0p3upirltuqt7m6.apps.googleusercontent.com";
+window.initGoogleSignIn = function () {
+  const GOOGLE_CLIENT_ID =
+    "762914522263-mshmosk8e89upni0c0p3upirltuqt7m6.apps.googleusercontent.com";
+
+  if (!window.google) {
+    console.error("Google GSI not loaded");
+    return;
+  }
 
   google.accounts.id.initialize({
-      client_id: GOOGLE_CLIENT_ID,
-      callback: handleGoogleCredentialResponse
+    client_id: GOOGLE_CLIENT_ID,
+    callback: handleGoogleCredentialResponse
   });
 
   google.accounts.id.renderButton(
-      document.getElementById("g-signin"),
-      { theme: "filled_blue", size: "large", width: 260 }
+    document.getElementById("g-signin"),
+    {
+      theme: "filled_blue",
+      size: "large",
+      width: 260
+    }
   );
-});
+};
 
 // Global handler for Google Sign-In
 window.handleGoogleCredentialResponse = async function(response) {
