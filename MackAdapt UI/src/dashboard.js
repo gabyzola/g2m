@@ -13,9 +13,20 @@ import {
     function closeDeleteModal() {
       document.getElementById('deleteModal').style.display = 'none';
     }
-    function mockDeleteAccount() {
-      alert("Account would be deleted.");
-      closeDeleteModal();
+    async function deleteAccount() {
+      if (!userId) return;
+
+      const confirmed = confirm("Are you sure you want to delete your account? This cannot be undone.");
+      if (!confirmed) return;
+
+      const success = await removeUser(userId);
+      if (success) {
+        alert("Your account has been deleted.");
+        sessionStorage.removeItem("googleToken");
+        window.location.href = "/login.html"; // Redirect after deletion
+      } else {
+        alert("Failed to delete account. Please try again.");
+      }
     }
 
     //defines all badges and point thresholds
@@ -56,6 +67,11 @@ import {
 
       userId = user.userId; 
       renderBadges(userId);
+
+      const deleteBtn = document.getElementById("deleteAccountBtn");
+      if (deleteBtn) {
+        deleteBtn.addEventListener("click", deleteAccount);
+      }
     }
 
     initDashboard();

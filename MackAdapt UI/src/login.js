@@ -27,7 +27,7 @@ window.initGoogleSignIn = function () {
   );
 };
 
-// Global handler for Google Sign-In
+//adjusted this to be global bc it wasn't working in deployment
 window.handleGoogleCredentialResponse = async function(response) {
   try {
     const jwt = response.credential;

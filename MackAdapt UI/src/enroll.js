@@ -13,7 +13,6 @@ if (!classId) {
   alert("No class selected.");
 }
 
-// Add Back button link dynamically
 const backButton = document.createElement('a');
 backButton.textContent = "← Back to Class Module";
 backButton.href = `/class-module.html?classId=${classId}`;

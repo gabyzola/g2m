@@ -38,7 +38,6 @@ async function init() {
     return;
   }
 
-  // --- Fetch user by google token ---
   const user = await lookupUserBySub(googleToken);
   console.log("[DEBUG] User object returned from backend:", user);
 
@@ -51,7 +50,6 @@ async function init() {
   userId = user.userId;
   email = user.email;
 
-  // --- Attach event listeners for modals ---
   readingBtn.addEventListener("click", () => {
     readingNameInput.value = "";
     objectivesContainer.innerHTML = `
@@ -103,7 +101,6 @@ async function init() {
     }
   });
 
-  // --- Attach delete modal event listeners ---
   document.addEventListener("click", (e) => {
     if (e.target.classList.contains("delete-icon")) {
       quizToDelete = e.target.dataset.quizId;
@@ -122,14 +119,13 @@ async function init() {
       await deleteQuiz(quizToDelete, classId, userId);
       deleteModal.style.display = "none";
       quizToDelete = null;
-      await loadClassData(); // refresh after delete
+      await loadClassData(); //refreshes after delete
     } catch (err) {
       console.error(err);
       alert("Error deleting quiz.");
     }
   });
 
-  // --- Load all page data ---
   await loadClassData();
 }
 

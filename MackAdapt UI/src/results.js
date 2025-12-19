@@ -69,6 +69,7 @@ import "./style.css";
 
         const answers = attempt.answers ?? [];
 
+        //sticks results in a table
         answers.forEach(ans => {
             const tr = document.createElement('tr');
             tr.className = ans.pointsEarned > 0 ? 'correct' : 'incorrect';

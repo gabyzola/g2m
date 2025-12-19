@@ -37,7 +37,7 @@ async function init() {
   const quizId = params.get("quizId"); 
   const googleToken = sessionStorage.getItem("googleToken");
 
-  console.log("[DEBUG] Google token from sessionStorage:", googleToken);
+  console.log("debug: Google token from sessionStorage:", googleToken);
 
   let userId = null;
   let email = null;
