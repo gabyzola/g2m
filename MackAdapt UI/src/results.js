@@ -1,4 +1,4 @@
-import { getClassEnrollees, getAttemptResults, getLatestSessionId } from "./src/api/backend.js";
+import { getClassEnrollees, getAttemptResults, getLatestSessionId } from "./backend";
 import "./style.css";
     const params = new URLSearchParams(window.location.search);
     const classId = params.get("classId");
