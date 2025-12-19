@@ -339,6 +339,10 @@ footer {
   padding: 1rem;
   margin-top: 4rem;
 }
+
+.modal-bg {
+  display: none;
+}
 .hero-image {
   background-image: url("/hero.jpeg");
   background-size: cover;
