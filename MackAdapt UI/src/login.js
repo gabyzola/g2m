@@ -121,3 +121,12 @@ async function submitRegistration() {
 // Attach modal event listeners
 document.getElementById("createAccountBtn").addEventListener("click", submitRegistration);
 document.getElementById("regRole").addEventListener("change", toggleRoleFields);
+
+window.addEventListener("load", () => {
+  if (window.google) {
+    initGoogleSignIn();
+  } else {
+    console.error("Google GSI not loaded");
+  }
+});
+
