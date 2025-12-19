@@ -428,9 +428,9 @@ public class QuizController {
 
     @DeleteMapping("/users/remove/{userId}")
     public boolean removeUser(
-            @PathVariable int studentId
+            @PathVariable int userId
     ) {
-        return bl.deleteUser(studentId);
+        return bl.deleteUser(userId);
     }
 
     //good, resets at the end of quiz
