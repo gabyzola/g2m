@@ -1,6 +1,7 @@
 import { createQuiz, addQuestion, addReadingToQuiz } from "./backend";
 import "./style.css";
 
+async function init() {
   const query = new URLSearchParams(window.location.search);
   const quizId = query.get("quizId");
   const classId = query.get("classId");
@@ -11,8 +12,7 @@ import "./style.css";
   const questionContainer = document.getElementById("questionContainer");
 
   let questionIndex = 0;
- 
-  // Create a new question block
+
   function createQuestionBlock() {
     const block = document.createElement("div");
     block.classList.add("panel");
@@ -22,10 +22,8 @@ import "./style.css";
 
     const idx = questionIndex++;
 
-    // Use latest objectives
     block.innerHTML = `
       <h4>Question ${idx + 1}</h4>
-
       <label>Question Text</label>
       <textarea class="q-text"></textarea>
 
@@ -37,35 +35,22 @@ import "./style.css";
       </select>
 
       <label>Learning Objective</label>
-      <select class="q-objective">
-        ${objectiveSelect.innerHTML}
-      </select>
+      <select class="q-objective">${objectiveSelect.innerHTML}</select>
 
-      <label>A)</label>
-      <input class="q-A">
-
-      <label>B)</label>
-      <input class="q-B">
-
-      <label>C)</label>
-      <input class="q-C">
-
-      <label>D)</label>
-      <input class="q-D">
-
-      <label>Correct Answer (A/B/C/D)</label>
-      <input class="q-correct" maxlength="1" placeholder="A/B/C/D">
+      <label>A)</label><input class="q-A">
+      <label>B)</label><input class="q-B">
+      <label>C)</label><input class="q-C">
+      <label>D)</label><input class="q-D">
+      <label>Correct Answer (A/B/C/D)</label><input class="q-correct" maxlength="1" placeholder="A/B/C/D">
     `;
 
     return block;
   }
 
-  // Add a new question
   document.getElementById("newQuestionBtn").addEventListener("click", () => {
     questionContainer.appendChild(createQuestionBlock());
   });
 
-  // Fetch readings
   async function loadReadings() {
     try {
       const res = await fetch(`/api/classes/${classId}/readings`);
@@ -83,7 +68,7 @@ import "./style.css";
         return;
       }
 
-      data.forEach(reading => {
+      data.forEach((reading) => {
         const op = document.createElement("option");
         op.value = reading.readingId;
         op.textContent = reading.readingName;
@@ -91,15 +76,14 @@ import "./style.css";
       });
 
       // Load objectives for first reading
-      loadObjectives(data[0].readingId);
-
+      await loadObjectives(data[0].readingId);
     } catch (err) {
       console.error("Failed to load readings:", err);
-      readingSelect.innerHTML = "<option disabled selected>Error loading readings</option>";
+      readingSelect.innerHTML =
+        "<option disabled selected>Error loading readings</option>";
     }
   }
 
-  // Fetch objectives for a reading
   async function loadObjectives(readingId) {
     try {
       const res = await fetch(`/api/quizzes/${readingId}/readingobjectives`);
@@ -115,7 +99,7 @@ import "./style.css";
         op.selected = true;
         objectiveSelect.appendChild(op);
       } else {
-        data.forEach(obj => {
+        data.forEach((obj) => {
           const op = document.createElement("option");
           op.value = obj.objectiveId;
           op.textContent = obj.objectiveName;
@@ -123,27 +107,23 @@ import "./style.css";
         });
       }
 
-      // Update all existing question blocks
       refreshQuestionObjectives();
 
-      // If no questions exist, create first one
       if (questionIndex === 0) {
         questionContainer.appendChild(createQuestionBlock());
       }
-
     } catch (err) {
       console.error("Failed to load objectives:", err);
-      objectiveSelect.innerHTML = "<option disabled selected>Error loading objectives</option>";
+      objectiveSelect.innerHTML =
+        "<option disabled selected>Error loading objectives</option>";
     }
   }
 
-  // When user changes reading from dropdown
   readingSelect.addEventListener("change", () => {
     const selectedReadingId = parseInt(readingSelect.value);
     if (selectedReadingId) loadObjectives(selectedReadingId);
   });
 
-  // Link a reading to quiz
   document.getElementById("addReadingBtn").addEventListener("click", async () => {
     const readingId = parseInt(readingSelect.value);
     if (!readingId) return alert("Please select a reading first.");
@@ -151,21 +131,21 @@ import "./style.css";
     const result = await addReadingToQuiz(quizId, readingId);
     if (result && result.success) {
       alert("Reading linked to quiz!");
-      await loadQuizObjectives();  // reload objectives
-      refreshQuestionObjectives(); // update all question dropdowns
+      await loadQuizObjectives();
+      refreshQuestionObjectives();
     } else {
       alert("Failed to link reading.");
       console.error(result);
     }
   });
 
-  // Update all question blocks with latest objectives
   function refreshQuestionObjectives() {
     const html = objectiveSelect.innerHTML;
-    document.querySelectorAll(".q-objective").forEach(sel => sel.innerHTML = html);
+    document.querySelectorAll(".q-objective").forEach(
+      (sel) => (sel.innerHTML = html)
+    );
   }
 
-  // Save quiz
   document.getElementById("saveQuizBtn").addEventListener("click", async () => {
     const quizName = document.getElementById("quizName").value.trim();
     if (!quizName) return alert("Please enter a quiz name!");
@@ -174,7 +154,7 @@ import "./style.css";
     const nameRes = await fetch(`/api/quizzes/${quizId}/name`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ quizName })
+      body: JSON.stringify({ quizName }),
     });
 
     const nameResult = await nameRes.json();
@@ -192,8 +172,10 @@ import "./style.css";
         choiceB: block.querySelector(".q-B").value.trim(),
         choiceC: block.querySelector(".q-C").value.trim(),
         choiceD: block.querySelector(".q-D").value.trim(),
-        correctAnswer: block.querySelector(".q-correct").value.trim().toUpperCase(),
-        objectiveId: parseInt(block.querySelector(".q-objective").value)
+        correctAnswer: block.querySelector(".q-correct").value
+          .trim()
+          .toUpperCase(),
+        objectiveId: parseInt(block.querySelector(".q-objective").value),
       };
 
       const result = await addQuestion(quizId, questionData);
@@ -207,7 +189,6 @@ import "./style.css";
     window.location.href = `class-module.html?classId=${classId}&userId=${userId}`;
   });
 
-  // Load quiz objectives from backend
   async function loadQuizObjectives() {
     try {
       const res = await fetch(`/api/quizzes/${quizId}/objectives`);
@@ -223,7 +204,7 @@ import "./style.css";
         op.selected = true;
         objectiveSelect.appendChild(op);
       } else {
-        objectives.forEach(obj => {
+        objectives.forEach((obj) => {
           const op = document.createElement("option");
           op.value = obj.objectiveId;
           op.textContent = obj.objectiveName;
@@ -234,10 +215,14 @@ import "./style.css";
       refreshQuestionObjectives();
     } catch (err) {
       console.error("Failed to load quiz objectives:", err);
-      objectiveSelect.innerHTML = "<option disabled selected>Error loading objectives</option>";
+      objectiveSelect.innerHTML =
+        "<option disabled selected>Error loading objectives</option>";
     }
   }
 
-  // Initial load
+  //initial load get rid of top level
   await loadReadings();
   await loadQuizObjectives();
+}
+
+init();
