@@ -20,11 +20,11 @@ import {
 
     //defines all badges and point thresholds
     const badges = [
-      { name: "Rookie", img: "/Images/badges/Rookie.png", points: 0, description: "Complete your first quiz" },
-      { name: "Steady Learner", img: "/Images/badges/Rookie (1).png", points: 100, description: "Reach 100 total points" },
-      { name: "Knowledge Collector", img: "/Images/badges/Rookie (2).png", points: 500, description: "Reach 500 total points" },
-      { name: "Quiz Master", img: "/Images/badges/Rookie (3).png", points: 700, description: "Reach 700 total points" },
-      { name: "Legend", img: "/Images/badges/Rookie (4).png", points: 1000, description: "Reach 1000 total points" }
+      { name: "Rookie", img: "/Rookie.png", points: 0, description: "Complete your first quiz" },
+      { name: "Steady Learner", img: "/Rookie (1).png", points: 100, description: "Reach 100 total points" },
+      { name: "Knowledge Collector", img: "/Rookie (2).png", points: 500, description: "Reach 500 total points" },
+      { name: "Quiz Master", img: "/Rookie (3).png", points: 700, description: "Reach 700 total points" },
+      { name: "Legend", img: "/Rookie (4).png", points: 1000, description: "Reach 1000 total points" }
     ];
 
     async function renderBadges(userId) {
