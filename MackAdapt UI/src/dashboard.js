@@ -7,12 +7,6 @@ import {
 
     let userId = null;
 
-    function openDeleteModal() {
-      document.getElementById('deleteModal').style.display = 'flex';
-    }
-    function closeDeleteModal() {
-      document.getElementById('deleteModal').style.display = 'none';
-    }
     async function deleteAccount() {
       if (!userId) return;
 
@@ -68,9 +62,27 @@ import {
       userId = user.userId; 
       renderBadges(userId);
 
-      const deleteBtn = document.getElementById("deleteAccountBtn");
-      if (deleteBtn) {
-        deleteBtn.addEventListener("click", deleteAccount);
+      const deleteBtn = document.querySelector('.danger-btn');
+      const modalOverlay = document.getElementById('deleteModal');
+      const modalCancelBtn = modalOverlay.querySelector('.cancel');
+      const modalConfirmBtn = modalOverlay.querySelector('.confirm');
+
+      if (deleteBtn && modalOverlay && modalCancelBtn && modalConfirmBtn) {
+        // Open modal
+        deleteBtn.addEventListener('click', () => {
+          modalOverlay.style.display = 'flex';
+        });
+
+        // Cancel deletion
+        modalCancelBtn.addEventListener('click', () => {
+          modalOverlay.style.display = 'none';
+        });
+
+        // Confirm deletion
+        modalConfirmBtn.addEventListener('click', async () => {
+          await deleteAccount();
+          modalOverlay.style.display = 'none';
+        });
       }
     }
 
