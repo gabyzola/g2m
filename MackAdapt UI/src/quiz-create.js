@@ -11,7 +11,7 @@ import "./style.css";
   const questionContainer = document.getElementById("questionContainer");
 
   let questionIndex = 0;
-
+ 
   // Create a new question block
   function createQuestionBlock() {
     const block = document.createElement("div");
