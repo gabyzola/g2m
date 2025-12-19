@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import path from 'path'
 
 export default defineConfig({
-  target: "esnext",
+  // target: "esnext",
   build: {
     rollupOptions: {
       input: {
