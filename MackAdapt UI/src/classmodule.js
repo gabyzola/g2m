@@ -8,7 +8,7 @@ import {
   getClassName,
   lookupUserBySub,
   deleteQuiz
-} from "./backend.js";
+} from "./backend";
 import "./style.css";
 
 const params = new URLSearchParams(window.location.search);

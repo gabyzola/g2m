@@ -3,7 +3,7 @@ import {
         getClassEnrollees, 
         enrollStudent, 
         removeStudent 
-      } from "./src/api/backend.js";
+      } from "./backend";
       import "./style.css";
 
       const params = new URLSearchParams(window.location.search);

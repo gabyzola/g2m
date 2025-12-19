@@ -1,4 +1,4 @@
-import { lookupUser } from "./backend.js";
+import { lookupUser } from "./backend";
 import "./style.css";
 
 let currentGoogleSub = null;

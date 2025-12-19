@@ -1,4 +1,4 @@
-import { createQuiz, addQuestion, addReadingToQuiz } from "./src/api/backend.js";
+import { createQuiz, addQuestion, addReadingToQuiz } from "./backend";
 import "./style.css";
 
   const query = new URLSearchParams(window.location.search);

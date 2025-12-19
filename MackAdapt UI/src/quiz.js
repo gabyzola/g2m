@@ -8,7 +8,7 @@ import {
   getAttemptResults,
   assignBadge,
   lookupUserBySub
-} from "./src/api/backend.js";
+} from "./backend";
 import "./style.css";
 
 function showMessage(text, type = "warning") {

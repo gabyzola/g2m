@@ -2,7 +2,7 @@ import {
       removeUser,
       getStudentTotalPoints, 
       lookupUserBySub
-    } from "./backend.js";
+    } from "./backend";
     import "./style.css"; // Import CSS for Vite to bundle
 
     let userId = null;
