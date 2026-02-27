@@ -121,7 +121,7 @@ public class QuizDal {
 
         } catch (SQLException e) {
             System.out.println("Error looking up user: " + e.getMessage());
-            return Map.of("userId", -1, "email", null);
+            throw new RuntimeException("DB lookup failed", e);
 
         } finally {
             try { if (stmt != null) stmt.close(); } catch (SQLException ignore) {}
@@ -149,7 +149,7 @@ public class QuizDal {
 
         } catch (SQLException e) {
             System.out.println("Error looking up user: " + e.getMessage());
-            return -1;
+            throw new RuntimeException("Database unavailable", e);
 
         } finally {
             try { if (stmt != null) stmt.close(); } catch (SQLException ignore) {}
@@ -177,7 +177,7 @@ public class QuizDal {
 
         } catch (SQLException e) {
             System.out.println("Error fetching user role: " + e.getMessage());
-            return -1;
+            throw new RuntimeException("DB lookup failed", e);
 
         } finally {
             try { if (stmt != null) stmt.close(); } catch (SQLException ignore) {}
